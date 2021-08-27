@@ -2,6 +2,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,jetbrains,dotnetcore
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,jetbrains,dotnetcore
 
+.vscode
 ### DotnetCore ###
 # .NET Core build folders
 bin/
