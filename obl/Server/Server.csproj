@@ -6,4 +6,8 @@
         <RootNamespace>Servidor</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Domain" />
+    </ItemGroup>
+
 </Project>
