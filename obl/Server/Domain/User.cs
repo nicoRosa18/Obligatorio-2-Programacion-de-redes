@@ -9,5 +9,21 @@ namespace ConsoleAppSocketServer.Domain
         public ArrayList AcquireGames { get; set; }
         
         public ArrayList PublishedGames { get; set; }
+        
+        public void PublishGame(Game game)
+        {
+            this.PublishedGames.Add(game);
+        }
+
+        public void PublishQualification(Qualification qualification)
+        {
+            qualification.game.ComunityQualifications.Add(qualification);
+        }
+
+        public void BuyGame(Game game)
+        {
+            this.AcquireGames.Add(game);
+        }
+        
     }
 }
