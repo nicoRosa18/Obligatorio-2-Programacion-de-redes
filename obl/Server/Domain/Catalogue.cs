@@ -9,7 +9,7 @@ namespace ConsoleAppSocketServer.Domain
     {
         public Collection<Game> Games { get; set; }
 
-        public Collection<Game> SearchGameByGenre(string genre)
+        private Collection<Game> SearchGameByGenre(string genre)
         {
             Collection<Game> matchingGames = new Collection<Game>();
             for (int i = 0; i < this.Games.Count; i++)
@@ -21,7 +21,7 @@ namespace ConsoleAppSocketServer.Domain
             return matchingGames;
         }
 
-        public Game SearchGameByTitle(string title)
+        private Game SearchGameByTitle(string title)
         {
             for (int i = 0; i < this.Games.Count; i++)
             {
@@ -31,7 +31,7 @@ namespace ConsoleAppSocketServer.Domain
             throw new Exception("Game not found");
         }
 
-        public Collection<Game> SearchGameByQualification(int qualification)
+        private Collection<Game> SearchGameByQualification(int qualification)
         {
             Collection<Game> matchingGames = new Collection<Game>();
             for (int i = 0; i < this.Games.Count; i++)

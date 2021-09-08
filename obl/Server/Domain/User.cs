@@ -24,6 +24,11 @@ namespace ConsoleAppSocketServer.Domain
         {
             this.AcquireGames.Add(game);
         }
-        
+
+        public override bool Equals(object? obj)
+        {
+            User user = (User) obj;
+            return this.Name.Equals(user.Name);
+        }
     }
 }

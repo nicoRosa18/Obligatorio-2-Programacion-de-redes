@@ -3,13 +3,16 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using ConsoleAppSocketServer.Domain;
 
 namespace ConsoleAppSocketServer
 {
     class Program
     {
+        private UsersAndCatalogueManager _usersAndCatalogueManager = new UsersAndCatalogueManager();
         static void Main(string[] args)
         {
+            
             Console.WriteLine("Comenzando Socket Server...");
 
             var socketServer = new Socket(AddressFamily.InterNetwork,
@@ -47,10 +50,14 @@ namespace ConsoleAppSocketServer
                 var buffer = new byte[1024];
                 // Si la conexion se cierra, el receive retorna 0
                 bytesReceived = connectedSocket.Receive(buffer);
+                
                 if (bytesReceived > 0)
                 {
                     var message = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine($"{threadId}: Recibi el siguiente mensaje: {message}");
+                    Console.WriteLine(message);
+                    var messagecleared = EliminarEspacios(message);
+                    MessagesManager.MessageInterpreter(messagecleared, connectedSocket); //interpreta el mensaje recibido y genera una respuesta
+                    Console.WriteLine("abajo MessageInterpreteer en program.cs");
                 }
                 else
                 {
@@ -62,6 +69,15 @@ namespace ConsoleAppSocketServer
             connectedSocket.Shutdown(SocketShutdown.Both);
             connectedSocket.Close();
             Console.WriteLine($"{threadId}: Cerrando la  conexion...");
+        }
+
+        private static string EliminarEspacios(string message)
+        {
+            Console.WriteLine("en eliminar espacios");
+            int coutAt=message.IndexOf("*");
+            string newMessage = message.Substring(0, coutAt);
+            Console.WriteLine("termine eliminar espacios");
+            return newMessage;
         }
     }
 }
