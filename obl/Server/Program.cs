@@ -9,10 +9,11 @@ namespace ConsoleAppSocketServer
 {
     class Program
     {
-        private UsersAndCatalogueManager _usersAndCatalogueManager = new UsersAndCatalogueManager();
+        private static UsersAndCatalogueManager _usersAndCatalogueManager;
         static void Main(string[] args)
         {
-            
+            _usersAndCatalogueManager = new UsersAndCatalogueManager();
+            Session._usersAndCatalogueManager = _usersAndCatalogueManager; 
             Console.WriteLine("Comenzando Socket Server...");
 
             var socketServer = new Socket(AddressFamily.InterNetwork,
@@ -43,41 +44,17 @@ namespace ConsoleAppSocketServer
 
         private static void HandleConnection(Socket connectedSocket, int threadId)
         {
-            var bytesReceived = 1;
-            // Este while se usa para mantenerse aqui mientras la conexion no se cierra
-            while (bytesReceived > 0)
+            Session session = new Session(connectedSocket,threadId);
+            while (session.Active)
             {
-                var buffer = new byte[1024];
-                // Si la conexion se cierra, el receive retorna 0
-                bytesReceived = connectedSocket.Receive(buffer);
-                
-                if (bytesReceived > 0)
-                {
-                    var message = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine(message);
-                    var messagecleared = EliminarEspacios(message);
-                    MessagesManager.MessageInterpreter(messagecleared, connectedSocket); //interpreta el mensaje recibido y genera una respuesta
-                    Console.WriteLine("abajo MessageInterpreteer en program.cs");
-                }
-                else
-                {
-                    Console.WriteLine($"{threadId}: El cliente remoto cerro la conexion...");
-                }
+                session.Listen();
             }
-
             // Iniciamos el proceso de cerrado del socket
             connectedSocket.Shutdown(SocketShutdown.Both);
             connectedSocket.Close();
             Console.WriteLine($"{threadId}: Cerrando la  conexion...");
         }
 
-        private static string EliminarEspacios(string message)
-        {
-            Console.WriteLine("en eliminar espacios");
-            int coutAt=message.IndexOf("*");
-            string newMessage = message.Substring(0, coutAt);
-            Console.WriteLine("termine eliminar espacios");
-            return newMessage;
-        }
+       
     }
 }

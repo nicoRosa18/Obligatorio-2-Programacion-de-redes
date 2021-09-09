@@ -18,8 +18,10 @@ namespace ConsoleAppSocketServer.Domain
             this.Catalogue = new Catalogue();
         }
 
-        public void AddUser(User user)
+        public void AddUser(string username)
         {
+            User user = new User();
+            user.Name = username;
             this.Users.Add(user);
         }
 
@@ -42,6 +44,11 @@ namespace ConsoleAppSocketServer.Domain
             User userToCompare = new User();
             userToCompare.Name = userName;
             return Users.Contains(userToCompare);
+        }
+
+        public bool Login(string user)
+        {
+            return ContainsUser(user);
         }
     }
 }

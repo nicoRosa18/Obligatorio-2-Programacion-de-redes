@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using ConsoleAppSocketServer;
 
 namespace ConsoleAppSocketClient
 {
@@ -25,45 +26,31 @@ namespace ConsoleAppSocketClient
             var termine = false;
             SendMessage("startupMenu", socketClient);//pedimos el menu de inicio
             // Si la conexion se cierra, el receive retorna 0
-            ShowMessage(socketClient);
+            Console.WriteLine(MessageManager.ShowMessage(socketClient));
             while (!termine)
             {
                 string command = Console.ReadLine();
-                SendMessage(command, socketClient);
-                ShowMessage(socketClient);
-                /*    var message = Console.ReadLine();
-                    if (message.Length == 0)
+                if (command.Length == 0)
                     {
                         Console.WriteLine("Cerrando la conexion");
                         termine = true;
                     }
                     else
                     {
-                        var data = Encoding.UTF8.GetBytes(message);
-                        socketClient.Send(data);
-                    }*/
+                        SendMessage(command, socketClient);
+                        Console.WriteLine(MessageManager.ShowMessage(socketClient));
+                    }
             }
             socketClient.Shutdown(SocketShutdown.Both);
             socketClient.Close();
             Console.WriteLine("Cerrando la conexion..");            
             Console.ReadLine();
         }
-
         private static void SendMessage(string message, Socket socketClient)
         {
             var bytes = Encoding.UTF8.GetBytes($"{message}*");
             socketClient.Send(bytes);
         }
-        private static void ShowMessage(Socket socketClient)
-        {
-            var buffer = new byte[1024];
-            var bytesReceived = 1;
-            bytesReceived = socketClient.Receive(buffer);
-            if (bytesReceived > 0)
-            {
-                var message = Encoding.UTF8.GetString(buffer);
-                Console.WriteLine(message);
-            }
-        }
+        
     }
 }
