@@ -50,5 +50,10 @@ namespace ConsoleAppSocketServer.Domain
         {
             return ContainsUser(user);
         }
+
+        public void AddGame(Game gameToAdd)
+        {
+            this.Catalogue.AddGame(gameToAdd);
+        }
     }
 }

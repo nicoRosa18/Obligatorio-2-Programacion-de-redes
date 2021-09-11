@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Text;
+using Common.Protocol;
 
 namespace ConsoleAppSocketServer.Domain
 {
@@ -25,17 +27,23 @@ namespace ConsoleAppSocketServer.Domain
             string messageReturn = "";
             switch (message)
             {
-                case "startupMenu":
+                case CommandConstants.StartupMenu:
                     StartUpMenu();
                     break;
-                case "1":
+                case CommandConstants.RegisterUser:
                     UserRegist();
                     break;
-                case "2":
+                case CommandConstants.LoginUser:
                     UserLogin();
                     break;
-                case "3":
-                    StartUpMenu();
+                case CommandConstants.ViewCatalogue:
+                    ShowCatalogue();
+                    break;
+                case CommandConstants.MainMenu:
+                    mainMenu();
+                    break;
+                case CommandConstants.AddGame:
+                    AddGame();
                     break;
                 case "":
                     CloseConnection();
@@ -44,6 +52,43 @@ namespace ConsoleAppSocketServer.Domain
                     messageReturn = "por favor envie una opcion correcta";
                     SendMessage(messageReturn);
                     break;
+            }
+        }
+
+        private void AddGame()
+        {
+            if (UserLogged != null)
+            {
+                try
+                {
+                    string messageToSend = "Agregar nuevo juego: \n \n " +
+                                           "ingrese titulo: ";
+                    SendMessage(messageToSend);
+                    string title = Receive();
+                    messageToSend = " ingrese genero:";
+                    SendMessage(messageToSend);
+                    string genre = Receive();
+                    messageToSend = "ingrese una breve sinopsis:";
+                    SendMessage(messageToSend);
+                    string synopsis = Receive();
+                    messageToSend = "Agrege la calificacion de edad";
+                    SendMessage(messageToSend);
+                    string ageRating = Receive();
+                    messageToSend = "Agregue a ruta de acceso a la caratula del juego:";
+                    SendMessage(messageToSend);
+                    string coverPath = Receive();
+                    Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
+                    _usersAndCatalogueManager.AddGame(gameToAdd);
+                    SendMessage(SystemMessages.GameAdded);
+                }
+                catch (Exception e)
+                {
+                    SendMessage(e.Message);
+                }
+            }
+            else
+            {
+                SendMessage((SystemMessages.InvalidOption));
             }
         }
 
@@ -64,10 +109,31 @@ namespace ConsoleAppSocketServer.Domain
             }
         }
 
+        private void ShowCatalogue()
+        {
+            if (UserLogged != null)
+            {
+                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+                SendMessage(SystemMessages.CatalogueView+catalogue.ShowGamesOnStringList());
+               // serverHandler.SendFile(SystemMessages.CatalogueView+catalogue.ShowGamesOnStringList());
+            }
+            else
+            {
+                SendMessage((SystemMessages.InvalidOption));
+            }
+        }
+
         private void mainMenu()
         {
-            string messageToSend = "Menu de inicio";
-            SendMessage(messageToSend);
+            if (UserLogged != null)
+            {
+                string messageToSend = SystemMessages.MainMenuMessage;
+                SendMessage(messageToSend);
+            }
+            else
+            {
+                SendMessage((SystemMessages.InvalidOption));
+            }
         }
 
         private void UserRegist()
@@ -82,7 +148,7 @@ namespace ConsoleAppSocketServer.Domain
                 _usersAndCatalogueManager.AddUser(userName);
                 messageToSend =
                     $"Usuario Registrado!, usuarios registrados: {_usersAndCatalogueManager.Users.Count} \n \n" +
-                    $" ingrese 3 para volver al menu de inicio";
+                    $" ingrese 0 para volver al menu de inicio";
             }
 
             SendMessage(messageToSend);
@@ -104,10 +170,7 @@ namespace ConsoleAppSocketServer.Domain
 
         private void StartUpMenu()
         {
-            string messageToSend = "Bienvenido, envie el numero para la operacion deseada \n" +
-                                   " 1-Registrar Usuario \n" +
-                                   " 2- Ingresar Usuario\n" +
-                                   " enter para salir";
+            string messageToSend = SystemMessages.StartUpMessage;
             SendMessage(messageToSend);
         }
 

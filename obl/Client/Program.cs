@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Common.Protocol;
 using ConsoleAppSocketServer;
 
 namespace ConsoleAppSocketClient
@@ -24,7 +25,7 @@ namespace ConsoleAppSocketClient
             Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
 
             var termine = false;
-            SendMessage("startupMenu", socketClient);//pedimos el menu de inicio
+            SendMessage(CommandConstants.StartupMenu, socketClient);//pedimos el menu de inicio
             // Si la conexion se cierra, el receive retorna 0
             Console.WriteLine(MessageManager.ShowMessage(socketClient));
             while (!termine)

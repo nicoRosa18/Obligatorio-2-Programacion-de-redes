@@ -9,6 +9,11 @@ namespace ConsoleAppSocketServer.Domain
     {
         public Collection<Game> Games { get; set; }
 
+        public Catalogue()
+        {
+            this.Games = new Collection<Game>();
+        }
+
         private Collection<Game> SearchGameByGenre(string genre)
         {
             Collection<Game> matchingGames = new Collection<Game>();
@@ -76,10 +81,33 @@ namespace ConsoleAppSocketServer.Domain
             return this.Games;
         }
 
+        public string ShowGamesOnStringList()
+        {
+            string ret = "";
+            if (Games.Count == 0)
+            {
+                ret = SystemMessages.EmptyCatalogue;
+            }
+            else
+            {
+                ret = "lista de juegos: \n \n";
+                foreach(Game game in Games)
+                {
+                    ret += $"{game.Title} \n";
+                }
+            }
+            return ret;
+        }
+
         public GameDetails ShowDetails(Game game)
         {
             GameDetails gameDetails = new GameDetails(game);
             return gameDetails;
+        }
+
+        public void AddGame(Game gameToAdd)
+        {
+            this.Games.Add(gameToAdd);
         }
     }
 }

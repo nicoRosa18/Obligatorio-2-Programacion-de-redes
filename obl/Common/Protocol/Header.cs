@@ -5,6 +5,7 @@ namespace Common.Protocol
 {
     public class Header
     {
+        
         public static int GetLength()
         {
             return Specification.FixedFileNameLength + Specification.FixedFileSizeLength;
