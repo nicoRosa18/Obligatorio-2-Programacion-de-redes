@@ -30,7 +30,7 @@ namespace ConsoleAppSocketServer.Domain
             CommunityQualifications = new Collection<Qualification>();
         }
 
-        public void AddComunityQualification(Qualification qualification)
+        public void AddCommunityQualification(Qualification qualification)
         {
             this.CommunityQualifications.Add(qualification);
             UpdateStars();

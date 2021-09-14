@@ -32,7 +32,7 @@ namespace ConsoleAppSocketServer.Domain
                     
                     if (matchedGames.Count != 0) //if it was also searched by gender
                     {
-                        matchedGames=  (Collection<Game>) matchedGames.Intersect(gamesByCualification); //intersects matching games by genre and by qualification
+                        matchedGames = (Collection<Game>) matchedGames.Intersect(gamesByCualification); //intersects matching games by genre and by qualification
                     }
                     else
                     {// add only games by qualification
@@ -54,7 +54,7 @@ namespace ConsoleAppSocketServer.Domain
             string ret = "";
             if (Games.Count == 0)
             {
-                ret = SystemMessages.EmptyCatalogue;
+                ret = "";
             }
             else
             {

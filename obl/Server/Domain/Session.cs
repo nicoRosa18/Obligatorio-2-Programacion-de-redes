@@ -9,17 +9,23 @@ namespace ConsoleAppSocketServer.Domain
     public class Session
     {
         public int ThreadId { get; set; }
-        private User UserLogged { get; set; }
+
+        public bool Active { get; set; }
+
         public static UsersAndCatalogueManager _usersAndCatalogueManager { get; set; }
 
         private Socket ConnectedSocket { get; set; }
-        public bool Active { get; set; }
 
-        public Session(Socket connectedSocket, int threadId)
+        private User _userLogged { get; set; }
+
+        private Message _message { get; set; }
+
+        public Session(Socket connectedSocket, int threadId, Message message)
         {
             this.ThreadId = threadId;
             this.ConnectedSocket = connectedSocket;
             this.Active = true;
+            this._message = message;
         }
 
         public void MessageInterpreter(string message)
@@ -31,7 +37,7 @@ namespace ConsoleAppSocketServer.Domain
                     StartUpMenu();
                     break;
                 case CommandConstants.RegisterUser:
-                    UserRegist();
+                    UserRegistration();
                     break;
                 case CommandConstants.LoginUser:
                     UserLogin();
@@ -55,103 +61,104 @@ namespace ConsoleAppSocketServer.Domain
             }
         }
 
+        private void StartUpMenu()
+        {
+            string messageToSend = _message.StartUpMessage;
+            SendMessage(messageToSend);
+        }
+        
+        private void UserRegistration()
+        {
+            SendMessage(_message.UserRegistration);
+            string userName = Receive();
+
+            if (_usersAndCatalogueManager.ContainsUser(userName))
+                SendMessage(_message.UserRepeated);
+                
+            else
+            {
+                _usersAndCatalogueManager.AddUser(userName);
+                SendMessage(_message.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _message.BackToStartUpMenu);
+            }            
+        }
+
+        private void UserLogin()
+        {
+            SendMessage(_message.UserLogIn);
+            string user = Receive();
+            if (_usersAndCatalogueManager.Login(user))
+            {
+                _userLogged = _usersAndCatalogueManager.GetUser(user);
+                mainMenu();
+            }
+            else
+            {
+                SendMessage(_message.UserIncorrect);
+            }
+        }
+
+        private void ShowCatalogue()
+        {
+            if (_userLogged != null)
+            {
+                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+
+                string messageToSend = catalogue.ShowGamesOnStringList();
+                if(messageToSend.Equals("")){
+                    messageToSend = _message.EmptyCatalogue;
+                }
+                SendMessage(_message.CatalogueView + messageToSend);
+            }
+            else
+            {
+                SendMessage((_message.InvalidOption));
+            }
+        }
+
+        private void mainMenu()
+        {
+            if (_userLogged != null)
+            {
+                string messageToSend = _message.MainMenuMessage;
+                SendMessage(messageToSend);
+            }
+            else
+            {
+                SendMessage((_message.InvalidOption));
+            }
+        }
+
         private void AddGame()
         {
-            if (UserLogged != null)
+            if (_userLogged != null)
             {
                 try
                 {
-                    string messageToSend = "Agregar nuevo juego: \n \n " +
-                                           "ingrese titulo: ";
-                    SendMessage(messageToSend);
+                    SendMessage(_message.NewGameInit);
                     string title = Receive();
-                    messageToSend = " ingrese genero:";
-                    SendMessage(messageToSend);
+                    SendMessage(_message.GameGenre);
                     string genre = Receive();
-                    messageToSend = "ingrese una breve sinopsis:";
-                    SendMessage(messageToSend);
-                    string synopsis = Receive();
-                    messageToSend = "Agrege la calificacion de edad";
-                    SendMessage(messageToSend);
+                    SendMessage(_message.GameSynopsis);
+                    string synopsis = Receive();      
+                    SendMessage(_message.GameAgeRestriction);
                     string ageRating = Receive();
-                    messageToSend = "Agregue a ruta de acceso a la caratula del juego:";
-                    SendMessage(messageToSend);
+                    SendMessage(_message.GameCover);
                     string coverPath = Receive();
+
                     Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
                     _usersAndCatalogueManager.AddGame(gameToAdd);
-                    SendMessage(SystemMessages.GameAdded);
+
+                    SendMessage(_message.GameAdded);
                 }
-                catch (Exception e)
+                catch (Exception e) //to be implemented
                 {
                     SendMessage(e.Message);
                 }
             }
             else
             {
-                SendMessage((SystemMessages.InvalidOption));
+                SendMessage((_message.InvalidOption));
             }
-        }
-
-        private void UserLogin()
-        {
-            string messageToSend = "Ingreso de usuario, ingrese username:";
-            SendMessage(messageToSend);
-            string user = Receive();
-            if (_usersAndCatalogueManager.Login(user))
-            {
-                UserLogged = _usersAndCatalogueManager.GetUser(user);
-                mainMenu();
-            }
-            else
-            {
-                messageToSend = "usuario incorrecto, vuelva a intentarlo.";
-                SendMessage(messageToSend);
-            }
-        }
-
-        private void ShowCatalogue()
-        {
-            if (UserLogged != null)
-            {
-                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
-                SendMessage(SystemMessages.CatalogueView+catalogue.ShowGamesOnStringList());
-               // serverHandler.SendFile(SystemMessages.CatalogueView+catalogue.ShowGamesOnStringList());
-            }
-            else
-            {
-                SendMessage((SystemMessages.InvalidOption));
-            }
-        }
-
-        private void mainMenu()
-        {
-            if (UserLogged != null)
-            {
-                string messageToSend = SystemMessages.MainMenuMessage;
-                SendMessage(messageToSend);
-            }
-            else
-            {
-                SendMessage((SystemMessages.InvalidOption));
-            }
-        }
-
-        private void UserRegist()
-        {
-            string messageToSend = "Registro de usuario \n \n nombre de usuario: \n";
-            SendMessage(messageToSend);
-            string userName = Receive();
-            if (_usersAndCatalogueManager.ContainsUser(userName))
-                messageToSend = "Ya existe un usuario con el mismo nombre, ingrese 1 para volver a intentar";
-            else
-            {
-                _usersAndCatalogueManager.AddUser(userName);
-                messageToSend =
-                    $"Usuario Registrado!, usuarios registrados: {_usersAndCatalogueManager.Users.Count} \n \n" +
-                    $" ingrese 0 para volver al menu de inicio";
-            }
-
-            SendMessage(messageToSend);
         }
 
         private string Receive()
@@ -168,11 +175,7 @@ namespace ConsoleAppSocketServer.Domain
             throw new Exception("empty message");
         }
 
-        private void StartUpMenu()
-        {
-            string messageToSend = SystemMessages.StartUpMessage;
-            SendMessage(messageToSend);
-        }
+        
 
         private void SendMessage(string message)
         {

@@ -13,8 +13,8 @@ namespace ConsoleAppSocketServer
         static void Main(string[] args)
         {
             _usersAndCatalogueManager = new UsersAndCatalogueManager(); 
+            Session._usersAndCatalogueManager = _usersAndCatalogueManager;
 
-            Session._usersAndCatalogueManager = _usersAndCatalogueManager; 
             Console.WriteLine("Comenzando Socket Server...");
 
             var socketServer = new Socket(AddressFamily.InterNetwork,
@@ -45,11 +45,14 @@ namespace ConsoleAppSocketServer
 
         private static void HandleConnection(Socket connectedSocket, int threadId)
         {
-            Session session = new Session(connectedSocket,threadId);
+            Message spanishMessage = new SpanishMessage();
+            Session session = new Session(connectedSocket,threadId, spanishMessage);
+
             while (session.Active)
             {
                 session.Listen();
             }
+
             // Iniciamos el proceso de cerrado del socket
             connectedSocket.Shutdown(SocketShutdown.Both);
             connectedSocket.Close();
