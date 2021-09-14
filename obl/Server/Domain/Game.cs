@@ -17,7 +17,7 @@ namespace ConsoleAppSocketServer.Domain
         
         public int Stars { get; set; }
 
-        public Collection<Qualification> ComunityQualifications { get; set; }
+        public Collection<Qualification> CommunityQualifications { get; set; }
 
         public Game(string title, string cover, string genre, string synopsis, string ageRating)
         {
@@ -27,12 +27,12 @@ namespace ConsoleAppSocketServer.Domain
             Synopsis = synopsis;
             AgeRating = ageRating;
             Stars = 0;
-            ComunityQualifications = new Collection<Qualification>();
+            CommunityQualifications = new Collection<Qualification>();
         }
 
         public void AddComunityQualification(Qualification qualification)
         {
-            this.ComunityQualifications.Add(qualification);
+            this.CommunityQualifications.Add(qualification);
             UpdateStars();
         }
 

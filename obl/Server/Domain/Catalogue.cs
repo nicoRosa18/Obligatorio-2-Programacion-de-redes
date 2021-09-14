@@ -14,38 +14,6 @@ namespace ConsoleAppSocketServer.Domain
             this.Games = new Collection<Game>();
         }
 
-        private Collection<Game> SearchGameByGenre(string genre)
-        {
-            Collection<Game> matchingGames = new Collection<Game>();
-            for (int i = 0; i < this.Games.Count; i++)
-            {
-                if (this.Games[i].Genre.Equals(genre)) matchingGames.Add(this.Games[i]);
-            }
-
-            if (matchingGames.Count == 0) throw new Exception("there are no games of this genre");
-            return matchingGames;
-        }
-
-        private Game SearchGameByTitle(string title)
-        {
-            for (int i = 0; i < this.Games.Count; i++)
-            {
-                if (this.Games[i].Title.Equals(title)) return this.Games[i];
-            }
-
-            throw new Exception("Game not found");
-        }
-
-        private Collection<Game> SearchGameByQualification(int qualification)
-        {
-            Collection<Game> matchingGames = new Collection<Game>();
-            for (int i = 0; i < this.Games.Count; i++)
-            {
-                if (this.Games[i].Stars==(qualification)) matchingGames.Add(this.Games[i]);
-            }
-            if (matchingGames.Count == 0) throw new Exception("there are no games of this qualification");
-            return matchingGames;
-        }
 
         public Collection<Game>  SearchGame(string title, string genre, int qualification)
         {
@@ -108,6 +76,40 @@ namespace ConsoleAppSocketServer.Domain
         public void AddGame(Game gameToAdd)
         {
             this.Games.Add(gameToAdd);
+        }
+        
+        private Collection<Game> SearchGameByGenre(string genre)
+        {
+            Collection<Game> matchingGames = new Collection<Game>();
+            for (int i = 0; i < this.Games.Count; i++)
+            {
+                if (this.Games[i].Genre.Equals(genre)) matchingGames.Add(this.Games[i]);
+            }
+
+            if (matchingGames.Count == 0) throw new Exception("there are no games of this genre");
+            
+            return matchingGames;
+        }
+
+        private Game SearchGameByTitle(string title)
+        {
+            for (int i = 0; i < this.Games.Count; i++)
+            {
+                if (this.Games[i].Title.Equals(title)) return this.Games[i];
+            }
+
+            throw new Exception("Game not found");
+        }
+
+        private Collection<Game> SearchGameByQualification(int qualification)
+        {
+            Collection<Game> matchingGames = new Collection<Game>();
+            for (int i = 0; i < this.Games.Count; i++)
+            {
+                if (this.Games[i].Stars==(qualification)) matchingGames.Add(this.Games[i]);
+            }
+            if (matchingGames.Count == 0) throw new Exception("there are no games of this qualification");
+            return matchingGames;
         }
     }
 }

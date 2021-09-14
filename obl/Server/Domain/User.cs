@@ -17,7 +17,7 @@ namespace ConsoleAppSocketServer.Domain
 
         public void PublishQualification(Qualification qualification)
         {
-            qualification.game.AddComunityQualification(qualification);
+            qualification.game.AddCommunityQualification(qualification);
         }
 
         public void BuyGame(Game game)

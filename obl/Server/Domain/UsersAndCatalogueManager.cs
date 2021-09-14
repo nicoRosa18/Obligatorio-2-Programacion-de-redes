@@ -5,15 +5,25 @@ using Microsoft.VisualBasic;
 
 namespace ConsoleAppSocketServer.Domain
 {
-
     public class UsersAndCatalogueManager
     {
+        private static UsersAndCatalogueManager _instance;
+        public static UsersAndCatalogueManager Instance 
+        { 
+            get 
+            {
+                return _instance;
+            } 
+        }
+
         public Collection<User>  Users { get; set; }
         
         public Catalogue Catalogue { get; set; }
 
-        public UsersAndCatalogueManager() //implement singleton
+        public UsersAndCatalogueManager() 
         {
+            CheckSingleInstanceOfSingleton();
+
             this.Users = new Collection<User>();
             this.Catalogue = new Catalogue();
         }
@@ -54,6 +64,14 @@ namespace ConsoleAppSocketServer.Domain
         public void AddGame(Game gameToAdd)
         {
             this.Catalogue.AddGame(gameToAdd);
+        }
+
+        private void CheckSingleInstanceOfSingleton()
+        {
+            if (_instance == null)
+            {
+                _instance = this;
+            }
         }
     }
 }

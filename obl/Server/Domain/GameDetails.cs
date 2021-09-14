@@ -8,21 +8,20 @@ namespace ConsoleAppSocketServer.Domain
         public Game Game { get; set; }
         
         public Collection<Qualification> Reviews { get; set; }
-        
+
         public int AverageMark { get; set; }
-        
         
         public  GameDetails(Game game)
         {
             this.Game = game;
-            this.Reviews = game.ComunityQualifications;
+            this.Reviews = game.CommunityQualifications;
             this.AverageMark = CalculateAverageMark(game);
         }
 
         private int CalculateAverageMark(Game game)
         {
             int totalStars = 0;
-            Collection<Qualification> qualifications = game.ComunityQualifications;
+            Collection<Qualification> qualifications = game.CommunityQualifications;
             for (int i = 0; i < qualifications.Count; i++)
             {
                 totalStars += qualifications[i].Stars;

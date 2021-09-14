@@ -12,7 +12,8 @@ namespace ConsoleAppSocketServer
         private static UsersAndCatalogueManager _usersAndCatalogueManager;
         static void Main(string[] args)
         {
-            _usersAndCatalogueManager = new UsersAndCatalogueManager();
+            _usersAndCatalogueManager = new UsersAndCatalogueManager(); 
+
             Session._usersAndCatalogueManager = _usersAndCatalogueManager; 
             Console.WriteLine("Comenzando Socket Server...");
 
