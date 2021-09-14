@@ -17,4 +17,6 @@ public abstract class Message
     public abstract string GameAdded {get ; set;}
     public abstract string CatalogueView {get ; set;}
     public abstract string InvalidOption {get ; set;}
+    public abstract string BuyGame { get; set; }
+    public abstract string GamePurchased { get; set; }
 }

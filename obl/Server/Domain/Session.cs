@@ -51,6 +51,9 @@ namespace ConsoleAppSocketServer.Domain
                 case CommandConstants.AddGame:
                     AddGame();
                     break;
+                case CommandConstants.buyGame:
+                    BuyGame();
+                    break;
                 case "":
                     CloseConnection();
                     break;
@@ -161,6 +164,25 @@ namespace ConsoleAppSocketServer.Domain
             }
         }
 
+        private void BuyGame()
+        {
+            SendMessage(_message.BuyGame);
+            Console.WriteLine(Receive());
+            
+            //int gameIndex = Convert.ToInt32(Receive());
+            //Catalogue catalogue = _usersAndCatalogueManager.Catalogue;
+            //try
+           // {
+            //    Game gameToBuy = catalogue.Games[gameIndex];
+            //    _userLogged.BuyGame(gameToBuy);
+                SendMessage(_message.GamePurchased);
+           // }
+            //catch (Exception e)
+            //{
+             //   SendMessage(e.Message);
+            //}
+        }
+
         private string Receive()
         {
             var buffer = new byte[1024];
@@ -192,7 +214,7 @@ namespace ConsoleAppSocketServer.Domain
         {
             Console.WriteLine("en Listen de Session");
             // Este while se usa para mantenerse aqui mientras la conexion no se cierra
-            var buffer = new byte[1024];
+            var buffer = new byte[2048];
                 // Si la conexion se cierra, el receive retorna 0
              var   bytesReceived = ConnectedSocket.Receive(buffer);
                 if (bytesReceived > 0)

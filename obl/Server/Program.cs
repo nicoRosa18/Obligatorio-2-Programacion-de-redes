@@ -22,7 +22,7 @@ namespace ConsoleAppSocketServer
                 ProtocolType.Tcp);
             Console.WriteLine("Creado el Socket");
             //127.0.0.1 es localhost -> solo permite conexiones dentro de la misma maquina
-            var localEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.5"),30000);
+            var localEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.4"),30000);
             
             socketServer.Bind(localEndpoint);
             Console.WriteLine("Socket bound to local IP");

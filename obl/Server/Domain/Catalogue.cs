@@ -59,9 +59,8 @@ namespace ConsoleAppSocketServer.Domain
             else
             {
                 ret = "lista de juegos: \n \n";
-                foreach(Game game in Games)
-                {
-                    ret += $"{game.Title} \n";
+                for(int i=0;i<Games.Count;i++){
+                    ret += $"{i}- {Games[i].Title} \n";
                 }
             }
             return ret;
