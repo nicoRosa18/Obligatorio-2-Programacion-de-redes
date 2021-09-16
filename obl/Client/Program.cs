@@ -19,22 +19,22 @@ namespace ConsoleAppSocketClient
 
             //127.0.0.1 es localhost -> solo permite conexiones dentro de la misma maquina
             // RANGO DE PUERTOS 0 - 65535 (RANGO de 1 a 1024 es reservado)
-            var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.5"), 30000);
+            var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.5"), 0);
             socketClient.Connect(remoteEndpoint);
 
             Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
 
-            var termine = false;
+            var endConnection = false;
             SendMessage(CommandConstants.StartupMenu, socketClient);//pedimos el menu de inicio
             // Si la conexion se cierra, el receive retorna 0
             Console.WriteLine(MessageManager.ShowMessage(socketClient));
-            while (!termine)
+            while (!endConnection)
             {
                 string command = Console.ReadLine();
                 if (command.Length == 0)
                     {
                         Console.WriteLine("Cerrando la conexion");
-                        termine = true;
+                        endConnection = true;
                     }
                     else
                     {

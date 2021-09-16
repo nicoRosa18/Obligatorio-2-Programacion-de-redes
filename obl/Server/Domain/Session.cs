@@ -28,16 +28,16 @@ namespace ConsoleAppSocketServer.Domain
             this._message = message;
         }
 
-        public void MessageInterpreter(string message)
+        public void MessageInterpreter(Header header)
         {
             string messageReturn = "";
-            switch (message)
+            switch (header.ICommand)
             {
                 case CommandConstants.StartupMenu:
                     StartUpMenu();
                     break;
                 case CommandConstants.RegisterUser:
-                    UserRegistration();
+                    UserRegistration(header.IDataLength);
                     break;
                 case CommandConstants.LoginUser:
                     UserLogin();
@@ -67,10 +67,10 @@ namespace ConsoleAppSocketServer.Domain
             SendMessage(messageToSend);
         }
         
-        private void UserRegistration()
+        private void UserRegistration(int datalength)
         {
             SendMessage(_message.UserRegistration);
-            string userName = Receive();
+            string userName = ReceiveMessage(datalength);
 
             if (_usersAndCatalogueManager.ContainsUser(userName))
                 SendMessage(_message.UserRepeated);
@@ -85,7 +85,7 @@ namespace ConsoleAppSocketServer.Domain
         private void UserLogin()
         {
             SendMessage(_message.UserLogIn);
-            string user = Receive();
+            string user = ReceiveMessage();
             if (_usersAndCatalogueManager.Login(user))
             {
                 _userLogged = _usersAndCatalogueManager.GetUser(user);
@@ -135,15 +135,15 @@ namespace ConsoleAppSocketServer.Domain
                 try
                 {
                     SendMessage(_message.NewGameInit);
-                    string title = Receive();
+                    string title = ReceiveMessage();
                     SendMessage(_message.GameGenre);
-                    string genre = Receive();
+                    string genre = ReceiveMessage();
                     SendMessage(_message.GameSynopsis);
-                    string synopsis = Receive();      
+                    string synopsis = ReceiveMessage();      
                     SendMessage(_message.GameAgeRestriction);
-                    string ageRating = Receive();
+                    string ageRating = ReceiveMessage();
                     SendMessage(_message.GameCover);
-                    string coverPath = Receive();
+                    string coverPath = ReceiveMessage();
 
                     Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
                     _usersAndCatalogueManager.AddGame(gameToAdd);
@@ -161,26 +161,37 @@ namespace ConsoleAppSocketServer.Domain
             }
         }
 
-        private string Receive()
+        private string ReceiveMessage(int dataLength)
         {
-            var buffer = new byte[1024];
-            var bytesReceived = 1;
-            bytesReceived = this.ConnectedSocket.Receive(buffer);
-            if (bytesReceived > 0)
-            {
-                var message = Encoding.UTF8.GetString(buffer);
-                return message;
-            }
-
-            throw new Exception("empty message");
+            var bufferData = new byte[dataLength];  
+            ReceiveData(this.ConnectedSocket, dataLength, bufferData);
+            
+            return Encoding.UTF8.GetString(bufferData);
         }
 
         
 
         private void SendMessage(string message)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(message+"*");
-            this.ConnectedSocket.Send(messageBytes);
+            // var messageBytes = Encoding.UTF8.GetBytes(message+"*");
+            // this.ConnectedSocket.Send(messageBytes);
+
+            var header = new Header(HeaderConstants.Request, CommandConstants.Message, message.Length);
+            var data = header.GetRequest();
+
+            var sentBytes = 0;
+                        while (sentBytes < data.Length)
+                        {
+                            sentBytes += this.ConnectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+                        }
+
+                        sentBytes = 0;
+                        var bytesMessage = Encoding.UTF8.GetBytes(message);
+                        while (sentBytes < bytesMessage.Length)
+                        {
+                            sentBytes += this.ConnectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
+                                SocketFlags.None);
+                        }
         }
 
         private void CloseConnection()
@@ -188,24 +199,61 @@ namespace ConsoleAppSocketServer.Domain
             this.Active = false;
         }
 
-        public void Listen()
+        public void Listen(Socket clientSocket)
         {
-            Console.WriteLine("en Listen de Session");
-            // Este while se usa para mantenerse aqui mientras la conexion no se cierra
-            var buffer = new byte[1024];
-                // Si la conexion se cierra, el receive retorna 0
-             var   bytesReceived = ConnectedSocket.Receive(buffer);
-                if (bytesReceived > 0)
+            // Console.WriteLine("en Listen de Session");
+            
+            //     // Si la conexion se cierra, el receive retorna 0
+            //  var   bytesReceived = ConnectedSocket.Receive(buffer);
+            //     if (bytesReceived > 0)
+            //     {
+            //         var message = Encoding.UTF8.GetString(buffer);
+            //         var messagecleared = MessageManager.EliminarEspacios(message);
+            //         Console.WriteLine(messagecleared);
+            //         this.MessageInterpreter(messagecleared); //interpreta el mensaje recibido y genera una respuesta
+            //     }
+            //     else
+            //     {
+            //         Console.WriteLine($"{this.ThreadId}: El cliente remoto cerro la conexion...");
+            //     }
+            
+            int headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                                   HeaderConstants.DataLength;
+            var buffer = new byte[headerLength];
+            try
+            {
+                ReceiveData(clientSocket, headerLength, buffer);
+                Header header = new Header();
+                header.DecodeData(buffer);
+                this.MessageInterpreter(header);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error {e.Message}..");    
+            }
+        }
+
+        private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
+        {
+            var iRecv = 0;
+            while (iRecv < length)
+            {
+                try
                 {
-                    var message = Encoding.UTF8.GetString(buffer);
-                    var messagecleared = MessageManager.EliminarEspacios(message);
-                    Console.WriteLine(messagecleared);
-                    this.MessageInterpreter(messagecleared); //interpreta el mensaje recibido y genera una respuesta
+                    var localRecv = clientSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
+                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                    {
+                        throw new Exception("Server is closing");
+                    }
+
+                    iRecv += localRecv;
                 }
-                else
+                catch (SocketException se)
                 {
-                    Console.WriteLine($"{this.ThreadId}: El cliente remoto cerro la conexion...");
+                    Console.WriteLine(se.Message);
+                    return;
                 }
+            }
         }
     }
 }
