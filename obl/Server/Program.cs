@@ -4,11 +4,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Server.Domain;
 
-namespace ConsoleAppSocketServer
+namespace Server
 {
-    class Program
+    internal static class Program
     {
         private static UsersAndCatalogueManager _usersAndCatalogueManager;
         static bool _endConnection = false;
@@ -42,15 +43,15 @@ namespace ConsoleAppSocketServer
                 {
                     case "exit":
                         _endConnection = true;
-                        socketServer.Close(0);
+                        socketServer.Close();
                         foreach (var client in _clients)
                         {
                             client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
-                        Console.WriteLine("a");
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-                        fakeSocket.Connect("192.168.1.10",30000);
+                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.10"), 30000);
+                        fakeSocket.Connect(remoteEndpoint);
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta ingresada, ingrese de nuevo");
@@ -79,7 +80,7 @@ namespace ConsoleAppSocketServer
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    // _endConnection = true;
+                    _endConnection = true;
                 }
             }
             Console.WriteLine("Exiting....");
@@ -87,18 +88,20 @@ namespace ConsoleAppSocketServer
 
         private static void HandleConnection(Socket connectedSocket, int threadId)
         {
-            Message spanishMessage = new SpanishMessage();
-            Session session = new Session(connectedSocket, threadId, spanishMessage);
+            while(!_endConnection){
+                Message spanishMessage = new SpanishMessage();
+                Session session = new Session(connectedSocket, threadId, spanishMessage);
 
-            while (session.Active)
-            {
-                session.Listen(connectedSocket);
+                while (session.Active)
+                {
+                    session.Listen(connectedSocket);
+                }
+
+                // Iniciamos el proceso de cerrado del socket
+                connectedSocket.Shutdown(SocketShutdown.Both);
+                connectedSocket.Close();
+                Console.WriteLine($"{threadId}: Cerrando coneccion...");
             }
-
-            // Iniciamos el proceso de cerrado del socket
-            connectedSocket.Shutdown(SocketShutdown.Both);
-            connectedSocket.Close();
-            Console.WriteLine($"{threadId}: Cerrando coneccion...");
         }
     }
 }
