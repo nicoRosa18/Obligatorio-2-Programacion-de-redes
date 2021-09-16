@@ -3,8 +3,9 @@ using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Text;
 using Common.Protocol;
+using Server.Domain.ServerExceptions;
 
-namespace ConsoleAppSocketServer.Domain
+namespace Server.Domain
 {
     public class Session
     {
@@ -40,20 +41,20 @@ namespace ConsoleAppSocketServer.Domain
                     UserRegistration(header.IDataLength);
                     break;
                 case CommandConstants.LoginUser:
-                    UserLogin();
+                    UserLogin(header.IDataLength);
                     break;
-                case CommandConstants.ViewCatalogue:
-                    ShowCatalogue();
-                    break;
-                case CommandConstants.MainMenu:
-                    mainMenu();
-                    break;
-                case CommandConstants.AddGame:
-                    AddGame();
-                    break;
-                case "":
-                    CloseConnection();
-                    break;
+                // case CommandConstants.ViewCatalogue:
+                //     ShowCatalogue();
+                //     break;
+                // case CommandConstants.MainMenu:
+                //     mainMenu();
+                //     break;
+                // case CommandConstants.AddGame:
+                //     AddGame();
+                //     break;
+                // case "":
+                //     CloseConnection();
+                //     break;
                 default:
                     messageReturn = "por favor envie una opcion correcta";
                     SendMessage(messageReturn);
@@ -82,10 +83,10 @@ namespace ConsoleAppSocketServer.Domain
             }            
         }
 
-        private void UserLogin()
+        private void UserLogin(int dataLength)
         {
             SendMessage(_message.UserLogIn);
-            string user = ReceiveMessage();
+            string user = ReceiveMessage(dataLength);
             if (_usersAndCatalogueManager.Login(user))
             {
                 _userLogged = _usersAndCatalogueManager.GetUser(user);
@@ -134,21 +135,21 @@ namespace ConsoleAppSocketServer.Domain
             {
                 try
                 {
-                    SendMessage(_message.NewGameInit);
-                    string title = ReceiveMessage();
-                    SendMessage(_message.GameGenre);
-                    string genre = ReceiveMessage();
-                    SendMessage(_message.GameSynopsis);
-                    string synopsis = ReceiveMessage();      
-                    SendMessage(_message.GameAgeRestriction);
-                    string ageRating = ReceiveMessage();
-                    SendMessage(_message.GameCover);
-                    string coverPath = ReceiveMessage();
+                    // SendMessage(_message.NewGameInit);
+                    // string title = ReceiveMessage();
+                    // SendMessage(_message.GameGenre);
+                    // string genre = ReceiveMessage();
+                    // SendMessage(_message.GameSynopsis);
+                    // string synopsis = ReceiveMessage();      
+                    // SendMessage(_message.GameAgeRestriction);
+                    // string ageRating = ReceiveMessage();
+                    // SendMessage(_message.GameCover);
+                    // string coverPath = ReceiveMessage();
 
-                    Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
-                    _usersAndCatalogueManager.AddGame(gameToAdd);
+                    // Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
+                    // _usersAndCatalogueManager.AddGame(gameToAdd);
 
-                    SendMessage(_message.GameAdded);
+                    // SendMessage(_message.GameAdded);
                 }
                 catch (Exception e) //to be implemented
                 {
@@ -173,25 +174,22 @@ namespace ConsoleAppSocketServer.Domain
 
         private void SendMessage(string message)
         {
-            // var messageBytes = Encoding.UTF8.GetBytes(message+"*");
-            // this.ConnectedSocket.Send(messageBytes);
-
             var header = new Header(HeaderConstants.Request, CommandConstants.Message, message.Length);
             var data = header.GetRequest();
 
             var sentBytes = 0;
-                        while (sentBytes < data.Length)
-                        {
-                            sentBytes += this.ConnectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-                        }
+            while (sentBytes < data.Length)
+            {
+                sentBytes += this.ConnectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+            }
 
-                        sentBytes = 0;
-                        var bytesMessage = Encoding.UTF8.GetBytes(message);
-                        while (sentBytes < bytesMessage.Length)
-                        {
-                            sentBytes += this.ConnectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                                SocketFlags.None);
-                        }
+            sentBytes = 0;
+            var bytesMessage = Encoding.UTF8.GetBytes(message);
+            while (sentBytes < bytesMessage.Length)
+            {
+                sentBytes += this.ConnectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
+                    SocketFlags.None);
+            }
         }
 
         private void CloseConnection()
@@ -200,23 +198,7 @@ namespace ConsoleAppSocketServer.Domain
         }
 
         public void Listen(Socket clientSocket)
-        {
-            // Console.WriteLine("en Listen de Session");
-            
-            //     // Si la conexion se cierra, el receive retorna 0
-            //  var   bytesReceived = ConnectedSocket.Receive(buffer);
-            //     if (bytesReceived > 0)
-            //     {
-            //         var message = Encoding.UTF8.GetString(buffer);
-            //         var messagecleared = MessageManager.EliminarEspacios(message);
-            //         Console.WriteLine(messagecleared);
-            //         this.MessageInterpreter(messagecleared); //interpreta el mensaje recibido y genera una respuesta
-            //     }
-            //     else
-            //     {
-            //         Console.WriteLine($"{this.ThreadId}: El cliente remoto cerro la conexion...");
-            //     }
-            
+        {  
             int headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
                                    HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
@@ -226,6 +208,10 @@ namespace ConsoleAppSocketServer.Domain
                 Header header = new Header();
                 header.DecodeData(buffer);
                 this.MessageInterpreter(header);
+            }
+            catch (ServerClosingException e)
+            {
+                CloseConnection();
             }
             catch (Exception e)
             {
@@ -243,7 +229,7 @@ namespace ConsoleAppSocketServer.Domain
                     var localRecv = clientSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
                     if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
                     {
-                        throw new Exception("Server is closing");
+                        throw new ServerClosingException();
                     }
 
                     iRecv += localRecv;

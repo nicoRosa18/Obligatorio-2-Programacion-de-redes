@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace ConsoleAppSocketServer.Domain
+namespace Server.Domain
 {
     public class Catalogue
     {

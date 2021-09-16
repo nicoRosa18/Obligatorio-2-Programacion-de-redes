@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using Microsoft.VisualBasic;
 
-namespace ConsoleAppSocketServer.Domain
+namespace Server.Domain
 {
     public class UsersAndCatalogueManager
     {

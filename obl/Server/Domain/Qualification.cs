@@ -1,4 +1,4 @@
-﻿namespace ConsoleAppSocketServer.Domain
+﻿namespace Server.Domain
 {
     public class Qualification
     {
