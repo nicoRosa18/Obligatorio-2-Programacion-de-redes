@@ -57,7 +57,7 @@ namespace Server.Domain
                 //     break;
                 default:
                     messageReturn = "por favor envie una opcion correcta";
-                    SendMessage(messageReturn);
+                    SendMessage(CommandConstants.StartupMenu, messageReturn);
                     break;
             }
         }
@@ -65,27 +65,27 @@ namespace Server.Domain
         private void StartUpMenu()
         {
             string messageToSend = _message.StartUpMessage;
-            SendMessage(messageToSend);
+            SendMessage(CommandConstants.StartupMenu, messageToSend);
         }
         
         private void UserRegistration(int datalength)
         {
-            SendMessage(_message.UserRegistration);
+            SendMessage(CommandConstants.RegisterUser, _message.UserRegistration);
             string userName = ReceiveMessage(datalength);
 
             if (_usersAndCatalogueManager.ContainsUser(userName))
-                SendMessage(_message.UserRepeated);
+                SendMessage(CommandConstants.RegisterUser, _message.UserRepeated);
                 
             else
             {
                 _usersAndCatalogueManager.AddUser(userName);
-                SendMessage(_message.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _message.BackToStartUpMenu);
+                SendMessage(CommandConstants.RegisterUser, _message.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _message.BackToStartUpMenu);
             }            
         }
 
         private void UserLogin(int dataLength)
         {
-            SendMessage(_message.UserLogIn);
+            SendMessage(CommandConstants.LoginUser, _message.UserLogIn);
             string user = ReceiveMessage(dataLength);
             if (_usersAndCatalogueManager.Login(user))
             {
@@ -94,26 +94,26 @@ namespace Server.Domain
             }
             else
             {
-                SendMessage(_message.UserIncorrect);
+                SendMessage(CommandConstants.LoginUser, _message.UserIncorrect);
             }
         }
 
         private void ShowCatalogue()
         {
-            if (_userLogged != null)
-            {
-                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+            // if (_userLogged != null)
+            // {
+            //     Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
 
-                string messageToSend = catalogue.ShowGamesOnStringList();
-                if(messageToSend.Equals("")){
-                    messageToSend = _message.EmptyCatalogue;
-                }
-                SendMessage(_message.CatalogueView + messageToSend);
-            }
-            else
-            {
-                SendMessage((_message.InvalidOption));
-            }
+            //     string messageToSend = catalogue.ShowGamesOnStringList();
+            //     if(messageToSend.Equals("")){
+            //         messageToSend = _message.EmptyCatalogue;
+            //     }
+            //     SendMessage(_message.CatalogueView + messageToSend);
+            // }
+            // else
+            // {
+            //     SendMessage(_message.InvalidOption);
+            // }
         }
 
         private void mainMenu()
@@ -121,11 +121,11 @@ namespace Server.Domain
             if (_userLogged != null)
             {
                 string messageToSend = _message.MainMenuMessage;
-                SendMessage(messageToSend);
+                SendMessage(CommandConstants.MainMenu, messageToSend);
             }
             else
             {
-                SendMessage((_message.InvalidOption));
+                SendMessage(CommandConstants.MainMenu, _message.InvalidOption);
             }
         }
 
@@ -153,12 +153,12 @@ namespace Server.Domain
                 }
                 catch (Exception e) //to be implemented
                 {
-                    SendMessage(e.Message);
+                    SendMessage(CommandConstants.Message, e.Message);
                 }
             }
             else
             {
-                SendMessage((_message.InvalidOption));
+                SendMessage(CommandConstants.Message, _message.InvalidOption);
             }
         }
 
@@ -172,9 +172,9 @@ namespace Server.Domain
 
         
 
-        private void SendMessage(string message)
+        private void SendMessage(int command, string message)
         {
-            var header = new Header(HeaderConstants.Request, CommandConstants.Message, message.Length);
+            var header = new Header(HeaderConstants.Request, command, message.Length);
             var data = header.GetRequest();
 
             var sentBytes = 0;

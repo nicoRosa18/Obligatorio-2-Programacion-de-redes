@@ -9,14 +9,15 @@ using Server.Domain;
 
 namespace Server
 {
-    internal static class Program
+    public class Program
     {
-        private static UsersAndCatalogueManager _usersAndCatalogueManager;
-        static bool _endConnection = false;
-        static List<Socket> _clients = new List<Socket>();
+        private static UsersAndCatalogueManager _usersAndCatalogueManager; //sacar
+        private static bool _endConnection = false; 
+        private static List<Socket> _clients = new List<Socket>();
 
         static void Main(string[] args)
         {
+            
             _usersAndCatalogueManager = new UsersAndCatalogueManager(); 
             Session._usersAndCatalogueManager = _usersAndCatalogueManager;
 
@@ -43,15 +44,12 @@ namespace Server
                 {
                     case "exit":
                         _endConnection = true;
-                        socketServer.Close();
-                        foreach (var client in _clients)
-                        {
-                            client.Shutdown(SocketShutdown.Both);
-                            client.Close();
-                        }
+
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
                         var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.10"), 30000);
                         fakeSocket.Connect(remoteEndpoint);
+
+                        socketServer.Close(); 
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta ingresada, ingrese de nuevo");
@@ -72,10 +70,15 @@ namespace Server
 
                     var connectedSocket = socketServer.Accept();
                     _clients.Add(connectedSocket);
-                    Console.WriteLine($" Nueva coneccion {threadId} aceptada");
+                    Console.WriteLine($"Nueva coneccion {threadId} aceptada"); //sacar
 
                     var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
                     threadConnection.Start();
+                }
+                catch(SocketException se)
+                {
+                    Console.WriteLine(se);
+                    Console.WriteLine("a");
                 }
                 catch (Exception e)
                 {
@@ -83,24 +86,39 @@ namespace Server
                     _endConnection = true;
                 }
             }
-            Console.WriteLine("Exiting....");
+            Console.WriteLine("Cerrando el server...");
+            Console.WriteLine(_endConnection);
         }
 
         private static void HandleConnection(Socket connectedSocket, int threadId)
         {
             while(!_endConnection){
-                Message spanishMessage = new SpanishMessage();
-                Session session = new Session(connectedSocket, threadId, spanishMessage);
-
-                while (session.Active)
+                try
                 {
-                    session.Listen(connectedSocket);
-                }
+                    Message spanishMessage = new SpanishMessage();
+                    Session session = new Session(connectedSocket, threadId, spanishMessage);
 
-                // Iniciamos el proceso de cerrado del socket
-                connectedSocket.Shutdown(SocketShutdown.Both);
-                connectedSocket.Close();
-                Console.WriteLine($"{threadId}: Cerrando coneccion...");
+                    while (session.Active && !_endConnection)
+                    {
+                        session.Listen(connectedSocket);
+                    }
+
+                    connectedSocket.Shutdown(SocketShutdown.Both);
+                    connectedSocket.Close();
+                    Console.WriteLine($"{threadId}: Cerrando coneccion...");
+                    return;
+                }
+                catch(SocketException se) //sacar si no es necesario
+                {
+                    Console.WriteLine(se);
+                    Console.WriteLine("a");
+                    _endConnection = true;
+                }
+                catch (Exception e) //sacar si no es necesario
+                {
+                    Console.WriteLine(e);
+                    _endConnection = true;
+                } 
             }
         }
     }

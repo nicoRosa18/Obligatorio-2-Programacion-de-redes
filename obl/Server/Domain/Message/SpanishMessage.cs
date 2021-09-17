@@ -48,11 +48,11 @@ public class SpanishMessage : Message
     {
         StartUpMessage ="Bienvenido, envie el numero para la operacion deseada \n" +
                         " 1-Registrar Usuario \n" +
-                        " 2- Ingresar Usuario\n" +
-                        " Enter para salir";   
+                        " 2-Ingresar Usuario \n" +
+                        " exit para salir";   
                         
-       MainMenuMessage ="Menu de inicio. ecriba el comando para la opcion elegida \n\n " +
-                        "catalogo- Ver catalogo de juegos\n" +
+       MainMenuMessage ="Menu de inicio. ecriba el comando para la opcion elegida \n " +
+                        "4- Ver catalogo de juegos \n" +
                         "Agregar juego- Agregar un nuevo juego a la tienda \n" +
                         "Mis juegos- Ver mis juegos adiquiridos";
        

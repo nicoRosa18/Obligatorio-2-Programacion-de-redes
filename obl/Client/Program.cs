@@ -7,7 +7,7 @@ using Common.Protocol;
 
 namespace Client
 {
-    class Program
+    public class Program
     {
 
         static void Main(string[] args)
@@ -18,8 +18,6 @@ namespace Client
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            //127.0.0.1 es localhost -> solo permite conexiones dentro de la misma maquina
-            // RANGO DE PUERTOS 0 - 65535 (RANGO de 1 a 1024 es reservado)
             var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.10"), 30000);
             socketClient.Connect(remoteEndpoint);
 
@@ -27,22 +25,22 @@ namespace Client
 
             bool endConnection = false;
             SendMessage(CommandConstants.StartupMenu, "", socketClient);//pedimos el menu de inicio
-            // Si la conexion se cierra, el receive retorna 0
+ 
             Console.WriteLine(ReceiveMessage(socketClient));
 
             while (!endConnection)
             {
                 string message = Console.ReadLine();
                 if (message.Equals("exit"))
-                    {
-                        Console.WriteLine("Closing connection");
-                        endConnection = true;
-                    }
-                    else
-                    {
-                        SendMessage(CommandConstants.Message, message, socketClient);
-                        Console.WriteLine(ReceiveMessage(socketClient));
-                    }
+                {
+                    Console.WriteLine("Closing connection");
+                    endConnection = true;
+                }
+                else
+                {
+                    SendMessage(CommandConstants.Message, message, socketClient);
+                    Console.WriteLine(ReceiveMessage(socketClient));
+                }
             }
             socketClient.Shutdown(SocketShutdown.Both);
             socketClient.Close();        
@@ -50,7 +48,7 @@ namespace Client
 
         private static void SendMessage(int command, string message, Socket socketClient)
         {
-            var header = new Header(HeaderConstants.Request, command, message.Length);
+            var header = new Header(HeaderConstants.Request, CommandConstants.Message, message.Length);
             var data = header.GetRequest();
             var sentBytes = 0;
             while (sentBytes < data.Length)
