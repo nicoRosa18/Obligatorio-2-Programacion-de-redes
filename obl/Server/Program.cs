@@ -110,20 +110,22 @@ namespace Server
                         session.Listen(connectedSocket);
                     }
 
-                    connectedSocket.Shutdown(SocketShutdown.Both);
-                    connectedSocket.Close();
+                    if(!_endConnection){
+                        connectedSocket.Shutdown(SocketShutdown.Both);
+                        connectedSocket.Close();
+                    }
+             
                     Console.WriteLine($"{threadId}: Cerrando coneccion...");
                     return;
                 }
                 catch(SocketException se) //sacar si no es necesario
                 {
-                    // Console.WriteLine(se);
-                    Console.WriteLine("a");
+                    Console.WriteLine(se);
                     _endConnection = true;
                 }
                 catch (Exception e) //sacar si no es necesario
                 {
-                    // Console.WriteLine(e);
+                    Console.WriteLine(e);
                     _endConnection = true;
                 } 
             }

@@ -215,7 +215,8 @@ namespace Server.Domain
             }
             catch (Exception e)
             {
-                //Console.WriteLine($"Error {e.Message}..");    
+                Console.WriteLine($"Error {e.Message}.."); 
+                CloseConnection();   
             }
         }
 
@@ -236,8 +237,7 @@ namespace Server.Domain
                 }
                 catch (SocketException se)
                 {
-                    Console.WriteLine(se.Message);
-                    return;
+                    throw new ServerClosingException();
                 }
             }
         }

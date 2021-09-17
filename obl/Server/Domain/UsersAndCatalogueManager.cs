@@ -8,12 +8,21 @@ namespace Server.Domain
     public class UsersAndCatalogueManager
     {
         private static UsersAndCatalogueManager _instance;
+        private static readonly object padlock = new object();
+
         public static UsersAndCatalogueManager Instance 
         { 
-            get 
+            get
             {
-                return _instance;
-            } 
+                lock (padlock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new UsersAndCatalogueManager();
+                    }
+                    return _instance;
+                }
+            }
         }
 
         public Collection<User>  Users { get; set; }
@@ -22,8 +31,6 @@ namespace Server.Domain
 
         public UsersAndCatalogueManager() 
         {
-            CheckSingleInstanceOfSingleton();
-
             this.Users = new Collection<User>();
             this.Catalogue = new Catalogue();
         }
@@ -64,14 +71,6 @@ namespace Server.Domain
         public void AddGame(Game gameToAdd)
         {
             this.Catalogue.AddGame(gameToAdd);
-        }
-
-        private void CheckSingleInstanceOfSingleton()
-        {
-            if (_instance == null)
-            {
-                _instance = this;
-            }
         }
     }
 }
