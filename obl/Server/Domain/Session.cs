@@ -4,44 +4,43 @@ using System.Net.Sockets;
 using System.Text;
 using Common.Protocol;
 using Server.Domain.ServerExceptions;
+using Common.Communicator.Exceptions;
+using Common.Communicator;
 
 namespace Server.Domain
 {
     public class Session
     {
-        public int ThreadId { get; set; }
-
         public bool Active { get; set; }
 
         public static UsersAndCatalogueManager _usersAndCatalogueManager { get; set; }
 
-        private Socket ConnectedSocket { get; set; }
-
         private User _userLogged { get; set; }
 
-        private Message _message { get; set; }
+        private ICommunicator _communicator { get; set; }
 
-        public Session(Socket connectedSocket, int threadId, Message message)
+        private Message _messageLanguage { get; set; }
+
+        public Session(ICommunicator communicator, Message messageLanguage)
         {
-            this.ThreadId = threadId;
-            this.ConnectedSocket = connectedSocket;
             this.Active = true;
-            this._message = message;
+            this._communicator = communicator;
+            this._messageLanguage = messageLanguage;
         }
 
-        public void MessageInterpreter(Header header)
+        public void MessageInterpreter(CommunicatorPackage package)
         {
             string messageReturn = "";
-            switch (header.ICommand)
+            switch (package.Command)
             {
                 case CommandConstants.StartupMenu:
                     StartUpMenu();
                     break;
                 case CommandConstants.RegisterUser:
-                    UserRegistration(header.IDataLength);
+                    UserRegistration(package);
                     break;
                 case CommandConstants.LoginUser:
-                    UserLogin(header.IDataLength);
+                    UserLogin(package);
                     break;
                 // case CommandConstants.ViewCatalogue:
                 //     ShowCatalogue();
@@ -57,36 +56,34 @@ namespace Server.Domain
                 //     break;
                 default:
                     messageReturn = "por favor envie una opcion correcta";
-                    SendMessage(CommandConstants.StartupMenu, messageReturn);
+                    _communicator.SendMessage(CommandConstants.StartupMenu, messageReturn);
                     break;
             }
         }
 
         private void StartUpMenu()
         {
-            string messageToSend = _message.StartUpMessage;
-            SendMessage(CommandConstants.StartupMenu, messageToSend);
+            string messageToSend = _messageLanguage.StartUpMessage;
+            _communicator.SendMessage(CommandConstants.StartupMenu, messageToSend);
         }
         
-        private void UserRegistration(int datalength)
+        private void UserRegistration(CommunicatorPackage received)
         {
-            SendMessage(CommandConstants.RegisterUser, _message.UserRegistration);
-            string userName = ReceiveMessage(datalength);
+            string userName = received.Message;
 
             if (_usersAndCatalogueManager.ContainsUser(userName))
-                SendMessage(CommandConstants.RegisterUser, _message.UserRepeated);
+                _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
                 
             else
             {
                 _usersAndCatalogueManager.AddUser(userName);
-                SendMessage(CommandConstants.RegisterUser, _message.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _message.BackToStartUpMenu);
+                _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _messageLanguage.BackToStartUpMenu);
             }            
         }
 
-        private void UserLogin(int dataLength)
+        private void UserLogin(CommunicatorPackage received)
         {
-            SendMessage(CommandConstants.LoginUser, _message.UserLogIn);
-            string user = ReceiveMessage(dataLength);
+            string user = received.Message;
             if (_usersAndCatalogueManager.Login(user))
             {
                 _userLogged = _usersAndCatalogueManager.GetUser(user);
@@ -94,7 +91,7 @@ namespace Server.Domain
             }
             else
             {
-                SendMessage(CommandConstants.LoginUser, _message.UserIncorrect);
+                _communicator.SendMessage(CommandConstants.LoginUser, _messageLanguage.UserIncorrect);
             }
         }
 
@@ -106,13 +103,13 @@ namespace Server.Domain
 
             //     string messageToSend = catalogue.ShowGamesOnStringList();
             //     if(messageToSend.Equals("")){
-            //         messageToSend = _message.EmptyCatalogue;
+            //         messageToSend = _messageLanguage.EmptyCatalogue;
             //     }
-            //     SendMessage(_message.CatalogueView + messageToSend);
+            //     SendMessage(_messageLanguage.CatalogueView + messageToSend);
             // }
             // else
             // {
-            //     SendMessage(_message.InvalidOption);
+            //     SendMessage(_messageLanguage.InvalidOption);
             // }
         }
 
@@ -120,12 +117,12 @@ namespace Server.Domain
         {
             if (_userLogged != null)
             {
-                string messageToSend = _message.MainMenuMessage;
-                SendMessage(CommandConstants.MainMenu, messageToSend);
+                string messageToSend = _messageLanguage.MainMenuMessage;
+                _communicator.SendMessage(CommandConstants.MainMenu, messageToSend);
             }
             else
             {
-                SendMessage(CommandConstants.MainMenu, _message.InvalidOption);
+                _communicator.SendMessage(CommandConstants.MainMenu, _messageLanguage.InvalidOption);
             }
         }
 
@@ -135,111 +132,54 @@ namespace Server.Domain
             {
                 try
                 {
-                    // SendMessage(_message.NewGameInit);
+                    // SendMessage(_messageLanguage.NewGameInit);
                     // string title = ReceiveMessage();
-                    // SendMessage(_message.GameGenre);
+                    // SendMessage(_messageLanguage.GameGenre);
                     // string genre = ReceiveMessage();
-                    // SendMessage(_message.GameSynopsis);
-                    // string synopsis = ReceiveMessage();      
-                    // SendMessage(_message.GameAgeRestriction);
+                    // SendMessage(_messageLanguage.GameSynopsis);
+                    // string synopsis = ReceiveMessage();     
+                    // SendMessage(_messageLanguage.GameAgeRestriction);
                     // string ageRating = ReceiveMessage();
-                    // SendMessage(_message.GameCover);
+                    // SendMessage(_messageLanguage.GameCover);
                     // string coverPath = ReceiveMessage();
 
                     // Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
                     // _usersAndCatalogueManager.AddGame(gameToAdd);
 
-                    // SendMessage(_message.GameAdded);
+                    // SendMessage(_messageLanguage.GameAdded);
                 }
                 catch (Exception e) //to be implemented
                 {
-                    SendMessage(CommandConstants.Message, e.Message);
+                    _communicator.SendMessage(CommandConstants.Message, e.Message);
                 }
             }
             else
             {
-                SendMessage(CommandConstants.Message, _message.InvalidOption);
+                _communicator.SendMessage(CommandConstants.Message, _messageLanguage.InvalidOption);
             }
         }
 
-        private string ReceiveMessage(int dataLength)
-        {
-            var bufferData = new byte[dataLength];  
-            ReceiveData(this.ConnectedSocket, dataLength, bufferData);
-            
-            return Encoding.UTF8.GetString(bufferData);
-        }
-
-        
-
-        private void SendMessage(int command, string message)
-        {
-            var header = new Header(HeaderConstants.Request, command, message.Length);
-            var data = header.GetRequest();
-
-            var sentBytes = 0;
-            while (sentBytes < data.Length)
-            {
-                sentBytes += this.ConnectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-            }
-
-            sentBytes = 0;
-            var bytesMessage = Encoding.UTF8.GetBytes(message);
-            while (sentBytes < bytesMessage.Length)
-            {
-                sentBytes += this.ConnectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                    SocketFlags.None);
-            }
-        }
-
-        private void CloseConnection()
-        {
-            this.Active = false;
-        }
-
-        public void Listen(Socket clientSocket)
+        public void Listen()
         {  
-            int headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                                   HeaderConstants.DataLength;
-            var buffer = new byte[headerLength];
             try
             {
-                ReceiveData(clientSocket, headerLength, buffer);
-                Header header = new Header();
-                header.DecodeData(buffer);
-                this.MessageInterpreter(header);
+                this.MessageInterpreter(this._communicator.ReceiveMessage());
             }
-            catch (ServerClosingException e)
+            catch (ClientClosingException e)
             {
-                CloseConnection();
+                CloseSession();
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Error {e.Message}.."); 
-                CloseConnection();   
+                CloseSession();   
             }
         }
 
-        private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
+        private void CloseSession()
         {
-            var iRecv = 0;
-            while (iRecv < length)
-            {
-                try
-                {
-                    var localRecv = clientSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
-                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
-                    {
-                        throw new ServerClosingException();
-                    }
-
-                    iRecv += localRecv;
-                }
-                catch (SocketException se)
-                {
-                    throw new ServerClosingException();
-                }
-            }
+            this.Active = false;
         }
+               
     }
 }
