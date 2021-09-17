@@ -45,9 +45,17 @@ namespace Server
                     case "exit":
                         _endConnection = true;
 
+                        foreach (var client in _clients)
+                        {
+                            Console.WriteLine("un cliente");
+                            client.Shutdown(SocketShutdown.Both);
+                            client.Close();
+                        }
+
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
                         var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.10"), 30000);
                         fakeSocket.Connect(remoteEndpoint);
+
 
                         socketServer.Close(); 
                         break;
@@ -87,7 +95,6 @@ namespace Server
                 }
             }
             Console.WriteLine("Cerrando el server...");
-            Console.WriteLine(_endConnection);
         }
 
         private static void HandleConnection(Socket connectedSocket, int threadId)
@@ -110,13 +117,13 @@ namespace Server
                 }
                 catch(SocketException se) //sacar si no es necesario
                 {
-                    Console.WriteLine(se);
+                    // Console.WriteLine(se);
                     Console.WriteLine("a");
                     _endConnection = true;
                 }
                 catch (Exception e) //sacar si no es necesario
                 {
-                    Console.WriteLine(e);
+                    // Console.WriteLine(e);
                     _endConnection = true;
                 } 
             }
