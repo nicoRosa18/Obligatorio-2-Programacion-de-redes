@@ -6,20 +6,18 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Server.Domain;
+using Server;
 
 namespace Server
 {
     public class Program
     {
-        private static UsersAndCatalogueManager _usersAndCatalogueManager; //sacar
-        private static bool _endConnection = false; 
-        private static List<Socket> _clients = new List<Socket>();
-
         static void Main(string[] args)
-        {
-            
-            _usersAndCatalogueManager = new UsersAndCatalogueManager(); 
+        {            
+            UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
             Session._usersAndCatalogueManager = _usersAndCatalogueManager;
+
+            ServerTools serverAttributes = new ServerTools();
 
             Console.WriteLine("Comenzando Socket Server...");
 
@@ -29,7 +27,7 @@ namespace Server
             socketServer.Bind(new IPEndPoint(IPAddress.Parse("192.168.1.10"),30000));
             socketServer.Listen(10);
 
-            var threadServer = new Thread(()=> ListenForConnections(socketServer));
+            var threadServer = new Thread(()=> ListenForConnections(socketServer, serverAttributes));
             threadServer.Start();
 
             Console.WriteLine("Bienvenido al Sistema Server");
@@ -37,15 +35,15 @@ namespace Server
             Console.WriteLine("Inserte: ");
             Console.WriteLine("exit -> Para cerrar todas las conecciones y abandonar el programa");
             Console.WriteLine("Se mostraran las conecciones realizadas");
-            while (!_endConnection)
+            while (!serverAttributes.EndConnection)
             {
                 var userInput = Console.ReadLine();
                 switch (userInput)
                 {
                     case "exit":
-                        _endConnection = true;
+                        serverAttributes.EndConnection = true;
 
-                        foreach (var client in _clients)
+                        foreach (var client in serverAttributes.Clients)
                         {
                             Console.WriteLine("un cliente");
                             client.Shutdown(SocketShutdown.Both);
@@ -66,10 +64,10 @@ namespace Server
             }
         }
 
-        private static void ListenForConnections(Socket socketServer)
+        private static void ListenForConnections(Socket socketServer, ServerTools serverAttributes)
         {
             int threadCount = 0;
-            while (!_endConnection)
+            while (!serverAttributes.EndConnection)
             {
                 try
                 {
@@ -77,10 +75,10 @@ namespace Server
                     int threadId = threadCount;
 
                     var connectedSocket = socketServer.Accept();
-                    _clients.Add(connectedSocket);
+                    serverAttributes.AddClient(connectedSocket);
                     Console.WriteLine($"Nueva coneccion {threadId} aceptada"); //sacar
 
-                    var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
+                    var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId, serverAttributes));
                     threadConnection.Start();
                 }
                 catch(SocketException se)
@@ -91,26 +89,26 @@ namespace Server
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    _endConnection = true;
+                    serverAttributes.EndConnection = true;
                 }
             }
             Console.WriteLine("Cerrando el server...");
         }
 
-        private static void HandleConnection(Socket connectedSocket, int threadId)
+        private static void HandleConnection(Socket connectedSocket, int threadId, ServerTools serverAttributes)
         {
-            while(!_endConnection){
+            while(!serverAttributes.EndConnection){
                 try
                 {
                     Message spanishMessage = new SpanishMessage();
                     Session session = new Session(connectedSocket, threadId, spanishMessage);
 
-                    while (session.Active && !_endConnection)
+                    while (session.Active && !serverAttributes.EndConnection)
                     {
                         session.Listen(connectedSocket);
                     }
 
-                    if(!_endConnection){
+                    if(!serverAttributes.EndConnection){
                         connectedSocket.Shutdown(SocketShutdown.Both);
                         connectedSocket.Close();
                     }
@@ -121,12 +119,12 @@ namespace Server
                 catch(SocketException se) //sacar si no es necesario
                 {
                     Console.WriteLine(se);
-                    _endConnection = true;
+                    serverAttributes.EndConnection = true;
                 }
                 catch (Exception e) //sacar si no es necesario
                 {
                     Console.WriteLine(e);
-                    _endConnection = true;
+                    serverAttributes.EndConnection = true;
                 } 
             }
         }
