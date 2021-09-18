@@ -3,92 +3,87 @@ using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Text;
 using Common.Protocol;
+using Server.Domain.ServerExceptions;
+using Common.Communicator.Exceptions;
+using Common.Communicator;
 
-namespace ConsoleAppSocketServer.Domain
+namespace Server.Domain
 {
     public class Session
     {
-        public int ThreadId { get; set; }
-
         public bool Active { get; set; }
 
         public static UsersAndCatalogueManager _usersAndCatalogueManager { get; set; }
 
-        private Socket ConnectedSocket { get; set; }
-
         private User _userLogged { get; set; }
 
-        private Message _message { get; set; }
+        private ICommunicator _communicator { get; set; }
 
-        public Session(Socket connectedSocket, int threadId, Message message)
+        private Message _messageLanguage { get; set; }
+
+        public Session(ICommunicator communicator, Message messageLanguage)
         {
-            this.ThreadId = threadId;
-            this.ConnectedSocket = connectedSocket;
             this.Active = true;
-            this._message = message;
+            this._communicator = communicator;
+            this._messageLanguage = messageLanguage;
         }
 
-        public void MessageInterpreter(string message)
+        public void MessageInterpreter(CommunicatorPackage package)
         {
             string messageReturn = "";
-            switch (message)
+            switch (package.Command)
             {
                 case CommandConstants.StartupMenu:
                     StartUpMenu();
                     break;
                 case CommandConstants.RegisterUser:
-                    UserRegistration();
+                    UserRegistration(package);
                     break;
                 case CommandConstants.LoginUser:
-                    UserLogin();
+                    UserLogin(package);
                     break;
-                case CommandConstants.ViewCatalogue:
-                    ShowCatalogue();
-                    break;
-                case CommandConstants.MainMenu:
-                    mainMenu();
-                    break;
-                case CommandConstants.AddGame:
-                    AddGame();
-                    break;
-                case CommandConstants.buyGame:
-                    BuyGame();
-                    break;
-                case "":
-                    CloseConnection();
-                    break;
+                // case CommandConstants.ViewCatalogue:
+                //     ShowCatalogue();
+                //     break;
+                // case CommandConstants.MainMenu:
+                //     mainMenu();
+                //     break;
+                // case CommandConstants.AddGame:
+                //     AddGame();
+                //     break;
+                // case "":
+                //     CloseConnection();
+                //     break;
                 default:
                     messageReturn = "por favor envie una opcion correcta";
-                    SendMessage(messageReturn);
+                    _communicator.SendMessage(CommandConstants.StartupMenu, messageReturn);
                     break;
             }
         }
 
         private void StartUpMenu()
         {
-            string messageToSend = _message.StartUpMessage;
-            SendMessage(messageToSend);
+            string messageToSend = _messageLanguage.StartUpMessage;
+            _communicator.SendMessage(CommandConstants.StartupMenu, messageToSend);
         }
         
-        private void UserRegistration()
+        private void UserRegistration(CommunicatorPackage received)
         {
-            SendMessage(_message.UserRegistration);
-            string userName = Receive();
+            string userName = received.Message;
 
             if (_usersAndCatalogueManager.ContainsUser(userName))
-                SendMessage(_message.UserRepeated);
+                _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
                 
             else
             {
                 _usersAndCatalogueManager.AddUser(userName);
-                SendMessage(_message.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _message.BackToStartUpMenu);
+                _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserCreated + _usersAndCatalogueManager.Users.Count + "\n" + _messageLanguage.BackToStartUpMenu);
             }            
         }
 
-        private void UserLogin()
+        private void UserLogin(CommunicatorPackage received)
         {
-            SendMessage(_message.UserLogIn);
-            string user = Receive();
+            string user = received.Message;
             if (_usersAndCatalogueManager.Login(user))
             {
                 _userLogged = _usersAndCatalogueManager.GetUser(user);
@@ -96,38 +91,38 @@ namespace ConsoleAppSocketServer.Domain
             }
             else
             {
-                SendMessage(_message.UserIncorrect);
+                _communicator.SendMessage(CommandConstants.LoginUser, _messageLanguage.UserIncorrect);
             }
         }
 
         private void ShowCatalogue()
         {
-            if (_userLogged != null)
-            {
-                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+            // if (_userLogged != null)
+            // {
+            //     Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
 
-                string messageToSend = catalogue.ShowGamesOnStringList();
-                if(messageToSend.Equals("")){
-                    messageToSend = _message.EmptyCatalogue;
-                }
-                SendMessage(_message.CatalogueView + messageToSend);
-            }
-            else
-            {
-                SendMessage((_message.InvalidOption));
-            }
+            //     string messageToSend = catalogue.ShowGamesOnStringList();
+            //     if(messageToSend.Equals("")){
+            //         messageToSend = _messageLanguage.EmptyCatalogue;
+            //     }
+            //     SendMessage(_messageLanguage.CatalogueView + messageToSend);
+            // }
+            // else
+            // {
+            //     SendMessage(_messageLanguage.InvalidOption);
+            // }
         }
 
         private void mainMenu()
         {
             if (_userLogged != null)
             {
-                string messageToSend = _message.MainMenuMessage;
-                SendMessage(messageToSend);
+                string messageToSend = _messageLanguage.MainMenuMessage;
+                _communicator.SendMessage(CommandConstants.MainMenu, messageToSend);
             }
             else
             {
-                SendMessage((_message.InvalidOption));
+                _communicator.SendMessage(CommandConstants.MainMenu, _messageLanguage.InvalidOption);
             }
         }
 
@@ -137,97 +132,54 @@ namespace ConsoleAppSocketServer.Domain
             {
                 try
                 {
-                    SendMessage(_message.NewGameInit);
-                    string title = Receive();
-                    SendMessage(_message.GameGenre);
-                    string genre = Receive();
-                    SendMessage(_message.GameSynopsis);
-                    string synopsis = Receive();      
-                    SendMessage(_message.GameAgeRestriction);
-                    string ageRating = Receive();
-                    SendMessage(_message.GameCover);
-                    string coverPath = Receive();
+                    // SendMessage(_messageLanguage.NewGameInit);
+                    // string title = ReceiveMessage();
+                    // SendMessage(_messageLanguage.GameGenre);
+                    // string genre = ReceiveMessage();
+                    // SendMessage(_messageLanguage.GameSynopsis);
+                    // string synopsis = ReceiveMessage();     
+                    // SendMessage(_messageLanguage.GameAgeRestriction);
+                    // string ageRating = ReceiveMessage();
+                    // SendMessage(_messageLanguage.GameCover);
+                    // string coverPath = ReceiveMessage();
 
-                    Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
-                    _usersAndCatalogueManager.AddGame(gameToAdd);
+                    // Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
+                    // _usersAndCatalogueManager.AddGame(gameToAdd);
 
-                    SendMessage(_message.GameAdded);
+                    // SendMessage(_messageLanguage.GameAdded);
                 }
                 catch (Exception e) //to be implemented
                 {
-                    SendMessage(e.Message);
+                    _communicator.SendMessage(CommandConstants.Message, e.Message);
                 }
             }
             else
             {
-                SendMessage((_message.InvalidOption));
+                _communicator.SendMessage(CommandConstants.Message, _messageLanguage.InvalidOption);
             }
-        }
-
-        private void BuyGame()
-        {
-            SendMessage(_message.BuyGame);
-            Console.WriteLine(Receive());
-            
-            //int gameIndex = Convert.ToInt32(Receive());
-            //Catalogue catalogue = _usersAndCatalogueManager.Catalogue;
-            //try
-           // {
-            //    Game gameToBuy = catalogue.Games[gameIndex];
-            //    _userLogged.BuyGame(gameToBuy);
-                SendMessage(_message.GamePurchased);
-           // }
-            //catch (Exception e)
-            //{
-             //   SendMessage(e.Message);
-            //}
-        }
-
-        private string Receive()
-        {
-            var buffer = new byte[1024];
-            var bytesReceived = 1;
-            bytesReceived = this.ConnectedSocket.Receive(buffer);
-            if (bytesReceived > 0)
-            {
-                var message = Encoding.UTF8.GetString(buffer);
-                return message;
-            }
-
-            throw new Exception("empty message");
-        }
-
-        
-
-        private void SendMessage(string message)
-        {
-            var messageBytes = Encoding.UTF8.GetBytes(message+"*");
-            this.ConnectedSocket.Send(messageBytes);
-        }
-
-        private void CloseConnection()
-        {
-            this.Active = false;
         }
 
         public void Listen()
-        {
-            Console.WriteLine("en Listen de Session");
-            // Este while se usa para mantenerse aqui mientras la conexion no se cierra
-            var buffer = new byte[2048];
-                // Si la conexion se cierra, el receive retorna 0
-             var   bytesReceived = ConnectedSocket.Receive(buffer);
-                if (bytesReceived > 0)
-                {
-                    var message = Encoding.UTF8.GetString(buffer);
-                    var messagecleared = MessageManager.EliminarEspacios(message);
-                    Console.WriteLine(messagecleared);
-                    this.MessageInterpreter(messagecleared); //interpreta el mensaje recibido y genera una respuesta
-                }
-                else
-                {
-                    Console.WriteLine($"{this.ThreadId}: El cliente remoto cerro la conexion...");
-                }
+        {  
+            try
+            {
+                this.MessageInterpreter(this._communicator.ReceiveMessage());
+            }
+            catch (ClientClosingException e)
+            {
+                CloseSession();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error {e.Message}.."); 
+                CloseSession();   
+            }
         }
+
+        private void CloseSession()
+        {
+            this.Active = false;
+        }
+               
     }
 }

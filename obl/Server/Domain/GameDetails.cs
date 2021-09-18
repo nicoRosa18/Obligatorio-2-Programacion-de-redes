@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
 
-namespace ConsoleAppSocketServer.Domain
+namespace Server.Domain
 {
     public class GameDetails
     {

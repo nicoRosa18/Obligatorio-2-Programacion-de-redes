@@ -3,12 +3,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Common.Protocol;
-using ConsoleAppSocketServer;
+using Common.Communicator;
 
-namespace ConsoleAppSocketClient
+namespace Client
 {
-    class Program
+    public class Program
     {
+
         static void Main(string[] args)
         {
             Console.WriteLine("Empezando Socket Client...");
@@ -17,41 +18,34 @@ namespace ConsoleAppSocketClient
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            //127.0.0.1 es localhost -> solo permite conexiones dentro de la misma maquina
-            // RANGO DE PUERTOS 0 - 65535 (RANGO de 1 a 1024 es reservado)
-            var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.4"), 30000);
+            var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.10"), 30000);
             socketClient.Connect(remoteEndpoint);
 
             Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
+            CommunicationSocket communication = new CommunicationSocket(socketClient);
+            bool endConnection = false;
 
-            var termine = false;
-            SendMessage(CommandConstants.StartupMenu, socketClient);//pedimos el menu de inicio
-            // Si la conexion se cierra, el receive retorna 0
-            Console.WriteLine(MessageManager.ShowMessage(socketClient));
-            while (!termine)
+            communication.SendMessage(CommandConstants.StartupMenu, "");//pedimos el menu de inicio
+ 
+            Console.WriteLine(communication.ReceiveMessage().Message);
+
+            while (!endConnection)
             {
-                string command = Console.ReadLine();
-                if (command.Length == 0)
-                    {
-                        Console.WriteLine("Cerrando la conexion");
-                        termine = true;
-                    }
-                    else
-                    {
-                        SendMessage(command, socketClient);
-                        Console.WriteLine(MessageManager.ShowMessage(socketClient));
-                    }
+                string message = Console.ReadLine();
+                //string message = Console.ReadLine(); -> for actual message
+                if (message.Equals("exit"))
+                {
+                    Console.WriteLine("Closing connection");
+                    endConnection = true;
+                }
+                else
+                {
+                    communication.SendMessage(CommandConstants.Message, message);
+                    Console.WriteLine(communication.ReceiveMessage());
+                }
             }
             socketClient.Shutdown(SocketShutdown.Both);
-            socketClient.Close();
-            Console.WriteLine("Cerrando la conexion..");            
-            Console.ReadLine();
+            socketClient.Close();        
         }
-        private static void SendMessage(string message, Socket socketClient)
-        {
-            var bytes = Encoding.UTF8.GetBytes($"{message}*");
-            socketClient.Send(bytes);
-        }
-        
     }
 }

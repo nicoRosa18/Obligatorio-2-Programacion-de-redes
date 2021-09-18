@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace ConsoleAppSocketServer.Domain
+namespace Server.Domain
 {
     public class User
     {
