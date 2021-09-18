@@ -45,7 +45,7 @@ namespace Server
                         }
 
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.4"), 30000);
+                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.5"), 30000);
                         fakeSocket.Connect(remoteEndpoint);
 
                         _socketServer.Close(); 

@@ -29,5 +29,27 @@ namespace Server.Domain
 
             return totalStars / qualifications.Count;
         }
+
+        public string DetailsOnstring()
+        {
+            string ret = "";
+            ret += $"Detalles: \n" +
+                   $"titulo: {this.Game.Title} \n " +
+                   $"genero: {this.Game.Genre} \n " +
+                   $"sinopsis: {this.Game.Synopsis} \n " +
+                   $"clasificacion de edad:{this.Game.AgeRating}" +
+                   $"promedio de estrellas {this.Game.Stars}" +
+                   $"comentarios:";
+            foreach (var qualification in this.Game.CommunityQualifications)
+            {
+                string qual = $"usuario: {qualification.User} \n" +
+                              $"comentario: {qualification.comment} \n " +
+                              $"estrellas: {qualification.Stars} \n \n ";
+
+                ret += qual;
+            }
+
+            return ret;
+        }
     }
 }

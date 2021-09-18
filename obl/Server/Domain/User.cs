@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Server.Domain
 {
@@ -6,13 +9,19 @@ namespace Server.Domain
     {
         public string Name { get; set; }
         
-        public ArrayList AcquireGames { get; set; }
+        public ICollection<Game> AcquireGames { get; set; }
         
         public ArrayList PublishedGames { get; set; }
         
         public void PublishGame(Game game)
         {
             this.PublishedGames.Add(game);
+        }
+
+        public User()
+        {
+            this.AcquireGames = new Collection<Game>();
+            this.PublishedGames = new ArrayList();
         }
 
         public void PublishQualification(Qualification qualification)
@@ -22,7 +31,25 @@ namespace Server.Domain
 
         public void BuyGame(Game game)
         {
-            this.AcquireGames.Add(game);
+            if (AcquireGames.Contains(game))
+            {
+                throw new Exception("game already purchased");
+            }
+            else
+            {
+                this.AcquireGames.Add(game);
+            }
+        }
+
+        public string GetMyGames()
+        {
+            string ret = "";
+            foreach (var game in AcquireGames)
+            {
+                ret += $"{game.Title} \n";
+            }
+
+            return ret;
         }
 
         public override bool Equals(object? obj)

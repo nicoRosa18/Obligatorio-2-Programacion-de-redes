@@ -15,7 +15,7 @@ namespace Server.Domain
         }
 
 
-        public Collection<Game>  SearchGame(string title, string genre, int qualification)
+        public string  SearchGame(string title, string genre, int qualification)
         {
             Collection<Game> matchedGames = new Collection<Game>();
             if(!title.Equals("")) matchedGames.Add(SearchGameByTitle(title));
@@ -41,9 +41,17 @@ namespace Server.Domain
                 }
                
             }
-            return matchedGames;
+
+            string matchedGamesOnString = ConvertToString(matchedGames);
+            return matchedGamesOnString;
         }
-        
+
+        public Game GetGameByName(string name)
+        {
+            Game game = SearchGameByTitle(name); 
+            return game;
+        }
+
         public Collection<Game> Show()
         {
             return this.Games;
@@ -110,5 +118,17 @@ namespace Server.Domain
             if (matchingGames.Count == 0) throw new Exception("there are no games of this qualification");
             return matchingGames;
         }
+
+        private string ConvertToString(Collection<Game> games)
+        {
+            string ret = "";
+            foreach (var game in games)
+            {
+                ret += $"{game.Title} \n";
+            }
+
+            return ret;
+        }
+        
     }
 }

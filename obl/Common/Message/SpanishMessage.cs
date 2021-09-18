@@ -1,4 +1,5 @@
 ﻿using System;
+using Common.Protocol;
 
 public class SpanishMessage : Message
 {
@@ -38,6 +39,18 @@ public class SpanishMessage : Message
     public override string BuyGame { get; set; }
 
     public override string GamePurchased { get; set; }
+    
+    public override  string SearchByTitle { get; set; }
+    
+    public override  string SearchByGenre { get; set; }
+    
+    public override  string SearchByStars { get; set; }
+    
+    public override string SearchGame { get; set; }
+    public override string SearchGameOptions { get; set; }
+    public override string MyGamesOptions { get; set; }
+    public override string GameDetails { get; set; }
+    public override string PublishQualification { get; set; }
 
     public SpanishMessage()
     {
@@ -49,12 +62,12 @@ public class SpanishMessage : Message
         StartUpMessage ="Bienvenido, envie el numero para la operacion deseada \n" +
                         " 1-Registrar Usuario \n" +
                         " 2-Ingresar Usuario \n" +
-                        " exit para salir";   
-                        
-       MainMenuMessage ="Menu de inicio. ecriba el comando para la opcion elegida \n " +
-                        "4- Ver catalogo de juegos \n" +
-                        "Agregar juego- Agregar un nuevo juego a la tienda \n" +
-                        "Mis juegos- Ver mis juegos adiquiridos";
+                        " exit para salir";
+
+        MainMenuMessage = $"Menu de inicio. ecriba el comando para la opcion elegida \n " +
+                          $"{CommandConstants.SearchGame}- Buscar juego \n "+
+                          $"{CommandConstants.AddGame}- Agregar juego- Agregar un nuevo juego a la tienda \n" +
+                          $"{CommandConstants.MyGames}- Ver mis juegos adiquiridos";
        
        UserRegistration = "Registro de usuario \n \n nombre de usuario: \n";
        
@@ -67,11 +80,10 @@ public class SpanishMessage : Message
        UserLogIn = "Ingreso de usuario, ingrese username:";
        
        UserIncorrect = "usuario incorrecto, vuelva a intentarlo.";
-       
-       EmptyCatalogue = "No hay juegos para mostrar \n" +
-                        "escriba menu para volver al menu de inicio";
-        
-       NewGameInit = "Agregar nuevo juego: \n \n " +
+
+       EmptyCatalogue = "No hay juegos para mostrar \n";
+
+       NewGameInit = "Agregar nuevo juego: \n \n " + 
                      "ingrese titulo: ";
        
        GameGenre = "Ingrese genero:";
@@ -81,20 +93,40 @@ public class SpanishMessage : Message
        GameAgeRestriction = "Agrege la calificacion de edad";
        
        GameCover = "Agregue a ruta de acceso a la caratula del juego:";
-       
-       GameAdded = "Juego agregado correctamente! \n " +
-                   "escriba menu para volver al menu de inicio";
+
+       GameAdded = "Juego agregado correctamente! \n ";
        
        CatalogueView = "Catalogo:" +
                        "Escriba menu para volver al menu de inicio \n" +
                        "Escriba 6 para comprar un juego y agregarlo a su biblioteca. \n";
        
        BuyGame = "Comprar juego: \n " +
-                 "envie el numero del juego en catalogo que desea adquirir";
+                 "envie el nombre del juego buscado anteriormente que desea adquirir";
        
        InvalidOption = "Opcion invalida, por favor elija una nueva opcion.";
 
        GamePurchased = "Juego agregado correctamente a tu biblioteca! \n" +
                        "escriba menu para volver al menu de inicio";
+
+       SearchGame = "Buscar juego: si no desea buscar por un atributo, dejelo vacio";
+
+       SearchByTitle = "Titulo:";
+
+       SearchByGenre = "Genero:";
+
+       SearchByStars = "Calificacion (0-5):";
+
+       SearchGameOptions = $"{CommandConstants.MainMenu}- para volver al menu \n" +
+                           $"{CommandConstants.buyGame}- para comprar un juego \n"+
+                           $"{CommandConstants.PublishQualification}- para agregar una calificacion";
+
+       MyGamesOptions = $"{CommandConstants.MainMenu}- para vover al menu \n" +
+                        $"{CommandConstants.GameDetails}- para ver los detalles de un juego";
+
+       GameDetails = $"ingrese el nombre del juego que quiere ver los detalles";
+
+       PublishQualification = "Ingrese el nombre del juego que quiere agregar una calificacion";
+       
+       
     }
 }
