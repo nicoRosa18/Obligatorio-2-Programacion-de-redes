@@ -18,7 +18,7 @@ namespace Client
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.10"), 30000);
+            var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.4"), 30000);
             socketClient.Connect(remoteEndpoint);
 
             Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
