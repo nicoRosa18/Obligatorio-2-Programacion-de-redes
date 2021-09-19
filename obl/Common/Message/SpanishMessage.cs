@@ -51,6 +51,8 @@ public class SpanishMessage : Message
     public override string MyGamesOptions { get; set; }
     public override string GameDetails { get; set; }
     public override string PublishQualification { get; set; }
+    
+    public override string QualificationAdded { get; set; }
 
     public SpanishMessage()
     {
@@ -126,7 +128,7 @@ public class SpanishMessage : Message
        GameDetails = $"ingrese el nombre del juego que quiere ver los detalles";
 
        PublishQualification = "Ingrese el nombre del juego que quiere agregar una calificacion";
-       
-       
+
+       QualificationAdded = "Comentario agregado!";
     }
 }

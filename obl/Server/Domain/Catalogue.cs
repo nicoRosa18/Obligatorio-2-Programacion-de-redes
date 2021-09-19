@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -17,14 +18,14 @@ namespace Server.Domain
 
         public string  SearchGame(string title, string genre, int qualification)
         {
-            Collection<Game> matchedGames = new Collection<Game>();
+            List<Game> matchedGames = new List<Game>();
             if(!title.Equals("")) matchedGames.Add(SearchGameByTitle(title));
             else
             {
                 if (!genre.Equals(""))
                 {
                     Collection<Game> gamesByGenre = SearchGameByGenre(genre);
-                    matchedGames.Concat(gamesByGenre);
+                    matchedGames.AddRange(gamesByGenre);
                 }
                 if (qualification!=-1) //-1 qualification does not exists
                 {
@@ -32,11 +33,11 @@ namespace Server.Domain
                     
                     if (matchedGames.Count != 0) //if it was also searched by gender
                     {
-                        matchedGames = (Collection<Game>) matchedGames.Intersect(gamesByCualification); //intersects matching games by genre and by qualification
+                        matchedGames = (List<Game>) matchedGames.Intersect(gamesByCualification); //intersects matching games by genre and by qualification
                     }
                     else
                     {// add only games by qualification
-                        matchedGames.Concat(gamesByCualification);
+                        matchedGames.AddRange(gamesByCualification);
                     }
                 }
                
@@ -119,7 +120,7 @@ namespace Server.Domain
             return matchingGames;
         }
 
-        private string ConvertToString(Collection<Game> games)
+        private string ConvertToString(List<Game> games)
         {
             string ret = "";
             foreach (var game in games)

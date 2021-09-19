@@ -15,7 +15,11 @@ namespace Server.Domain
         {
             this.Game = game;
             this.Reviews = game.CommunityQualifications;
-            this.AverageMark = CalculateAverageMark(game);
+            if (game.CommunityQualifications.Count != 0)
+            {
+                this.AverageMark = CalculateAverageMark(game);
+            }
+            else this.AverageMark = 0;
         }
 
         private int CalculateAverageMark(Game game)
@@ -37,9 +41,9 @@ namespace Server.Domain
                    $"titulo: {this.Game.Title} \n " +
                    $"genero: {this.Game.Genre} \n " +
                    $"sinopsis: {this.Game.Synopsis} \n " +
-                   $"clasificacion de edad:{this.Game.AgeRating}" +
-                   $"promedio de estrellas {this.Game.Stars}" +
-                   $"comentarios:";
+                   $"clasificacion de edad:{this.Game.AgeRating} \n" +
+                   $"promedio de estrellas {this.Game.Stars} \n"  +
+                   $"comentarios: \n";
             foreach (var qualification in this.Game.CommunityQualifications)
             {
                 string qual = $"usuario: {qualification.User} \n" +

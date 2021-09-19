@@ -17,5 +17,10 @@
 
         public const int GameAlreadyPurchased = 60;
         public const int PublishQualification = 14;
+        public const int GameExists = 17;
+        public const int GameNotExits = 18;
+
+        public const int userLogged = 20;
+        public const int userNotLogged = 21;
     }
 }

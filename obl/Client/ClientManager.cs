@@ -2,6 +2,7 @@
 using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
+using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using Common.Communicator;
 using Common.Protocol;
@@ -22,7 +23,7 @@ namespace Client
         {
             this._message = new SpanishMessage();
             this._socket = socketClient;
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.5"), 30000);
+            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.4"), 30000);
             this._communication= new CommunicationSocket(_socket);   
         }
 
@@ -116,11 +117,26 @@ namespace Client
         private void PublishQualification()
         {
             Console.WriteLine(_message.PublishQualification);
-            string gameName = Console.ReadLine();
-            //aca verificar que el nombre del juego exista.
+            bool gameNameOk = false;
+            string gameName = " ";
+            while (!gameNameOk)
+            {
+                gameName = Console.ReadLine();
+                _communication.SendMessage(CommandConstants.GameExists,gameName);
+                int res = _communication.ReceiveMessage().Command;
+                if (res == CommandConstants.GameExists)
+                {
+                    gameNameOk = true;
+                }
+                else
+                {
+                    Console.WriteLine("ingrese un nombre de juego valido");
+                }
+            }
+
             Console.WriteLine("califique con una valoracion del 0 al 5");
             bool starsOk = false;
-            string stars = "";
+            string stars = " ";
             while (!starsOk)
             {
                 stars = Console.ReadLine();
@@ -138,7 +154,7 @@ namespace Client
             Console.WriteLine("agregue un comentario");
             string comment = Console.ReadLine();
             string message = $"{gameName}#{stars}#{comment}";
-            _communication.SendMessage(CommandConstants.PublishQualification, comment);
+            _communication.SendMessage(CommandConstants.PublishQualification, message);
             Console.WriteLine(_communication.ReceiveMessage().Message);
             MainMenu();
         }
@@ -148,7 +164,7 @@ namespace Client
         Console.WriteLine(_message.GameDetails);
         string gameName = Console.ReadLine();
         _communication.SendMessage(CommandConstants.GameDetails,gameName);
-        _communication.ReceiveMessage();
+        Console.WriteLine(_communication.ReceiveMessage().Message);
         MainMenu();
         }
         private void ShowMyGames()
@@ -190,8 +206,6 @@ namespace Client
             _communication.SendMessage(CommandConstants.SearchGame,searchConcat);
             Console.WriteLine(_message.SearchGameOptions);
             Console.WriteLine(_communication.ReceiveMessage().Message);
-            string option = Console.ReadLine();
-            int optionInt = Int32.Parse(option);
         }
 
         private void BuyGame()
@@ -212,20 +226,46 @@ namespace Client
         {
             try
             {
-                Console.WriteLine(_message.NewGameInit);
-                string title = Console.ReadLine();
-                Console.WriteLine(_message.GameGenre);
-                string genre = Console.ReadLine();    
-                Console.WriteLine(_message.GameSynopsis);
-                string synopsis =Console.ReadLine();       
-                Console.WriteLine(_message.GameAgeRestriction);
-                string ageRating =Console.ReadLine();    
-                Console.WriteLine(_message.GameCover);
-                string coverPath =Console.ReadLine();    
+                bool titleOk = false;
+                string title = "";
+                while (!titleOk)
+                {
+                    Console.WriteLine(_message.NewGameInit);
+                    title = Console.ReadLine();
+                    if (!string.IsNullOrEmpty(title)) titleOk = true;
+                }
+
+                bool genreOk = false;
+                string genre = "";
+                while (!genreOk)
+                {
+                    Console.WriteLine(_message.GameGenre);
+                    genre = Console.ReadLine();
+                    if (!string.IsNullOrWhiteSpace(genre) || !string.IsNullOrWhiteSpace(genre)) genreOk = true;
+                }
+                
+                bool synOk = false;
+                string synopsis = "";
+                while (!synOk)
+                {
+                    Console.WriteLine(_message.GameSynopsis);
+                    synopsis =Console.ReadLine(); 
+                    if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) synOk = true;
+                }
+                bool ageOk = false;
+                string ageRating = "";
+                while (!ageOk)
+                {
+                    Console.WriteLine(_message.GameAgeRestriction);
+                    ageRating =Console.ReadLine(); 
+                    if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) ageOk = true;
+                }
                 CommunicationSocket communication = new CommunicationSocket(_socket);
                 string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
                 communication.SendMessage(CommandConstants.AddGame,dataToSend);
                 //aca falta enviar con file sender la imagen
+                //                Console.WriteLine(_message.GameCover);
+                //                string coverPath =Console.ReadLine();   
                 Console.WriteLine(communication.ReceiveMessage().Message);
                 Console.WriteLine(_message.MainMenuMessage);
             }
@@ -243,17 +283,28 @@ namespace Client
         private void UserLogin()
         {
            Console.WriteLine(_message.UserLogIn);
-           string user = Console.ReadLine();
-           _communication.SendMessage(CommandConstants.LoginUser,user);
-           Console.WriteLine(_communication.ReceiveMessage().Message);
+           bool okLogin = false;
+           bool menu = false;
+           while (!okLogin&& !menu)
+           {
+               string user = Console.ReadLine();
+               _communication.SendMessage(CommandConstants.LoginUser, user);
+               CommunicatorPackage receive = _communication.ReceiveMessage();
+               if (receive.Command != CommandConstants.userNotLogged) okLogin = true;
+               Console.WriteLine(receive.Message);
+           }
         }
 
         private void UserRegistration()
         {
             Console.WriteLine(_message.UserRegistration);
             string user = Console.ReadLine();
-            _communication.SendMessage(CommandConstants.RegisterUser, user); 
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            if (user.Equals("") || user.Equals(" ")) Console.WriteLine("nombre no valido");
+            else
+            {
+                _communication.SendMessage(CommandConstants.RegisterUser, user);
+                Console.WriteLine(_communication.ReceiveMessage().Message);
+            }
             StartUpMenu();
         }
 

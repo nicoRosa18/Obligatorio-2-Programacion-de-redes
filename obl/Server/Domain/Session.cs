@@ -42,13 +42,10 @@ namespace Server.Domain
                 case CommandConstants.LoginUser:
                     UserLogin(package);
                     break;
-                // case CommandConstants.ViewCatalogue:
-                //     ShowCatalogue();
-                //     break;
-                // case CommandConstants.MainMenu:
-                //     mainMenu();
-                //     break;
-                 case CommandConstants.AddGame:
+                 case CommandConstants.ViewCatalogue:
+                     ShowCatalogue();
+                     break;
+                case CommandConstants.AddGame:
                      AddGame(package);
                      break;
                  case CommandConstants.SearchGame:
@@ -66,6 +63,10 @@ namespace Server.Domain
                  case  CommandConstants.PublishQualification:
                      PublishQualification(package);
                      break;
+                 case CommandConstants.GameExists:
+                     GameExists(package);
+                     break;
+                     
                 // case "":
                 //     CloseConnection();
                 //     break;
@@ -76,11 +77,34 @@ namespace Server.Domain
             }
         }
 
+        private void GameExists(CommunicatorPackage package)
+        {
+            try
+            {
+                Game game = _usersAndCatalogueManager.Catalogue.GetGameByName(package.Message);
+                _communicator.SendMessage(CommandConstants.GameExists,"");
+            }
+            catch (Exception e)
+            {
+                _communicator.SendMessage(CommandConstants.GameNotExits,"");
+            }
+        }
+
         private void PublishQualification(CommunicatorPackage package)
         {
             string[] data = new string[3];
             data = package.Message.Split("#");
-            
+            string gameName = data[0];
+            int stars= Int32.Parse(data[1]);
+            string comment = data[2];
+            Game game = _usersAndCatalogueManager.Catalogue.GetGameByName(gameName);
+            Qualification q = new Qualification();
+            q.comment = comment;
+            q.Stars = stars;
+            q.User = _userLogged.Name;
+            q.game = game;
+            game.AddCommunityQualification(q);
+            _communicator.SendMessage(CommandConstants.PublishQualification, _messageLanguage.QualificationAdded);
         }
 
         private void ViewGameDetails(CommunicatorPackage package)
@@ -112,7 +136,7 @@ namespace Server.Domain
             int stars = -1;
             try
             {
-                 stars = Int32.Parse(values[3]);
+                 stars = Int32.Parse(values[2]);
             }
             catch {}
             string games= _usersAndCatalogueManager.Catalogue.SearchGame(title, genre, stars);
@@ -149,7 +173,7 @@ namespace Server.Domain
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.LoginUser, _messageLanguage.UserIncorrect);
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserIncorrect);
             }
         }
 
