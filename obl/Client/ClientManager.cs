@@ -23,7 +23,7 @@ namespace Client
         {
             this._message = new SpanishMessage();
             this._socket = socketClient;
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.4"), 30000);
+            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.7"), 30000);
             this._communication= new CommunicationSocket(_socket);   
         }
 
@@ -313,4 +313,4 @@ namespace Client
            Console.WriteLine(_message.StartUpMessage);
         }
     }
-    }
+}

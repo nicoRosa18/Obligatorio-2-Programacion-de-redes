@@ -22,12 +22,10 @@ public abstract class Message
     public abstract  string SearchByTitle { get; set; }
     public abstract  string SearchByGenre { get; set; }
     public abstract  string SearchByStars { get; set; }
-    
     public abstract string SearchGame { get;set; }
     public abstract string  SearchGameOptions { get; set; }
     public abstract string MyGamesOptions { get; set; }
     public abstract string GameDetails { get; set; }
     public abstract string  PublishQualification { get; set; }
-    
     public abstract  string QualificationAdded { get; set; }
 }

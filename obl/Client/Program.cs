@@ -17,6 +17,7 @@ namespace Client
             var socketClient = new Socket(AddressFamily.InterNetwork,
                 SocketType.Stream,
                 ProtocolType.Tcp);
+                
             ClientManager manager = new ClientManager(socketClient);
             manager.Start();
         }
