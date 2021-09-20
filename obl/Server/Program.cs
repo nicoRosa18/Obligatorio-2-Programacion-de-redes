@@ -21,7 +21,7 @@ namespace Server
                 SocketType.Stream,
                 ProtocolType.Tcp);
 
-            socketServer.Bind(new IPEndPoint(IPAddress.Parse("192.168.1.7"), 30000));
+            socketServer.Bind(new IPEndPoint(IPAddress.Parse("192.168.1.8"), 30000));
 
             socketServer.Listen(10);
 

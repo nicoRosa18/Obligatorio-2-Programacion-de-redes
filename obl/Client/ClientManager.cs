@@ -11,20 +11,21 @@ namespace Client
 {
     public class ClientManager
     {
-
         private Socket _socket { get; set; }
         private IPEndPoint _remoteEndpoint { get; set; }
-        
+
         private CommunicationSocket _communication { get; set; }
 
         private Message _message { get; set; }
+
+        private bool endConnection;
 
         public ClientManager(Socket socketClient)
         {
             this._message = new SpanishMessage();
             this._socket = socketClient;
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.7"), 30000);
-            this._communication= new CommunicationSocket(_socket);   
+            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.8"), 30000);
+            this._communication = new CommunicationSocket(_socket);
         }
 
         public void Start()
@@ -38,26 +39,33 @@ namespace Client
         {
             Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
             CommunicationSocket communication = new CommunicationSocket(_socket);
-            bool endConnection = false;
+            endConnection = false;
             communication.SendMessage(CommandConstants.StartupMenu, ""); //pedimos el menu de inicio
             Console.WriteLine(communication.ReceiveMessage().Message);
             while (!endConnection)
             {
-                string message = Console.ReadLine();
-                //string message = Console.ReadLine(); -> for actual message
-                if (message.Equals("exit"))
+               try
                 {
-                    Console.WriteLine("Closing connection");
-                    endConnection = true;
+                    string message = Console.ReadLine();
+                    //string message = Console.ReadLine(); -> for actual message
+                    if (message.Equals("exit"))
+                    {
+                        
+                        endConnection = true;
+                    }
+                    else
+                    {
+                        MessageInterpreter(message);
+                    }
                 }
-                else
+                catch
                 {
-                    MessageInterpreter(message);
+                    Console.WriteLine("Server closed, closing connection");
+                    endConnection = true;
                 }
             }
 
-            _socket.Shutdown(SocketShutdown.Both);
-            _socket.Close();
+            CloseConnection();
         }
 
         private void MessageInterpreter(string message)
@@ -103,14 +111,14 @@ namespace Client
                         break;
                 }
             }
+            catch (SocketException e)
+            {
+                endConnection = true;
+            }
             catch (Exception e)
             {
-                if (e.Message.Equals("exit")) CloseConnection();
-                else
-                {
-                    messageReturn = "por favor envie una opcion correcta";
-                    Console.WriteLine(messageReturn);
-                }
+                messageReturn = "por favor envie una opcion correcta";
+                Console.WriteLine(messageReturn);
             }
         }
 
@@ -122,7 +130,7 @@ namespace Client
             while (!gameNameOk)
             {
                 gameName = Console.ReadLine();
-                _communication.SendMessage(CommandConstants.GameExists,gameName);
+                _communication.SendMessage(CommandConstants.GameExists, gameName);
                 int res = _communication.ReceiveMessage().Command;
                 if (res == CommandConstants.GameExists)
                 {
@@ -148,9 +156,10 @@ namespace Client
                 }
                 catch
                 {
-                     Console.WriteLine("debe ingresar un numero entre 0 y 5");
+                    Console.WriteLine("debe ingresar un numero entre 0 y 5");
                 }
             }
+
             Console.WriteLine("agregue un comentario");
             string comment = Console.ReadLine();
             string message = $"{gameName}#{stars}#{comment}";
@@ -159,17 +168,18 @@ namespace Client
             MainMenu();
         }
 
-        private void  ShowGameDetails()
+        private void ShowGameDetails()
         {
-        Console.WriteLine(_message.GameDetails);
-        string gameName = Console.ReadLine();
-        _communication.SendMessage(CommandConstants.GameDetails,gameName);
-        Console.WriteLine(_communication.ReceiveMessage().Message);
-        MainMenu();
+            Console.WriteLine(_message.GameDetails);
+            string gameName = Console.ReadLine();
+            _communication.SendMessage(CommandConstants.GameDetails, gameName);
+            Console.WriteLine(_communication.ReceiveMessage().Message);
+            MainMenu();
         }
+
         private void ShowMyGames()
         {
-            _communication.SendMessage(CommandConstants.MyGames,"");
+            _communication.SendMessage(CommandConstants.MyGames, "");
             Console.WriteLine(_communication.ReceiveMessage().Message);
             Console.WriteLine(_message.MyGamesOptions);
         }
@@ -203,7 +213,7 @@ namespace Client
             }
 
             string searchConcat = $"{title}#{genre}#{stars}";
-            _communication.SendMessage(CommandConstants.SearchGame,searchConcat);
+            _communication.SendMessage(CommandConstants.SearchGame, searchConcat);
             Console.WriteLine(_message.SearchGameOptions);
             Console.WriteLine(_communication.ReceiveMessage().Message);
         }
@@ -243,26 +253,28 @@ namespace Client
                     genre = Console.ReadLine();
                     if (!string.IsNullOrWhiteSpace(genre) || !string.IsNullOrWhiteSpace(genre)) genreOk = true;
                 }
-                
+
                 bool synOk = false;
                 string synopsis = "";
                 while (!synOk)
                 {
                     Console.WriteLine(_message.GameSynopsis);
-                    synopsis =Console.ReadLine(); 
+                    synopsis = Console.ReadLine();
                     if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) synOk = true;
                 }
+
                 bool ageOk = false;
                 string ageRating = "";
                 while (!ageOk)
                 {
                     Console.WriteLine(_message.GameAgeRestriction);
-                    ageRating =Console.ReadLine(); 
+                    ageRating = Console.ReadLine();
                     if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) ageOk = true;
                 }
+
                 CommunicationSocket communication = new CommunicationSocket(_socket);
                 string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
-                communication.SendMessage(CommandConstants.AddGame,dataToSend);
+                communication.SendMessage(CommandConstants.AddGame, dataToSend);
                 //aca falta enviar con file sender la imagen
                 //                Console.WriteLine(_message.GameCover);
                 //                string coverPath =Console.ReadLine();   
@@ -277,22 +289,24 @@ namespace Client
 
         private void CloseConnection()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Closing connection");
+            _socket.Shutdown(SocketShutdown.Both);
+            _socket.Close();
         }
 
         private void UserLogin()
         {
-           Console.WriteLine(_message.UserLogIn);
-           bool okLogin = false;
-           bool menu = false;
-           while (!okLogin&& !menu)
-           {
-               string user = Console.ReadLine();
-               _communication.SendMessage(CommandConstants.LoginUser, user);
-               CommunicatorPackage receive = _communication.ReceiveMessage();
-               if (receive.Command != CommandConstants.userNotLogged) okLogin = true;
-               Console.WriteLine(receive.Message);
-           }
+            Console.WriteLine(_message.UserLogIn);
+            bool okLogin = false;
+            bool menu = false;
+            while (!okLogin && !menu)
+            {
+                string user = Console.ReadLine();
+                _communication.SendMessage(CommandConstants.LoginUser, user);
+                CommunicatorPackage receive = _communication.ReceiveMessage();
+                if (receive.Command != CommandConstants.userNotLogged) okLogin = true;
+                Console.WriteLine(receive.Message);
+            }
         }
 
         private void UserRegistration()
@@ -305,12 +319,13 @@ namespace Client
                 _communication.SendMessage(CommandConstants.RegisterUser, user);
                 Console.WriteLine(_communication.ReceiveMessage().Message);
             }
+
             StartUpMenu();
         }
 
         private void StartUpMenu()
         {
-           Console.WriteLine(_message.StartUpMessage);
+            Console.WriteLine(_message.StartUpMessage);
         }
     }
 }
