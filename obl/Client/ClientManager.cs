@@ -1,9 +1,6 @@
 ﻿using System;
-using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
 using Common.Communicator;
 using Common.Protocol;
 
@@ -12,13 +9,17 @@ namespace Client
     public class ClientManager
     {
         private Socket _socket { get; set; }
+        
         private IPEndPoint _remoteEndpoint { get; set; }
-
+        
         private CommunicationSocket _communication { get; set; }
+        
 
         private Message _message { get; set; }
+        
 
         private bool endConnection;
+        
 
         public ClientManager(Socket socketClient)
         {
@@ -27,27 +28,25 @@ namespace Client
             _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.8"), 30000);
             this._communication = new CommunicationSocket(_socket);
         }
-
+        
         public void Start()
         {
             _socket.Connect(_remoteEndpoint);
             Menu();
         }
-
-
+        
         private void Menu()
         {
             Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
             CommunicationSocket communication = new CommunicationSocket(_socket);
             endConnection = false;
-            communication.SendMessage(CommandConstants.StartupMenu, ""); //pedimos el menu de inicio
+            communication.SendMessage(CommandConstants.StartupMenu, "");
             Console.WriteLine(communication.ReceiveMessage().Message);
             while (!endConnection)
             {
                try
                 {
                     string message = Console.ReadLine();
-                    //string message = Console.ReadLine(); -> for actual message
                     if (message.Equals("exit"))
                     {
                         
@@ -242,9 +241,20 @@ namespace Client
                 {
                     Console.WriteLine(_message.NewGameInit);
                     title = Console.ReadLine();
-                    if (!string.IsNullOrEmpty(title)) titleOk = true;
+                    if (!string.IsNullOrEmpty(title))
+                    {
+                        _communication.SendMessage(CommandConstants.GameExists, title);
+                        int res = _communication.ReceiveMessage().Command;
+                        if (res == CommandConstants.GameExists)
+                        {
+                            Console.WriteLine("ya existe un juego con este nombre");
+                        }
+                        else
+                        {
+                            titleOk = true;
+                        }
+                    }
                 }
-
                 bool genreOk = false;
                 string genre = "";
                 while (!genreOk)
@@ -302,10 +312,14 @@ namespace Client
             while (!okLogin && !menu)
             {
                 string user = Console.ReadLine();
-                _communication.SendMessage(CommandConstants.LoginUser, user);
-                CommunicatorPackage receive = _communication.ReceiveMessage();
-                if (receive.Command != CommandConstants.userNotLogged) okLogin = true;
-                Console.WriteLine(receive.Message);
+                if(string.IsNullOrWhiteSpace(user)) Console.WriteLine("nombre vacio, ingrese un nombre");
+                else
+                {
+                    _communication.SendMessage(CommandConstants.LoginUser, user);
+                    CommunicatorPackage receive = _communication.ReceiveMessage();
+                    if (receive.Command != CommandConstants.userNotLogged) okLogin = true;
+                    Console.WriteLine(receive.Message);
+                }
             }
         }
 
@@ -313,7 +327,7 @@ namespace Client
         {
             Console.WriteLine(_message.UserRegistration);
             string user = Console.ReadLine();
-            if (user.Equals("") || user.Equals(" ")) Console.WriteLine("nombre no valido");
+            if (string.IsNullOrWhiteSpace(user)) Console.WriteLine("nombre no valido");
             else
             {
                 _communication.SendMessage(CommandConstants.RegisterUser, user);
