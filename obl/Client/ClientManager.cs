@@ -31,7 +31,7 @@ namespace Client
 
             _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
 
-            this._communication= new CommunicationSocket(_socket);   
+            this._communication = new CommunicationSocket(_socket);   
         }
 
         public void Start()
@@ -166,7 +166,7 @@ namespace Client
             MainMenu();
         }
 
-        private void  ShowGameDetails()
+        private void  ShowGameDetails() //agregar file receiver 
         {
         Console.WriteLine(_message.GameDetails);
         string gameName = Console.ReadLine();
@@ -270,6 +270,8 @@ namespace Client
                 CommunicationSocket communication = new CommunicationSocket(_socket);
                 string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
                 communication.SendMessage(CommandConstants.AddGame,dataToSend);
+
+                Console.WriteLine(""); //envio de imagen
                 //aca falta enviar con file sender la imagen
                 //                Console.WriteLine(_message.GameCover);
                 //                string coverPath =Console.ReadLine();   
