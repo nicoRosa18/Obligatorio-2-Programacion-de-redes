@@ -6,6 +6,7 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using Common.Communicator;
 using Common.Protocol;
+using Common.SettingsManager;
 
 namespace Client
 {
@@ -14,16 +15,22 @@ namespace Client
 
         private Socket _socket { get; set; }
         private IPEndPoint _remoteEndpoint { get; set; }
-        
         private CommunicationSocket _communication { get; set; }
-
         private Message _message { get; set; }
+        private string _serverIpAddress { get; set; }
+        private string _serverPort { get; set; }
 
         public ClientManager(Socket socketClient)
         {
             this._message = new SpanishMessage();
             this._socket = socketClient;
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.7"), 30000);
+
+            ISettingsManager _ipConfiguration = new AddressIPConfiguration();
+            _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
+            _serverPort = _ipConfiguration.ReadSetting("ServerPort");
+
+            _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
+
             this._communication= new CommunicationSocket(_socket);   
         }
 

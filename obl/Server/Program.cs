@@ -20,12 +20,7 @@ namespace Server
             var socketServer = new Socket(AddressFamily.InterNetwork,
                 SocketType.Stream,
                 ProtocolType.Tcp);
-
-            socketServer.Bind(new IPEndPoint(IPAddress.Parse("192.168.1.7"), 30000));
-
-            socketServer.Listen(10);
-
-
+                
             ServerManager serverManager = new ServerManager(socketServer);
         }
     }
