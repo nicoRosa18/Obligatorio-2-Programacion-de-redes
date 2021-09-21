@@ -57,7 +57,8 @@ namespace Common.Communicator
             var buffer = new byte[headerLength];
             ReceiveData(headerLength, buffer);
 
-            Console.WriteLine(headerLength);
+            Console.WriteLine(header.IFileNameSize);
+            Console.WriteLine(header.IFileSize);
 
             header.DecodeData(buffer);
             int fileNameSize = header.IFileNameSize;
@@ -91,12 +92,12 @@ namespace Common.Communicator
             Console.WriteLine("Enviando el archivo");
             Console.WriteLine(path);
             
-            long fileSize = _fileHandler.GetFileSize(path); 
-            Console.WriteLine(fileSize);
             string fileName = _fileHandler.GetFileName(path);
-            Console.WriteLine(fileName); 
             int fileNameSize = Encoding.UTF8.GetBytes(fileName).Length;
+            long fileSize = _fileHandler.GetFileSize(path); 
+
             Console.WriteLine(fileNameSize);
+            Console.WriteLine(fileSize);
 
             HeaderFile header = new HeaderFile(fileNameSize, fileSize);
             byte[] data = header.GetSendHeader();
