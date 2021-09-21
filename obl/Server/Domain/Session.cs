@@ -232,17 +232,25 @@ namespace Server.Domain
                 {
                     string[] data= new string[4];
                     data = package.Message.Split("#");
-                     string title = data[0];
-                     string genre = data[1];
-                     string synopsis =data[2];     
-                     string ageRating = data[3];
+                    string title = data[0];
+                    string genre = data[1];
+                    string synopsis =data[2];     
+                    string ageRating = data[3];
+                    _communicator.SendMessage(CommandConstants.SendCover,_messageLanguage.SendGameCover);
                      //aca envio un string pidieendo la caratula
                      //aca la recibo
-                     string coverPath = "default";
-                     //string coverPath = ReceiveMessage();
-                     Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
-                     _usersAndCatalogueManager.AddGame(gameToAdd);
-                      _communicator.SendMessage(CommandConstants.AddGame,_messageLanguage.GameAdded);
+                    string coverPath = "Default";
+                    try
+                    {
+                       coverPath = _communicator.ReceiveFile();
+                    }
+                    catch(Exception e)
+                    {
+                       Console.WriteLine(e.Message);
+                    }
+                    Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
+                    _usersAndCatalogueManager.AddGame(gameToAdd);
+                    _communicator.SendMessage(CommandConstants.AddGame,_messageLanguage.SendGameCover);
                 }
                 catch (Exception e) //to be implemented
                 {

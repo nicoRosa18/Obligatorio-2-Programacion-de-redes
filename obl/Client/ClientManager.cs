@@ -259,6 +259,7 @@ namespace Client
                     synopsis =Console.ReadLine(); 
                     if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) synOk = true;
                 }
+
                 bool ageOk = false;
                 string ageRating = "";
                 while (!ageOk)
@@ -271,10 +272,24 @@ namespace Client
                 string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
                 communication.SendMessage(CommandConstants.AddGame,dataToSend);
 
-                Console.WriteLine(""); //envio de imagen
-                //aca falta enviar con file sender la imagen
-                //                Console.WriteLine(_message.GameCover);
-                //                string coverPath =Console.ReadLine();   
+                Console.WriteLine(""); 
+
+                Console.WriteLine(_communication.ReceiveMessage().Message);    
+                
+                bool fileNotFound = true;
+                while(fileNotFound)
+                {
+                    try{
+                        string path = Console.ReadLine(); //cambiar a file name si se da el caso
+                        Console.WriteLine(path + "r");
+                        _communication.SendFile(path);
+                        fileNotFound = false;
+                    }
+                    catch(Exception e){
+                        Console.WriteLine("Archivo no encontrado, reingrese su ruta");
+                    }
+                }
+  
                 Console.WriteLine(communication.ReceiveMessage().Message);
                 Console.WriteLine(_message.MainMenuMessage);
             }
