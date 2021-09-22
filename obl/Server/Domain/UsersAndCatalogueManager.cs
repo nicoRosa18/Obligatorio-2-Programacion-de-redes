@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using Microsoft.VisualBasic;
+using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
 {
@@ -70,7 +71,18 @@ namespace Server.Domain
 
         public void AddGame(Game gameToAdd)
         {
-            this.Catalogue.AddGame(gameToAdd);
+            {
+                this.Catalogue.AddGame(gameToAdd);
+            }
+            else
+            {
+                throw new GameAlreadyExists();
+            }
+        }
+
+        public bool ExistsGame(Game gameToAdd)
+        {
+            return this.Catalogue.ExistsGame(gameToAdd);
         }
     }
 }

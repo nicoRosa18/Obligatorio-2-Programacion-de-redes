@@ -12,8 +12,6 @@ namespace Client
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Empezando Socket Client...");
-
             var socketClient = new Socket(AddressFamily.InterNetwork,
                 SocketType.Stream,
                 ProtocolType.Tcp);

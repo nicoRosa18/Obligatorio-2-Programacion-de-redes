@@ -80,7 +80,7 @@ namespace Common.Communicator
         public void SendFile(string path)
         {
             if(!_fileHandler.FileExists(path)){
-                throw new Exception("file does not exist");
+                throw new FileDoesNotExist();
             }
             
             string fileName = _fileHandler.GetFileName(path);

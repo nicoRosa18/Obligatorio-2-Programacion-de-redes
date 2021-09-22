@@ -4,24 +4,24 @@ using System.Net.Sockets;
 using Common.Communicator;
 using Common.Protocol;
 using Common.SettingsManager;
+using Common.Communicator.Exceptions;
 
 namespace Client
 {
     public class ClientManager
     {
-        private Socket _socket { get; set; }
-        
-        private IPEndPoint _remoteEndpoint { get; set; }
-        private CommunicationSocket _communication { get; set; }
-        private Message _message { get; set; }
-        private string _serverIpAddress { get; set; }
-        private string _serverPort { get; set; }
-        private bool endConnection;
+        private Socket _socket;
+        private IPEndPoint _remoteEndpoint;
+        private CommunicationSocket _communication;
+        private Message _message;
+        private string _serverIpAddress;
+        private string _serverPort;
+        private bool _endConnection;
 
         public ClientManager(Socket socketClient)
         {
-            this._message = new SpanishMessage();
-            this._socket = socketClient;
+            _message = new SpanishMessage();
+            _socket = socketClient;
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
@@ -29,50 +29,56 @@ namespace Client
 
             _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
 
-            this._communication = new CommunicationSocket(_socket);   
+            this._communication = new CommunicationSocket(_socket);
         }
         
         public void Start()
         {
-            _socket.Connect(_remoteEndpoint);
-            Menu();
+            try{
+                _socket.Connect(_remoteEndpoint);
+                Menu();
+            }
+            catch(SocketException){
+                Console.WriteLine(_message.ServerClosed);
+            }
         }
         
         private void Menu()
         {
-            Console.WriteLine("Conectado al server remoto, escriba un mensaje, enter para terminar");
+            Console.WriteLine(_message.ClientConnectedWithServer);
             CommunicationSocket communication = new CommunicationSocket(_socket);
-            endConnection = false;
-            communication.SendMessage(CommandConstants.StartupMenu, "");
-            Console.WriteLine(communication.ReceiveMessage().Message);
-            while (!endConnection)
+            _endConnection = false;
+            try
             {
-               try
+                communication.SendMessage(CommandConstants.StartupMenu, "");
+                Console.WriteLine(communication.ReceiveMessage().Message);
+
+                while (!_endConnection)
                 {
                     string message = Console.ReadLine();
                     if (message.Equals("exit"))
                     {
-                        
-                        endConnection = true;
+                        _endConnection = true;
                     }
                     else
                     {
                         MessageInterpreter(message);
                     }
-                }
-                catch
-                {
-                    Console.WriteLine("Server closed, closing connection");
-                    endConnection = true;
-                }
+                }        
             }
-
+            catch (SocketException)
+            {
+                Console.WriteLine(_message.ServerClosed);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
             CloseConnection();
         }
 
         private void MessageInterpreter(string message)
         {
-            string messageReturn = "";
             try
             {
                 switch (Int32.Parse(message))
@@ -108,19 +114,13 @@ namespace Client
                         PublishQualification();
                         break;
                     default:
-                        messageReturn = "por favor envie una opcion correcta";
-                        Console.WriteLine(messageReturn);
+                        Console.WriteLine(_message.WrongOption);
                         break;
                 }
             }
-            catch (SocketException e)
+            catch(FormatException)
             {
-                endConnection = true;
-            }
-            catch (Exception e)
-            {
-                messageReturn = "por favor envie una opcion correcta";
-                Console.WriteLine(messageReturn);
+                Console.WriteLine(_message.WrongOption);
             }
         }
 
@@ -218,6 +218,8 @@ namespace Client
             _communication.SendMessage(CommandConstants.SearchGame, searchConcat);
             Console.WriteLine(_message.SearchGameOptions);
             Console.WriteLine(_communication.ReceiveMessage().Message);
+
+            MainMenu();
         }
 
         private void BuyGame()
@@ -226,99 +228,115 @@ namespace Client
             string gameName = Console.ReadLine();
             _communication.SendMessage(CommandConstants.buyGame, gameName);
             Console.WriteLine(_communication.ReceiveMessage().Message);
-            MainMenu();
-        }
 
-        private void MainMenu()
-        {
-            Console.WriteLine(_message.MainMenuMessage);
+            MainMenu();
         }
 
         private void AddGame()
         {
-            try
+            bool titleOk = false;
+            string title = "";
+            while (!titleOk)
             {
-                bool titleOk = false;
-                string title = "";
-                while (!titleOk)
+                Console.WriteLine(_message.NewGameInit);
+                title = Console.ReadLine();
+                if (!string.IsNullOrEmpty(title))
                 {
-                    Console.WriteLine(_message.NewGameInit);
-                    title = Console.ReadLine();
-                    if (!string.IsNullOrEmpty(title))
+                    _communication.SendMessage(CommandConstants.GameExists, title);
+                    int res = _communication.ReceiveMessage().Command;
+                    if (res == CommandConstants.GameExists)
                     {
-                        _communication.SendMessage(CommandConstants.GameExists, title);
-                        int res = _communication.ReceiveMessage().Command;
-                        if (res == CommandConstants.GameExists)
-                        {
-                            Console.WriteLine("ya existe un juego con este nombre");
-                        }
-                        else
-                        {
-                            titleOk = true;
-                        }
+                        Console.WriteLine(_message.RepeatedGame);
+                    }
+                    else
+                    {
+                        titleOk = true;
                     }
                 }
-                bool genreOk = false;
-                string genre = "";
-                while (!genreOk)
+                else
                 {
-                    Console.WriteLine(_message.GameGenre);
-                    genre = Console.ReadLine();
-                    if (!string.IsNullOrWhiteSpace(genre) || !string.IsNullOrWhiteSpace(genre)) genreOk = true;
+                    Console.WriteLine(_message.InvalidTitle);
                 }
-
-                bool synOk = false;
-                string synopsis = "";
-                while (!synOk)
-                {
-                    Console.WriteLine(_message.GameSynopsis);
-                    synopsis = Console.ReadLine();
-                    if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) synOk = true;
-                }
-
-                bool ageOk = false;
-                string ageRating = "";
-                while (!ageOk)
-                {
-                    Console.WriteLine(_message.GameAgeRestriction);
-                    ageRating = Console.ReadLine();
-                    if (!string.IsNullOrWhiteSpace(synopsis) || !string.IsNullOrWhiteSpace(synopsis)) ageOk = true;
-                }
-
-                CommunicationSocket communication = new CommunicationSocket(_socket);
-                string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
-                communication.SendMessage(CommandConstants.AddGame,dataToSend);
-
-                Console.WriteLine(""); 
-
-                Console.WriteLine(_communication.ReceiveMessage().Message);    
-                
-                bool fileNotFound = true;
-                while(fileNotFound)
-                {
-                    try{
-                        string path = Console.ReadLine(); //cambiar a file name si se da el caso
-                        Console.WriteLine(path + "r");
-                        _communication.SendFile(path);
-                        fileNotFound = false;
-                    }
-                    catch(Exception e){
-                        Console.WriteLine("Archivo no encontrado, reingrese su ruta");
-                    }
-                }
-  
-                Console.WriteLine(communication.ReceiveMessage().Message);
-                Console.WriteLine(_message.MainMenuMessage);
             }
-            catch (Exception e) //to be implemented
+
+            bool genreOk = false;
+            string genre = "";
+            while (!genreOk)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(_message.GameGenre);
+                genre = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(genre))
+                {
+                    genreOk = true;
+                } 
+                else
+                {
+                    Console.WriteLine(_message.InvalidGenre);
+                }
             }
+
+            bool synOk = false;
+            string synopsis = "";
+            while (!synOk)
+            {
+                Console.WriteLine(_message.GameSynopsis);
+                synopsis = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(synopsis)) 
+                {
+                    synOk = true;
+                }
+                else
+                {
+                    Console.WriteLine(_message.InvalidSynopsis);
+                }
+            }
+
+            bool ageOk = false;
+            string ageRating = "";
+            while (!ageOk)
+            {
+                Console.WriteLine(_message.GameAgeRestriction);
+                ageRating = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(synopsis))
+                {
+                    ageOk = true;
+                } 
+                else
+                {
+                    Console.WriteLine(_message.InvalidAge);
+                }
+            }
+
+            Console.WriteLine("mandado");
+            string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
+            _communication.SendMessage(CommandConstants.AddGame, dataToSend);
+
+            Console.WriteLine(dataToSend);//
+
+            CommunicatorPackage a = _communication.ReceiveMessage();
+            string mostrar = a.Message;
+            Console.WriteLine(mostrar);
+            
+            bool fileNotFound = true;
+            while(fileNotFound)
+            {
+                try{
+                    string path = Console.ReadLine();
+                    _communication.SendFile(path);
+                    fileNotFound = false;
+                }
+                catch(FileDoesNotExist){
+                    Console.WriteLine(_message.FileNotFound);
+                }
+            }
+
+            Console.WriteLine(_communication.ReceiveMessage().Message);
+            MainMenu();
         }
 
         private void CloseConnection()
         {
-            Console.WriteLine("Closing connection");
+            Console.WriteLine(_message.Disconnected);
             _socket.Shutdown(SocketShutdown.Both);
             _socket.Close();
         }
@@ -331,7 +349,7 @@ namespace Client
             while (!okLogin && !menu)
             {
                 string user = Console.ReadLine();
-                if(string.IsNullOrWhiteSpace(user)) Console.WriteLine("nombre vacio, ingrese un nombre");
+                if(string.IsNullOrWhiteSpace(user)) Console.WriteLine(_message.InvalidUsername);
                 else
                 {
                     _communication.SendMessage(CommandConstants.LoginUser, user);
@@ -340,13 +358,14 @@ namespace Client
                     Console.WriteLine(receive.Message);
                 }
             }
+            MainMenu();
         }
 
         private void UserRegistration()
         {
             Console.WriteLine(_message.UserRegistration);
             string user = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(user)) Console.WriteLine("nombre no valido");
+            if (string.IsNullOrWhiteSpace(user)) Console.WriteLine(_message.InvalidUsername);
             else
             {
                 _communication.SendMessage(CommandConstants.RegisterUser, user);
@@ -359,6 +378,11 @@ namespace Client
         private void StartUpMenu()
         {
             Console.WriteLine(_message.StartUpMessage);
+        }
+
+        private void MainMenu()
+        {
+            Console.WriteLine("\n" + _message.MainMenuMessage);
         }
     }
 }

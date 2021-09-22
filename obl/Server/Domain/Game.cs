@@ -7,17 +7,19 @@ namespace Server.Domain
     {
         public string Title { get; set; }
         
-        public string Cover { get; set; }  // image format 
+        public string Cover { get; set; } 
         
         public string Genre { get; set; }
         
         public string Synopsis { get; set; }
         
         public string AgeRating { get; set; }
-        
+
         public int Stars { get; set; }
 
         public Collection<Qualification> CommunityQualifications { get; set; }
+
+        public Game(){}
 
         public Game(string title, string cover, string genre, string synopsis, string ageRating)
         {
@@ -30,6 +32,11 @@ namespace Server.Domain
             CommunityQualifications = new Collection<Qualification>();
         }
 
+        public override bool Equals(object obj)
+        {   
+            return Title.Equals(((Game)obj).Title);
+        }
+
         public void AddCommunityQualification(Qualification qualification)
         {
             this.CommunityQualifications.Add(qualification);
@@ -40,6 +47,6 @@ namespace Server.Domain
         {
             GameDetails gameDetails = new GameDetails(this);
             Stars = gameDetails.AverageMark;
-        }
+        }        
     }
 }

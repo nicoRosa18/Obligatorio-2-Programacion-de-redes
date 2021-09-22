@@ -15,11 +15,11 @@ namespace Server.Domain
 
         public static UsersAndCatalogueManager _usersAndCatalogueManager { get; set; }
 
-        private User _userLogged { get; set; }
+        private User _userLogged;
 
-        private ICommunicator _communicator { get; set; }
+        private ICommunicator _communicator;
 
-        private Message _messageLanguage { get; set; }
+        private Message _messageLanguage;
 
         public Session(ICommunicator communicator, Message messageLanguage)
         {
@@ -81,12 +81,14 @@ namespace Server.Domain
         {
             try
             {
-                Game game = _usersAndCatalogueManager.Catalogue.GetGameByName(package.Message);
-                _communicator.SendMessage(CommandConstants.GameExists,"");
-            }
-            catch (Exception e)
-            {
+                Game gameBeacon = new Game();
+                gameBeacon.Title = package.Message;
+                _usersAndCatalogueManager.ExistsGame(gameBeacon);
                 _communicator.SendMessage(CommandConstants.GameNotExits,"");
+            }
+            catch (GameAlreadyExists)
+            {
+                _communicator.SendMessage(CommandConstants.GameExists,"");
             }
         }
 
@@ -168,8 +170,8 @@ namespace Server.Domain
             string user = received.Message;
             if (_usersAndCatalogueManager.Login(user))
             {
+                _communicator.SendMessage(CommandConstants.userLogged, _messageLanguage.UserLogged);
                 _userLogged = _usersAndCatalogueManager.GetUser(user);
-                mainMenu();
             }
             else
             {
@@ -211,51 +213,33 @@ namespace Server.Domain
             // }
         }
 
-        private void mainMenu()
-        {
-            if (_userLogged != null)
-            {
-                string messageToSend = _messageLanguage.MainMenuMessage;
-                _communicator.SendMessage(CommandConstants.MainMenu, messageToSend);
-            }
-            else
-            {
-                _communicator.SendMessage(CommandConstants.MainMenu, _messageLanguage.InvalidOption);
-            }
-        }
-
         private void AddGame(CommunicatorPackage package)
         {
             if (_userLogged != null)
             {
+                string[] data= new string[4];
+                data = package.Message.Split("#");
+                string title = data[0];
+                string genre = data[1];
+                string synopsis =data[2];     
+                string ageRating = data[3];
+                _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.SendGameCover);
+
+                string coverPath = "Default";
                 try
                 {
-                    string[] data= new string[4];
-                    data = package.Message.Split("#");
-                    string title = data[0];
-                    string genre = data[1];
-                    string synopsis =data[2];     
-                    string ageRating = data[3];
-                    _communicator.SendMessage(CommandConstants.SendCover,_messageLanguage.SendGameCover);
-                     //aca envio un string pidieendo la caratula
-                     //aca la recibo
-                    string coverPath = "Default";
-                    try
-                    {
-                       coverPath = _communicator.ReceiveFile();
-                    }
-                    catch(Exception e)
-                    {
-                       Console.WriteLine(e.Message);
-                    }
-                    Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
-                    _usersAndCatalogueManager.AddGame(gameToAdd);
-                    _communicator.SendMessage(CommandConstants.AddGame,_messageLanguage.SendGameCover);
+                    coverPath = _communicator.ReceiveFile();
                 }
-                catch (Exception e) //to be implemented
+                catch(Exception e)
                 {
-                    _communicator.SendMessage(CommandConstants.Message, e.Message);
+                    Console.WriteLine(e.Message);
                 }
+
+                Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
+
+                _usersAndCatalogueManager.AddGame(gameToAdd);
+
+                _communicator.SendMessage(CommandConstants.AddGame, _messageLanguage.SendGameCover);
             }
             else
             {

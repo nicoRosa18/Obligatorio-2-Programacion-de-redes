@@ -2,13 +2,13 @@ using System;
 
 namespace Server.Domain.ServerExceptions
 {
-    public class ServerClosingException : Exception
+    public class GameAlreadyExists : Exception
     {
-        public ServerClosingException()
+        public GameAlreadyExists()
         {
         }
 
-        public override string Message => "Server is closing";
+        public override string Message => "Game already exists";
 
         public override string ToString()
         {

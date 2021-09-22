@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
 {
@@ -15,6 +16,10 @@ namespace Server.Domain
             this.Games = new Collection<Game>();
         }
 
+        public bool ExistsGame(Game game)
+        {
+            return Games.Contains(game);
+        }
 
         public string  SearchGame(string title, string genre, int qualification)
         {
@@ -106,7 +111,7 @@ namespace Server.Domain
                 if (this.Games[i].Title.Equals(title)) return this.Games[i];
             }
 
-            throw new Exception("Game not found");
+            throw new GameNotFound();
         }
 
         private Collection<Game> SearchGameByQualification(int qualification)
