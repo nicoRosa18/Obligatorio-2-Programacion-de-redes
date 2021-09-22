@@ -54,32 +54,25 @@ namespace Common.Communicator
             Console.WriteLine("Me llego el archivo");//
             HeaderFile header = new HeaderFile();
             int headerLength = header.GetLength();
-            var buffer = new byte[headerLength];
+            byte[] buffer = new byte[headerLength];
             ReceiveData(headerLength, buffer);
-
-            Console.WriteLine(header.IFileNameSize);
-            Console.WriteLine(header.IFileSize);
 
             header.DecodeData(buffer);
             int fileNameSize = header.IFileNameSize;
             long fileSize = header.IFileSize;
 
-            Console.WriteLine("tamano");
-            Console.WriteLine(fileNameSize);
-            Console.WriteLine(fileSize);
-
+            buffer = new byte[fileNameSize];
             ReceiveData(fileNameSize, buffer);
             string fileName = Encoding.UTF8.GetString(buffer);
 
-            Console.WriteLine(fileName);//
-
+            string existingFile = _fileHandler.GetPath(fileName);
+            if(_fileHandler.FileExists(existingFile))
+            {
+                _fileHandler.DeleteFile(existingFile);
+            }
             ReceiveParts(fileName, fileSize);
 
             string filePath = _fileHandler.GetPath(fileName);
-            Console.WriteLine(filePath);//
-
-            Console.WriteLine("Recibido");
-            Console.WriteLine(filePath);
 
             return filePath;
         }
@@ -89,15 +82,10 @@ namespace Common.Communicator
             if(!_fileHandler.FileExists(path)){
                 throw new Exception("file does not exist");
             }
-            Console.WriteLine("Enviando el archivo");
-            Console.WriteLine(path);
             
             string fileName = _fileHandler.GetFileName(path);
             int fileNameSize = Encoding.UTF8.GetBytes(fileName).Length;
             long fileSize = _fileHandler.GetFileSize(path); 
-
-            Console.WriteLine(fileNameSize);
-            Console.WriteLine(fileSize);
 
             HeaderFile header = new HeaderFile(fileNameSize, fileSize);
             byte[] data = header.GetSendHeader();
@@ -106,7 +94,6 @@ namespace Common.Communicator
             SendData(Encoding.UTF8.GetBytes(fileName));
 
             SendParts(path, fileSize);
-            Console.WriteLine("Enviado");
         }
 
         private void SendData(byte[] toSend)
@@ -120,13 +107,13 @@ namespace Common.Communicator
 
         private void ReceiveData(int length, byte[] buffer)
         {
-            var iRecv = 0;
+            int iRecv = 0;
             while (iRecv < length)
             {
                 try
                 {
-                    var localRecv = this._connectedSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
-                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                    int localRecv = this._connectedSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
+                    if (localRecv == 0) 
                     {
                         throw new ClientClosingException();
                     }
@@ -143,7 +130,6 @@ namespace Common.Communicator
         private void SendParts(string path, long fileSize)
         {
             long parts = PacketHandler.GetParts(fileSize);
-            Console.WriteLine($"Will Send {0} parts",parts); //sacar
             long offset = 0;
             long currentPart = 1;
 
@@ -172,7 +158,6 @@ namespace Common.Communicator
             long parts = PacketHandler.GetParts(fileSize);
             long offset = 0;
             long currentPart = 1;
-            Console.WriteLine($"Voy a recibir un archivo de tamaño {fileSize} en {parts} partes");
 
             while (fileSize > offset)
             {
@@ -180,14 +165,12 @@ namespace Common.Communicator
                 if (currentPart == parts)
                 {
                     var lastPartSize = (int)(fileSize - offset);
-                    Console.WriteLine($"Recibi un segmento de tamaño {lastPartSize}"); //sacar
                     data = new byte[lastPartSize];
                     ReceiveData(lastPartSize, data);
                     offset += lastPartSize;
                 }
                 else
                 {
-                    Console.WriteLine($"Recibi un segmento de tamaño {HeaderFileConstants.MaxPacketSize}"); //sacar
                     data = new byte[HeaderFileConstants.MaxPacketSize];
                     ReceiveData(HeaderFileConstants.MaxPacketSize, data);
                     offset += HeaderFileConstants.MaxPacketSize;

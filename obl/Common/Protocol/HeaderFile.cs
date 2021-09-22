@@ -45,7 +45,7 @@ namespace Common.Protocol
             {
                 string fileNameSize = Encoding.UTF8.GetString(data, 0, HeaderFileConstants.FixedFileNameSizeLength);
                 IFileNameSize = int.Parse(fileNameSize);
-                //Console.WriteLine(IFileNameSize); //
+                Console.WriteLine(IFileNameSize); //
                 string fileSize = Encoding.UTF8.GetString(data, HeaderFileConstants.FixedFileNameSizeLength, HeaderFileConstants.FixedFileSizeLength);
                 IFileSize = int.Parse(fileSize); //base64?
                 //Console.WriteLine(IFileSize); //

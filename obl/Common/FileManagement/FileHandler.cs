@@ -5,6 +5,18 @@ namespace Common.FileManagement
 {
     public class FileHandler : IFileHandler
     {
+        public void DeleteFile(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch(Exception e)
+            {
+                throw new Exception("File does not exist");
+            }
+        }
+
         public bool FileExists(string path)
         {
             return File.Exists(path);

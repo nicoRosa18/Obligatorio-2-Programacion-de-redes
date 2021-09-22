@@ -6,5 +6,6 @@ namespace Common.FileManagement
         string GetFileName(string path);
         long GetFileSize(string path);
         string GetPath(string fileName);
+        void DeleteFile(string path);
     }
 }

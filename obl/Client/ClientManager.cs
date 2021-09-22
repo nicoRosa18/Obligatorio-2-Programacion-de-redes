@@ -16,6 +16,7 @@ namespace Client
         private Message _message { get; set; }
         private string _serverIpAddress { get; set; }
         private string _serverPort { get; set; }
+        private bool endConnection;
 
         public ClientManager(Socket socketClient)
         {
