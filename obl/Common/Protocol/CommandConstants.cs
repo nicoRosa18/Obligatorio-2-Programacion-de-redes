@@ -14,13 +14,12 @@
         public const int AddGame = 11;
         public const int MyGames = 12;
         public const int GameDetails = 13;
-
         public const int GameAlreadyPurchased = 60;
         public const int PublishQualification = 14;
         public const int GameExists = 17;
         public const int GameNotExits = 18;
-
         public const int userLogged = 20;
         public const int userNotLogged = 21;
+        public const int SendCover = 22;
     }
 }

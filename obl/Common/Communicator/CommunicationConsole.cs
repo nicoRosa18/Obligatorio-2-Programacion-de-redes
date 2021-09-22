@@ -12,7 +12,17 @@ namespace Common.Communicator
 {
     public class CommunicationConsole : ICommunicator
     {
+        public string ReceiveFile()
+        {
+            throw new NotImplementedException();
+        }
+
         public CommunicatorPackage ReceiveMessage()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendFile(string message)
         {
             throw new NotImplementedException();
         }

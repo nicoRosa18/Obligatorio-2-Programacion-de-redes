@@ -4,8 +4,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using Server.Domain;
-using Server;
 using Common.Communicator;
+using Common.SettingsManager;
 
 namespace Server
 {
@@ -13,6 +13,8 @@ namespace Server
     {
         private ServerTools _serverAttributes {get; set;}
         private Socket _socketServer {get; set;}
+        private string _serverIpAddress {get; set;}
+        private string _serverPort {get; set;}
         public ServerManager(Socket socketServer)
         {
             UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
@@ -20,6 +22,13 @@ namespace Server
 
             _serverAttributes = new ServerTools();
             _socketServer = socketServer;
+            
+            ISettingsManager _ipConfiguration = new AddressIPConfiguration();
+            _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
+            _serverPort = _ipConfiguration.ReadSetting("ServerPort");
+
+            socketServer.Bind(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
+            socketServer.Listen(10);
 
             StartUpMenu();
             CreateConnections();
@@ -45,7 +54,7 @@ namespace Server
                         }
 
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.8"), 30000);
+                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
                         fakeSocket.Connect(remoteEndpoint);
 
                         _socketServer.Close(); 

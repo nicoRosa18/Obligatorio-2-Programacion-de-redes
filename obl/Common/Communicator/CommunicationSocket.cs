@@ -7,15 +7,20 @@ using System.Net;
 using System.Net.Sockets;
 using Common.Protocol;
 using Common.Communicator.Exceptions;
+using Common.FileManagement;
 
 namespace Common.Communicator
 {
     public class CommunicationSocket : ICommunicator
     {
-        private Socket _connectedSocket;
+        private readonly Socket _connectedSocket;
+        private readonly IFileStreamHandler _fileStreamHandler;
+        private readonly IFileHandler _fileHandler;
         
         public CommunicationSocket(Socket connectedSocket){
             _connectedSocket = connectedSocket;
+            _fileHandler = new FileHandler();
+            _fileStreamHandler = new FileStreamHandler();
         }
 
         public CommunicatorPackage ReceiveMessage()
@@ -37,21 +42,79 @@ namespace Common.Communicator
 
         public void SendMessage(int command, string message)
         {        
-            var header = new Header(HeaderConstants.Request, command, message.Length);
-            var data = header.GetRequest();
+            Header header = new Header(HeaderConstants.Request, command, message.Length);
+            byte[] data = header.GetRequest();
+            
+            SendData(data); 
+            SendData(Encoding.UTF8.GetBytes(message));
+        }
 
-            var sentBytes = 0;
-            while (sentBytes < data.Length)
-            {
-                sentBytes += this._connectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+        public string ReceiveFile()
+        {
+            Console.WriteLine("Me llego el archivo");//
+            HeaderFile header = new HeaderFile();
+            int headerLength = header.GetLength();
+            var buffer = new byte[headerLength];
+            ReceiveData(headerLength, buffer);
+
+            Console.WriteLine(header.IFileNameSize);
+            Console.WriteLine(header.IFileSize);
+
+            header.DecodeData(buffer);
+            int fileNameSize = header.IFileNameSize;
+            long fileSize = header.IFileSize;
+
+            Console.WriteLine("tamano");
+            Console.WriteLine(fileNameSize);
+            Console.WriteLine(fileSize);
+
+            ReceiveData(fileNameSize, buffer);
+            string fileName = Encoding.UTF8.GetString(buffer);
+
+            Console.WriteLine(fileName);//
+
+            ReceiveParts(fileName, fileSize);
+
+            string filePath = _fileHandler.GetPath(fileName);
+            Console.WriteLine(filePath);//
+
+            Console.WriteLine("Recibido");
+            Console.WriteLine(filePath);
+
+            return filePath;
+        }
+
+        public void SendFile(string path)
+        {
+            if(!_fileHandler.FileExists(path)){
+                throw new Exception("file does not exist");
             }
+            Console.WriteLine("Enviando el archivo");
+            Console.WriteLine(path);
+            
+            string fileName = _fileHandler.GetFileName(path);
+            int fileNameSize = Encoding.UTF8.GetBytes(fileName).Length;
+            long fileSize = _fileHandler.GetFileSize(path); 
 
-            sentBytes = 0;
-            var bytesMessage = Encoding.UTF8.GetBytes(message);
-            while (sentBytes < bytesMessage.Length)
+            Console.WriteLine(fileNameSize);
+            Console.WriteLine(fileSize);
+
+            HeaderFile header = new HeaderFile(fileNameSize, fileSize);
+            byte[] data = header.GetSendHeader();
+
+            SendData(data);
+            SendData(Encoding.UTF8.GetBytes(fileName));
+
+            SendParts(path, fileSize);
+            Console.WriteLine("Enviado");
+        }
+
+        private void SendData(byte[] toSend)
+        {
+            var sentBytes = 0;
+            while (sentBytes < toSend.Length)
             {
-                sentBytes += this._connectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                    SocketFlags.None);
+                sentBytes += this._connectedSocket.Send(toSend, sentBytes, toSend.Length - sentBytes, SocketFlags.None);
             }
         }
 
@@ -74,6 +137,63 @@ namespace Common.Communicator
                 {
                     throw new ClientClosingException();
                 }
+            }
+        }
+
+        private void SendParts(string path, long fileSize)
+        {
+            long parts = PacketHandler.GetParts(fileSize);
+            Console.WriteLine($"Will Send {0} parts",parts); //sacar
+            long offset = 0;
+            long currentPart = 1;
+
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart == parts)
+                {
+                    var lastPartSize = (int)(fileSize - offset);
+                    data = _fileStreamHandler.Read(path, offset, lastPartSize);
+                    offset += lastPartSize;
+                }
+                else
+                {
+                    data = _fileStreamHandler.Read(path, offset, HeaderFileConstants.MaxPacketSize);
+                    offset += HeaderFileConstants.MaxPacketSize;
+                }
+
+                SendData(data);
+                currentPart++;
+            }
+        }
+
+        private void ReceiveParts(string fileName, long fileSize)
+        {    
+            long parts = PacketHandler.GetParts(fileSize);
+            long offset = 0;
+            long currentPart = 1;
+            Console.WriteLine($"Voy a recibir un archivo de tamaño {fileSize} en {parts} partes");
+
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart == parts)
+                {
+                    var lastPartSize = (int)(fileSize - offset);
+                    Console.WriteLine($"Recibi un segmento de tamaño {lastPartSize}"); //sacar
+                    data = new byte[lastPartSize];
+                    ReceiveData(lastPartSize, data);
+                    offset += lastPartSize;
+                }
+                else
+                {
+                    Console.WriteLine($"Recibi un segmento de tamaño {HeaderFileConstants.MaxPacketSize}"); //sacar
+                    data = new byte[HeaderFileConstants.MaxPacketSize];
+                    ReceiveData(HeaderFileConstants.MaxPacketSize, data);
+                    offset += HeaderFileConstants.MaxPacketSize;
+                }
+                _fileStreamHandler.Write(fileName, data);
+                currentPart++;
             }
         }
     }

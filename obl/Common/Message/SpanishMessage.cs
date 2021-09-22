@@ -53,6 +53,7 @@ public class SpanishMessage : Message
     public override string PublishQualification { get; set; }
     
     public override string QualificationAdded { get; set; }
+    public override string SendGameCover { get; set; }
 
     public SpanishMessage()
     {
@@ -130,5 +131,7 @@ public class SpanishMessage : Message
        PublishQualification = "Ingrese el nombre del juego que quiere agregar una calificacion";
 
        QualificationAdded = "Comentario agregado!";
+
+       SendGameCover = "Ingrese la ruta de la imagen"; //o nombre del archivo dependiendo de como lo implementamos
     }
 }

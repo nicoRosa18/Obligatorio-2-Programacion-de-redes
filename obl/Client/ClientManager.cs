@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using Common.Communicator;
 using Common.Protocol;
+using Common.SettingsManager;
 
 namespace Client
 {
@@ -11,22 +12,23 @@ namespace Client
         private Socket _socket { get; set; }
         
         private IPEndPoint _remoteEndpoint { get; set; }
-        
         private CommunicationSocket _communication { get; set; }
-        
-
         private Message _message { get; set; }
-        
-
-        private bool endConnection;
-        
+        private string _serverIpAddress { get; set; }
+        private string _serverPort { get; set; }
 
         public ClientManager(Socket socketClient)
         {
             this._message = new SpanishMessage();
             this._socket = socketClient;
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse("192.168.1.8"), 30000);
-            this._communication = new CommunicationSocket(_socket);
+
+            ISettingsManager _ipConfiguration = new AddressIPConfiguration();
+            _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
+            _serverPort = _ipConfiguration.ReadSetting("ServerPort");
+
+            _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
+
+            this._communication = new CommunicationSocket(_socket);   
         }
         
         public void Start()
@@ -167,7 +169,7 @@ namespace Client
             MainMenu();
         }
 
-        private void ShowGameDetails()
+        private void  ShowGameDetails() //agregar file receiver 
         {
             Console.WriteLine(_message.GameDetails);
             string gameName = Console.ReadLine();
@@ -284,10 +286,26 @@ namespace Client
 
                 CommunicationSocket communication = new CommunicationSocket(_socket);
                 string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
-                communication.SendMessage(CommandConstants.AddGame, dataToSend);
-                //aca falta enviar con file sender la imagen
-                //                Console.WriteLine(_message.GameCover);
-                //                string coverPath =Console.ReadLine();   
+                communication.SendMessage(CommandConstants.AddGame,dataToSend);
+
+                Console.WriteLine(""); 
+
+                Console.WriteLine(_communication.ReceiveMessage().Message);    
+                
+                bool fileNotFound = true;
+                while(fileNotFound)
+                {
+                    try{
+                        string path = Console.ReadLine(); //cambiar a file name si se da el caso
+                        Console.WriteLine(path + "r");
+                        _communication.SendFile(path);
+                        fileNotFound = false;
+                    }
+                    catch(Exception e){
+                        Console.WriteLine("Archivo no encontrado, reingrese su ruta");
+                    }
+                }
+  
                 Console.WriteLine(communication.ReceiveMessage().Message);
                 Console.WriteLine(_message.MainMenuMessage);
             }

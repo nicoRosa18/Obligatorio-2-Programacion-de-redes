@@ -28,4 +28,5 @@ public abstract class Message
     public abstract string GameDetails { get; set; }
     public abstract string  PublishQualification { get; set; }
     public abstract  string QualificationAdded { get; set; }
+    public abstract  string SendGameCover { get; set; }
 }
