@@ -71,6 +71,7 @@ namespace Server.Domain
 
         public void AddGame(Game gameToAdd)
         {
+            if(!ExistsGame(gameToAdd))
             {
                 this.Catalogue.AddGame(gameToAdd);
             }
