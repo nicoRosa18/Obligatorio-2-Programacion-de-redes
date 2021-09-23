@@ -71,19 +71,19 @@ namespace Server.Domain
 
         public void AddGame(Game gameToAdd)
         {
-            if(!ExistsGame(gameToAdd))
-            {
-                this.Catalogue.AddGame(gameToAdd);
-            }
-            else
-            {
-                throw new GameAlreadyExists();
-            }
+            this.Catalogue.AddGame(gameToAdd);
         }
 
         public bool ExistsGame(Game gameToAdd)
         {
-            return this.Catalogue.ExistsGame(gameToAdd);
+            bool toReturn = false;
+            if(this.Catalogue.ExistsGame(gameToAdd))
+                toReturn = true;
+            else
+            {
+                throw new GameAlreadyExists();
+            }
+            return toReturn;
         }
     }
 }

@@ -51,7 +51,6 @@ namespace Common.Communicator
 
         public string ReceiveFile()
         {
-            Console.WriteLine("Me llego el archivo");//
             HeaderFile header = new HeaderFile();
             int headerLength = header.GetLength();
             byte[] buffer = new byte[headerLength];

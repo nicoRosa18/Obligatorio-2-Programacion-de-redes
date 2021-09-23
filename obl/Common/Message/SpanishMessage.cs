@@ -16,7 +16,6 @@ public class SpanishMessage : Message
     public override string GameGenre { get; set; }
     public override string GameSynopsis { get; set; }
     public override string GameAgeRestriction { get; set; }
-    public override string GameCover { get; set; }
     public override string GameAdded { get; set; }
     public override string CatalogueView { get; set; }
     public override string InvalidOption { get; set; }
@@ -45,7 +44,10 @@ public class SpanishMessage : Message
     public override string InvalidAge { get; set; }
     public override string FileNotFound { get; set; }
     public override string UserLogged { get; set; }
-    
+    public override string InvalidStars { get; set; }
+    public override string NoGameReturned { get; set; }
+    public override string GameList { get; set; }
+
     public SpanishMessage()
     {
         Setup();
@@ -100,23 +102,21 @@ public class SpanishMessage : Message
         
         GameAgeRestriction = "Agrege la calificacion de edad";
         
-        GameCover = "Agregue a ruta de acceso a la caratula del juego:";
-
-        GameAdded = "Juego agregado correctamente! \n ";
+        GameAdded = "Juego agregado correctamente! \n" +
+                    "Recuerda que los juegos recien agregados cuentan con 0 estrellas \n";
         
         CatalogueView = "Catalogo:" +
                         "Escriba menu para volver al menu de inicio \n" +
                         "Escriba 6 para comprar un juego y agregarlo a su biblioteca. \n";
         
         BuyGame = "Comprar juego: \n " +
-                    "envie el nombre del juego buscado anteriormente que desea adquirir";
+                    "Envie el nombre del juego buscado anteriormente que desea adquirir";
         
         InvalidOption = "Opcion invalida, por favor elija una nueva opcion.";
 
         InvalidUsername = "Nombre no valido";
 
-        GamePurchased = "Juego agregado correctamente a tu biblioteca! \n" +
-                        "escriba menu para volver al menu de inicio";
+        GamePurchased = "Juego agregado correctamente a tu biblioteca! \n";
 
         SearchGame = "Buscar juego: si no desea buscar por un atributo, dejelo vacio";
 
@@ -126,9 +126,10 @@ public class SpanishMessage : Message
 
         SearchByStars = "Calificacion (0-5):";
 
-        SearchGameOptions = $"{CommandConstants.MainMenu}- para volver al menu \n" +
-                            $"{CommandConstants.buyGame}- para comprar un juego \n"+
-                            $"{CommandConstants.PublishQualification}- para agregar una calificacion";
+        SearchGameOptions = "Opciones: " +
+                            $" {CommandConstants.MainMenu}-Para volver al menu \n" +
+                            $" {CommandConstants.buyGame}-Para comprar un juego \n"+
+                            $" {CommandConstants.PublishQualification}-Para agregar una calificacion";
 
         MyGamesOptions = $"{CommandConstants.MainMenu}- para vover al menu \n" +
                         $"{CommandConstants.GameDetails}- para ver los detalles de un juego";
@@ -153,5 +154,10 @@ public class SpanishMessage : Message
 
         FileNotFound = "Archivo no encontrado, reingrese su ruta";
 
+        InvalidStars = "Debe ingresar un numero entre 0 y 5";
+
+        NoGameReturned = "No se encontaron juegos";
+
+        GameList = "Lista de Juegos: ";
     }
 }

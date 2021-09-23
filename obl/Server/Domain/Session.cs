@@ -138,12 +138,13 @@ namespace Server.Domain
             int stars = -1;
             try
             {
-                 stars = Int32.Parse(values[2]);
+                stars = Int32.Parse(values[2]);
             }
-            catch {}
-            string games= _usersAndCatalogueManager.Catalogue.SearchGame(title, genre, stars);
+            catch(FormatException) {}
+
+            string games = _usersAndCatalogueManager.Catalogue.SearchGame(title, genre, stars);
             
-            _communicator.SendMessage(CommandConstants.SearchGame,games);
+            _communicator.SendMessage(CommandConstants.SearchGame, games);
         }
 
         private void StartUpMenu()
@@ -239,7 +240,7 @@ namespace Server.Domain
 
                 _usersAndCatalogueManager.AddGame(gameToAdd);
 
-                _communicator.SendMessage(CommandConstants.AddGame, _messageLanguage.SendGameCover);
+                _communicator.SendMessage(CommandConstants.AddGame, _messageLanguage.GameAdded);
             }
             else
             {

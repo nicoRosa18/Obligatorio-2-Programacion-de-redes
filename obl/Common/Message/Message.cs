@@ -18,7 +18,6 @@ public abstract class Message
     public abstract string GameGenre {get ; set;}
     public abstract string GameSynopsis {get ; set;}
     public abstract string GameAgeRestriction {get ; set;}
-    public abstract string GameCover {get ; set;}
     public abstract string GameAdded {get ; set;}
     public abstract string CatalogueView {get ; set;}
     public abstract string InvalidOption {get ; set;}
@@ -42,4 +41,7 @@ public abstract class Message
     public abstract  string InvalidAge { get; set; }
     public abstract  string FileNotFound { get; set; }
     public abstract  string UserLogged { get; set; }
+    public abstract  string InvalidStars { get; set; }
+    public abstract  string NoGameReturned { get; set; }
+    public abstract  string GameList { get; set; }
 }

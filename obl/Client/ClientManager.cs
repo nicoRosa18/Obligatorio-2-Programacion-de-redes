@@ -174,6 +174,7 @@ namespace Client
         {
             Console.WriteLine(_message.GameDetails);
             string gameName = Console.ReadLine();
+            
             _communication.SendMessage(CommandConstants.GameDetails, gameName);
             Console.WriteLine(_communication.ReceiveMessage().Message);
             MainMenu();
@@ -182,7 +183,10 @@ namespace Client
         private void ShowMyGames()
         {
             _communication.SendMessage(CommandConstants.MyGames, "");
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+
+            string games = _communication.ReceiveMessage().Message;
+            ShowGameList(games);
+
             Console.WriteLine(_message.MyGamesOptions);
         }
 
@@ -205,21 +209,22 @@ namespace Client
                 {
                     int starsInt = Int32.Parse(stars);
                     if (starsInt >= 0 && starsInt <= 5) starsOk = true;
-                    else Console.WriteLine("el numero de estrellas debe ser entre 0 y 5");
+                    else Console.WriteLine(_message.InvalidStars);
                 }
-                catch
+                catch(FormatException)
                 {
                     if (stars.Equals("")) starsOk = true;
-                    else Console.WriteLine("debe ingresar un numero entre 0 y 5");
+                    else Console.WriteLine(_message.InvalidStars);
                 }
             }
 
             string searchConcat = $"{title}#{genre}#{stars}";
             _communication.SendMessage(CommandConstants.SearchGame, searchConcat);
-            Console.WriteLine(_message.SearchGameOptions);
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            
+            string games = _communication.ReceiveMessage().Message;
+            ShowGameList(games);
 
-            MainMenu();
+            Console.WriteLine(_message.SearchGameOptions);
         }
 
         private void BuyGame()
@@ -307,15 +312,10 @@ namespace Client
                 }
             }
 
-            Console.WriteLine("mandado");
             string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
             _communication.SendMessage(CommandConstants.AddGame, dataToSend);
 
-            Console.WriteLine(dataToSend);//
-
-            CommunicatorPackage a = _communication.ReceiveMessage();
-            string mostrar = a.Message;
-            Console.WriteLine(mostrar);
+            Console.WriteLine(_communication.ReceiveMessage().Message);
             
             bool fileNotFound = true;
             while(fileNotFound)
@@ -329,7 +329,7 @@ namespace Client
                     Console.WriteLine(_message.FileNotFound);
                 }
             }
-
+            
             Console.WriteLine(_communication.ReceiveMessage().Message);
             MainMenu();
         }
@@ -383,6 +383,19 @@ namespace Client
         private void MainMenu()
         {
             Console.WriteLine("\n" + _message.MainMenuMessage);
+        }
+
+        private void ShowGameList(string games)
+        {
+            if(string.IsNullOrEmpty(games))
+            {
+                Console.WriteLine(_message.NoGameReturned);
+            }
+            else
+            {
+                Console.WriteLine(_message.GameList);
+                Console.WriteLine(games);
+            }
         }
     }
 }

@@ -23,17 +23,13 @@ namespace Common.Protocol
         {
             var stringFileNameSize = fileNameSize.ToString("D4");  
             _fileNameSize = Encoding.UTF8.GetBytes(stringFileNameSize);
-            //Console.WriteLine(stringFileNameSize); //
             var stringFileSize = fileSize.ToString("D8");  
             _fileSize = Encoding.UTF8.GetBytes(stringFileSize);
-            //Console.WriteLine(stringFileSize); //
         }
 
         public byte[] GetSendHeader()
         {
             var header = new byte[GetLength()];
-            //Console.WriteLine(_fileNameSize); //
-            //Console.WriteLine(_fileSize); //
             Array.Copy(_fileNameSize, 0, header, 0, HeaderFileConstants.FixedFileNameSizeLength);
             Array.Copy(_fileSize, 0, header, HeaderFileConstants.FixedFileNameSizeLength, HeaderFileConstants.FixedFileSizeLength);            
             return header;
@@ -45,10 +41,8 @@ namespace Common.Protocol
             {
                 string fileNameSize = Encoding.UTF8.GetString(data, 0, HeaderFileConstants.FixedFileNameSizeLength);
                 IFileNameSize = int.Parse(fileNameSize);
-                Console.WriteLine(IFileNameSize); //
                 string fileSize = Encoding.UTF8.GetString(data, HeaderFileConstants.FixedFileNameSizeLength, HeaderFileConstants.FixedFileSizeLength);
-                IFileSize = int.Parse(fileSize); //base64?
-                //Console.WriteLine(IFileSize); //
+                IFileSize = int.Parse(fileSize);
                 return true;
             }
             catch(Exception e)
