@@ -45,9 +45,12 @@ public class SpanishMessage : Message
     public override string FileNotFound { get; set; }
     public override string UserLogged { get; set; }
     public override string InvalidStars { get; set; }
-    public override string NoGameReturned { get; set; }
+    public override string GamesNotFound { get; set; }
     public override string GameList { get; set; }
-
+    public override string GameNotFound { get; set; }
+    public override string DownloadCover { get; set; }
+    public override string SavedPathAt { get; set; }
+    
     public SpanishMessage()
     {
         Setup();
@@ -129,10 +132,11 @@ public class SpanishMessage : Message
         SearchGameOptions = "Opciones: " +
                             $" {CommandConstants.MainMenu}-Para volver al menu \n" +
                             $" {CommandConstants.buyGame}-Para comprar un juego \n"+
+                            $" {CommandConstants.GameDetails}-Para ver los detalles de un juego \n"+
                             $" {CommandConstants.PublishQualification}-Para agregar una calificacion";
 
-        MyGamesOptions = $"{CommandConstants.MainMenu}- para vover al menu \n" +
-                        $"{CommandConstants.GameDetails}- para ver los detalles de un juego";
+        MyGamesOptions = $"{CommandConstants.MainMenu}-Para vover al menu \n" +
+                        $"{CommandConstants.GameDetails}-Para ver los detalles de un juego";
 
         GameDetails = $"Ingrese el nombre del juego que quiere ver los detalles";
 
@@ -156,8 +160,16 @@ public class SpanishMessage : Message
 
         InvalidStars = "Debe ingresar un numero entre 0 y 5";
 
-        NoGameReturned = "No se encontaron juegos";
+        GamesNotFound = "No se encontaron juegos";
+
+        GameNotFound = "No se encontro el juego";
 
         GameList = "Lista de Juegos: ";
+
+        DownloadCover = "Desea descargar la caratula?" +
+                            " 1-Si \n" +
+                            " Cualquier otro input para seguir \n";
+        
+        SavedPathAt = "Archivo guardado en la siguiente direccion:";
     }
 }

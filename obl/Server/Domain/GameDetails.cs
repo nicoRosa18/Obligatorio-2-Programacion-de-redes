@@ -38,17 +38,17 @@ namespace Server.Domain
         {
             string ret = "";
             ret += $"Detalles: \n" +
-                   $"titulo: {this.Game.Title} \n " +
-                   $"genero: {this.Game.Genre} \n " +
-                   $"sinopsis: {this.Game.Synopsis} \n " +
-                   $"clasificacion de edad:{this.Game.AgeRating} \n" +
-                   $"promedio de estrellas {this.Game.Stars} \n"  +
-                   $"comentarios: \n";
+                   $" Titulo: {this.Game.Title} \n" +
+                   $" Genero: {this.Game.Genre} \n" +
+                   $" Sinopsis: {this.Game.Synopsis} \n" +
+                   $" Clasificacion de edad:{this.Game.AgeRating} \n" +
+                   $" Promedio de estrellas {this.Game.Stars} \n"  +
+                   $"Comentarios: \n";
             foreach (var qualification in this.Game.CommunityQualifications)
             {
-                string qual = $"usuario: {qualification.User} \n" +
-                              $"comentario: {qualification.comment} \n " +
-                              $"estrellas: {qualification.Stars} \n \n ";
+                string qual = $" Usuario: {qualification.User} \n" +
+                              $" Comentario: {qualification.comment} \n" +
+                              $" Estrellas: {qualification.Stars} \n \n";
 
                 ret += qual;
             }

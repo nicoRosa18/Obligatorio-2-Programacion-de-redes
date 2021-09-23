@@ -176,7 +176,34 @@ namespace Client
             string gameName = Console.ReadLine();
             
             _communication.SendMessage(CommandConstants.GameDetails, gameName);
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            Console.WriteLine(_communication.ReceiveMessage().Message); 
+
+            Console.WriteLine(_message.DownloadCover);
+
+            string descargarCaratula = Console.ReadLine();
+            int command; 
+            if(descargarCaratula.Equals("1"))
+            {
+                command = CommandConstants.SendCover;
+                _communication.SendMessage(command, gameName);
+                string pathSavedAt = "";
+                try
+                {
+                    pathSavedAt = _communication.ReceiveFile();
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                Console.WriteLine(_message.SavedPathAt);
+                Console.WriteLine(pathSavedAt);
+            }
+            else
+            {
+                command = CommandConstants.NotSendCover;
+                _communication.SendMessage(command, "");
+            }
+
             MainMenu();
         }
 
@@ -389,7 +416,7 @@ namespace Client
         {
             if(string.IsNullOrEmpty(games))
             {
-                Console.WriteLine(_message.NoGameReturned);
+                Console.WriteLine(_message.GamesNotFound);
             }
             else
             {

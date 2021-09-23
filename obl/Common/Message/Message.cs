@@ -42,6 +42,9 @@ public abstract class Message
     public abstract  string FileNotFound { get; set; }
     public abstract  string UserLogged { get; set; }
     public abstract  string InvalidStars { get; set; }
-    public abstract  string NoGameReturned { get; set; }
+    public abstract  string GamesNotFound { get; set; }
     public abstract  string GameList { get; set; }
+    public abstract  string GameNotFound { get; set; }
+    public abstract  string DownloadCover { get; set; }
+    public abstract  string SavedPathAt { get; set; }
 }

@@ -42,30 +42,33 @@ namespace Server.Domain
                 case CommandConstants.LoginUser:
                     UserLogin(package);
                     break;
-                 case CommandConstants.ViewCatalogue:
-                     ShowCatalogue();
-                     break;
+                case CommandConstants.ViewCatalogue:
+                    ShowCatalogue();
+                    break;
                 case CommandConstants.AddGame:
-                     AddGame(package);
-                     break;
-                 case CommandConstants.SearchGame:
-                     SearchGame(package);
-                     break;
-                 case CommandConstants.buyGame:
-                     BuyGame(package);
-                     break;
-                 case CommandConstants.MyGames:
-                     MyGames();
-                     break;
-                 case CommandConstants.GameDetails:
-                     ViewGameDetails(package);
-                     break;
-                 case  CommandConstants.PublishQualification:
-                     PublishQualification(package);
-                     break;
-                 case CommandConstants.GameExists:
-                     GameExists(package);
-                     break;
+                    AddGame(package);
+                    break;
+                case CommandConstants.SearchGame:
+                    SearchGame(package);
+                    break;
+                case CommandConstants.buyGame:
+                    BuyGame(package);
+                    break;
+                case CommandConstants.MyGames:
+                    MyGames();
+                    break;
+                case CommandConstants.GameDetails:
+                    ViewGameDetails(package);
+                    break;
+                case  CommandConstants.PublishQualification:
+                    PublishQualification(package);
+                    break;
+                case CommandConstants.GameExists:
+                    GameExists(package);
+                    break;
+                case CommandConstants.SendCover:
+                    SendCover(package);
+                    break; 
                      
                 // case "":
                 //     CloseConnection();
@@ -118,9 +121,23 @@ namespace Server.Domain
                 GameDetails gameDetails = new GameDetails(game);
                 _communicator.SendMessage(CommandConstants.GameDetails, gameDetails.DetailsOnstring());
             }
-            catch (Exception e)
+            catch (GameNotFound)
             {
-                _communicator.SendMessage(package.Command,e.Message);
+                _communicator.SendMessage(package.Command, _messageLanguage.GameNotFound);
+            }
+        }
+
+        private void SendCover(CommunicatorPackage package){
+            Catalogue catalogue = _usersAndCatalogueManager.Catalogue;
+            Game game = catalogue.GetGameByName(package.Message);
+            string path = game.Cover;
+
+            try{
+                _communicator.SendFile(path);
+            }
+            catch(FileDoesNotExist)
+            {
+                //_communicator.SendFile(path); hacer una imagen comun que sea un ejemplo
             }
         }
 
