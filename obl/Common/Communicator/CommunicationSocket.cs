@@ -77,11 +77,7 @@ namespace Common.Communicator
         }
 
         public void SendFile(string path)
-        {
-            if(!_fileHandler.FileExists(path)){
-                throw new FileDoesNotExist();
-            }
-            
+        {            
             string fileName = _fileHandler.GetFileName(path);
             int fileNameSize = Encoding.UTF8.GetBytes(fileName).Length;
             long fileSize = _fileHandler.GetFileSize(path); 

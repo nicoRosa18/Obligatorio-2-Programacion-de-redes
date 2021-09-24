@@ -7,14 +7,7 @@ namespace Common.FileManagement
     {
         public void DeleteFile(string path)
         {
-            try
-            {
-                File.Delete(path);
-            }
-            catch(Exception e)
-            {
-                throw new Exception("File does not exist");
-            }
+            File.Delete(path);
         }
 
         public bool FileExists(string path)
@@ -29,7 +22,7 @@ namespace Common.FileManagement
                 return new FileInfo(path).Name;
             }
 
-            throw new Exception("File does not exist");
+            throw new FileNotFoundException();
         }
 
         public long GetFileSize(string path)
@@ -39,7 +32,7 @@ namespace Common.FileManagement
                 return new FileInfo(path).Length;
             }
 
-            throw new Exception("File does not exist");
+            throw new FileNotFoundException();
         }
 
         public string GetPath(string fileName)

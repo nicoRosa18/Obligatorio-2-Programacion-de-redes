@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
 {
@@ -33,7 +34,7 @@ namespace Server.Domain
         {
             if (AcquireGames.Contains(game))
             {
-                throw new Exception("game already purchased");
+                throw new GameAlreadyPurchased();
             }
             else
             {

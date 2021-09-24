@@ -47,4 +47,7 @@ public abstract class Message
     public abstract  string GameNotFound { get; set; }
     public abstract  string DownloadCover { get; set; }
     public abstract  string SavedPathAt { get; set; }
+    public abstract  string QualificationComment { get; set; }
+    public abstract  string UserNotLogged { get; set; }
+    public abstract  string GameAlreadyInLibrary { get; set; }
 }

@@ -5,6 +5,7 @@ using Common.Communicator;
 using Common.Protocol;
 using Common.SettingsManager;
 using Common.Communicator.Exceptions;
+using Common.FileManagement.Exceptions;
 
 namespace Client
 {
@@ -143,11 +144,11 @@ namespace Client
                 }
                 else
                 {
-                    Console.WriteLine("ingrese un nombre de juego valido");
+                    Console.WriteLine(_message.InvalidTitle);
                 }
             }
 
-            Console.WriteLine("califique con una valoracion del 0 al 5");
+            Console.WriteLine(_message.SearchByStars);
             bool starsOk = false;
             string stars = " ";
             while (!starsOk)
@@ -157,15 +158,15 @@ namespace Client
                 {
                     int starsInt = Int32.Parse(stars);
                     if (starsInt >= 0 && starsInt <= 5) starsOk = true;
-                    else Console.WriteLine("el numero de estrellas debe ser entre 0 y 5");
+                    else Console.WriteLine(_message.InvalidStars);
                 }
-                catch
+                catch(FormatException)
                 {
-                    Console.WriteLine("debe ingresar un numero entre 0 y 5");
+                    Console.WriteLine(_message.InvalidStars);
                 }
             }
 
-            Console.WriteLine("agregue un comentario");
+            Console.WriteLine(_message.QualificationComment); 
             string comment = Console.ReadLine();
             string message = $"{gameName}#{stars}#{comment}";
             _communication.SendMessage(CommandConstants.PublishQualification, message);
@@ -209,10 +210,17 @@ namespace Client
         {
             _communication.SendMessage(CommandConstants.MyGames, "");
 
-            string games = _communication.ReceiveMessage().Message;
-            ShowGameList(games);
+            CommunicatorPackage received = _communication.ReceiveMessage();
+            if(received.Command !=  CommandConstants.userNotLogged)
+            {
+                string games = received.Message;
+                ShowGameList(games);
 
-            Console.WriteLine(_message.MyGamesOptions);
+                Console.WriteLine(_message.MyGamesOptions);
+            }
+            else{
+                Console.WriteLine(received.Message);
+            }
         }
 
         private void SearchGame()
@@ -340,23 +348,26 @@ namespace Client
             string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
             _communication.SendMessage(CommandConstants.AddGame, dataToSend);
 
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            CommunicatorPackage received = _communication.ReceiveMessage();
+            Console.WriteLine(received.Message);
+
+            if(received.Command !=  CommandConstants.userNotLogged){
+                bool fileNotFound = true;
+                while(fileNotFound)
+                {
+                    try{
+                        string path = Console.ReadLine();
+                        _communication.SendFile(path);
+                        fileNotFound = false;
+                    }
+                    catch(FileNotFoundException){
+                        Console.WriteLine(_message.FileNotFound);
+                    }
+                }
             
-            bool fileNotFound = true;
-            while(fileNotFound)
-            {
-                try{
-                    string path = Console.ReadLine();
-                    _communication.SendFile(path);
-                    fileNotFound = false;
-                }
-                catch(FileDoesNotExist){
-                    Console.WriteLine(_message.FileNotFound);
-                }
+                Console.WriteLine(_communication.ReceiveMessage().Message);
+                MainMenu();
             }
-            
-            Console.WriteLine(_communication.ReceiveMessage().Message);
-            MainMenu();
         }
 
         private void CloseConnection()

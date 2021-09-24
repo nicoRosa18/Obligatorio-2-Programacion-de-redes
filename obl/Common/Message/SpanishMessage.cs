@@ -50,7 +50,10 @@ public class SpanishMessage : Message
     public override string GameNotFound { get; set; }
     public override string DownloadCover { get; set; }
     public override string SavedPathAt { get; set; }
-    
+    public override string QualificationComment { get; set; }
+    public override string UserNotLogged { get; set; }
+    public override string GameAlreadyInLibrary { get; set; }
+
     public SpanishMessage()
     {
         Setup();
@@ -93,6 +96,8 @@ public class SpanishMessage : Message
         UserLogged = "Usuario loggeado";
         
         UserIncorrect = "Usuario incorrecto, vuelva a intentarlo.";
+
+        UserNotLogged = "No es posible realizar la accion porque no se loggeo el usuario";
 
         EmptyCatalogue = "No hay juegos para mostrar \n";
 
@@ -142,7 +147,9 @@ public class SpanishMessage : Message
 
         PublishQualification = "Ingrese el nombre del juego que quiere agregar una calificacion";
 
-        QualificationAdded = "Comentario agregado!";
+        QualificationComment = "Agregue un comentario: ";
+
+        QualificationAdded = "Calificacion agregada!";
 
         SendGameCover = "Ingrese la ruta de la imagen";
 
@@ -171,5 +178,7 @@ public class SpanishMessage : Message
                             " Cualquier otro input para seguir \n";
         
         SavedPathAt = "Archivo guardado en la siguiente direccion:";
+
+        GameAlreadyInLibrary = "El juego ya esta en tu libreria";
     }
 }

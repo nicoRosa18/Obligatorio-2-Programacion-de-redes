@@ -6,6 +6,7 @@ using Common.Protocol;
 using Server.Domain.ServerExceptions;
 using Common.Communicator.Exceptions;
 using Common.Communicator;
+using Common.FileManagement.Exceptions;
 
 namespace Server.Domain
 {
@@ -97,19 +98,27 @@ namespace Server.Domain
 
         private void PublishQualification(CommunicatorPackage package)
         {
-            string[] data = new string[3];
-            data = package.Message.Split("#");
-            string gameName = data[0];
-            int stars= Int32.Parse(data[1]);
-            string comment = data[2];
-            Game game = _usersAndCatalogueManager.Catalogue.GetGameByName(gameName);
-            Qualification q = new Qualification();
-            q.comment = comment;
-            q.Stars = stars;
-            q.User = _userLogged.Name;
-            q.game = game;
-            game.AddCommunityQualification(q);
-            _communicator.SendMessage(CommandConstants.PublishQualification, _messageLanguage.QualificationAdded);
+            if(_userLogged != null)
+            {
+                string[] data = new string[3];
+                data = package.Message.Split("#");
+                string gameName = data[0];
+                int stars= Int32.Parse(data[1]);
+                string comment = data[2];
+
+                Game game = _usersAndCatalogueManager.Catalogue.GetGameByName(gameName);
+                Qualification q = new Qualification();
+                q.comment = comment;
+                q.Stars = stars;
+                q.User = _userLogged.Name;
+                q.game = game;
+                game.AddCommunityQualification(q);
+                _communicator.SendMessage(CommandConstants.PublishQualification, _messageLanguage.QualificationAdded);
+            }
+            else
+            {
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+            }
         }
 
         private void ViewGameDetails(CommunicatorPackage package)
@@ -135,15 +144,22 @@ namespace Server.Domain
             try{
                 _communicator.SendFile(path);
             }
-            catch(FileDoesNotExist)
+            catch(FileNotFoundException)
             {
-                //_communicator.SendFile(path); hacer una imagen comun que sea un ejemplo
+                _communicator.SendFile(path); //hacer una imagen comun que sea un ejemplo o hablar q hacer
             }
         }
 
         private void MyGames()
         {
-            _communicator.SendMessage( CommandConstants.MyGames,_userLogged.GetMyGames());
+            if(_userLogged != null)
+            {
+                _communicator.SendMessage(CommandConstants.MyGames,_userLogged.GetMyGames());
+            }
+            else
+            {
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+            }
         }
 
         private void SearchGame(CommunicatorPackage package)
@@ -199,17 +215,28 @@ namespace Server.Domain
 
         private void BuyGame(CommunicatorPackage package)
         {
-            try
+            if(_userLogged != null)
             {
-                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
-                string gameName = package.Message;
-                Game game = catalogue.GetGameByName(gameName);
-                _userLogged.BuyGame(game);
-                _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GamePurchased);
+                try
+                {
+                    Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+                    string gameName = package.Message;
+                    Game game = catalogue.GetGameByName(gameName);
+                    _userLogged.BuyGame(game);
+                    _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GamePurchased);
+                }
+                catch(GameNotFound)
+                {
+                    _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GameNotFound);
+                }
+                catch(GameAlreadyPurchased)
+                {
+                    _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GameAlreadyInLibrary);
+                }
             }
-            catch  (Exception e)
+            else
             {
-                _communicator.SendMessage(CommandConstants.buyGame, e.Message);
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -261,7 +288,7 @@ namespace Server.Domain
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.Message, _messageLanguage.InvalidOption);
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -271,7 +298,7 @@ namespace Server.Domain
             {
                 this.MessageInterpreter(this._communicator.ReceiveMessage());
             }
-            catch (ClientClosingException e)
+            catch (ClientClosingException)
             {
                 CloseSession();
             }

@@ -64,7 +64,6 @@ namespace Server
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta ingresada, ingrese de nuevo");
-                        //session.MessageInterpreter(userInput);
                         break;
                 }
             }

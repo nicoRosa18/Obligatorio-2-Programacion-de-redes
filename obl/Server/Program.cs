@@ -14,14 +14,8 @@ namespace Server
     public class Program
     {
         static void Main(string[] args)
-        {
-            Console.WriteLine("Comenzando Socket Server...");
-
-            var socketServer = new Socket(AddressFamily.InterNetwork,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-                
-            ServerManager serverManager = new ServerManager(socketServer);
+        {                
+            ServerManager serverManager = new ServerManager();
         }
     }
 }
