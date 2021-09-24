@@ -15,20 +15,23 @@ namespace Server
         private Socket _socketServer {get; set;}
         private string _serverIpAddress {get; set;}
         private string _serverPort {get; set;}
-        public ServerManager(Socket socketServer)
+        public ServerManager()
         {
+            _socketServer = new Socket(AddressFamily.InterNetwork,
+                SocketType.Stream,
+                ProtocolType.Tcp);
+
             UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
             Session._usersAndCatalogueManager = _usersAndCatalogueManager;
 
             _serverAttributes = new ServerTools();
-            _socketServer = socketServer;
             
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
 
-            socketServer.Bind(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
-            socketServer.Listen(10);
+            _socketServer.Bind(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
+            _socketServer.Listen(10);
 
             StartUpMenu();
             CreateConnections();

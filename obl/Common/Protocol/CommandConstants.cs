@@ -21,6 +21,5 @@
         public const int userLogged = 20;
         public const int userNotLogged = 21;
         public const int SendCover = 22;
-        public const int NotSendCover = 23;
     }
 }

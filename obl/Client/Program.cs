@@ -12,11 +12,9 @@ namespace Client
 
         static void Main(string[] args)
         {
-            var socketClient = new Socket(AddressFamily.InterNetwork,
-                SocketType.Stream,
-                ProtocolType.Tcp);
+            
                 
-            ClientManager manager = new ClientManager(socketClient);
+            ClientManager manager = new ClientManager();
             manager.Start();
         }
     }

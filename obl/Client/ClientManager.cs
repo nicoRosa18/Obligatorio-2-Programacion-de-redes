@@ -18,10 +18,13 @@ namespace Client
         private string _serverPort;
         private bool _endConnection;
 
-        public ClientManager(Socket socketClient)
+        public ClientManager()
         {
+            _socket = new Socket(AddressFamily.InterNetwork,
+                SocketType.Stream,
+                ProtocolType.Tcp);
+
             _message = new SpanishMessage();
-            _socket = socketClient;
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
@@ -170,7 +173,7 @@ namespace Client
             MainMenu();
         }
 
-        private void  ShowGameDetails() //agregar file receiver 
+        private void  ShowGameDetails() 
         {
             Console.WriteLine(_message.GameDetails);
             string gameName = Console.ReadLine();
@@ -197,11 +200,6 @@ namespace Client
                 }
                 Console.WriteLine(_message.SavedPathAt);
                 Console.WriteLine(pathSavedAt);
-            }
-            else
-            {
-                command = CommandConstants.NotSendCover;
-                _communication.SendMessage(command, "");
             }
 
             MainMenu();
