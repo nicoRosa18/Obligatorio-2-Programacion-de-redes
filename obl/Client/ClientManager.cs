@@ -128,6 +128,14 @@ namespace Client
             }
         }
 
+        public void ShowCatalogue()
+        {
+            _communication.SendMessage(CommandConstants.ViewCatalogue, "");
+            
+            Console.WriteLine(_communication.ReceiveMessage().Message);
+            Console.WriteLine(_message.SearchGameOptions);
+        }
+
         private void PublishQualification()
         {
             Console.WriteLine(_message.PublishQualification);

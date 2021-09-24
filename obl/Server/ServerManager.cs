@@ -51,7 +51,6 @@ namespace Server
                         _serverAttributes.EndConnection = true;
                         foreach (var client in _serverAttributes.Clients)
                         {
-                            Console.WriteLine("un cliente");
                             client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
@@ -81,7 +80,6 @@ namespace Server
 
                     var connectedSocket = _socketServer.Accept();
                     _serverAttributes.AddClient(connectedSocket);
-                    Console.WriteLine($"Nueva coneccion {threadId} aceptada"); //sacar
 
                     var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
                     threadConnection.Start();
@@ -117,6 +115,7 @@ namespace Server
                     if(!_serverAttributes.EndConnection){
                         connectedSocket.Shutdown(SocketShutdown.Both);
                         connectedSocket.Close();
+                        _serverAttributes.Clients.Remove(connectedSocket);
                     }
              
                     Console.WriteLine($"{threadId}: Cerrando coneccion...");

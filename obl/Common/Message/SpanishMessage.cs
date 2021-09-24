@@ -77,6 +77,7 @@ public class SpanishMessage : Message
 
         MainMenuMessage = "Menu del Sistema \n" +
                             "Escriba el comando para la opcion elegida \n " +
+                            $" {CommandConstants.ViewCatalogue}-Ver catalogo de juegos \n "+
                             $" {CommandConstants.SearchGame}-Buscar juego \n "+
                             $" {CommandConstants.AddGame}-Agregar juego (Agrega un nuevo juego a la tienda) \n " +
                             $" {CommandConstants.MyGames}-Ver mis juegos adiquiridos";
@@ -113,9 +114,7 @@ public class SpanishMessage : Message
         GameAdded = "Juego agregado correctamente! \n" +
                     "Recuerda que los juegos recien agregados cuentan con 0 estrellas \n";
         
-        CatalogueView = "Catalogo:" +
-                        "Escriba menu para volver al menu de inicio \n" +
-                        "Escriba 6 para comprar un juego y agregarlo a su biblioteca. \n";
+        CatalogueView = "Catalogo: \n ";
         
         BuyGame = "Comprar juego: \n " +
                     "Envie el nombre del juego buscado anteriormente que desea adquirir";

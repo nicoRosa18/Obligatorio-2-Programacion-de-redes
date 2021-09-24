@@ -242,20 +242,13 @@ namespace Server.Domain
 
         private void ShowCatalogue()
         {
-            // if (_userLogged != null)
-            // {
-            //     Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+            Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
 
-            //     string messageToSend = catalogue.ShowGamesOnStringList();
-            //     if(messageToSend.Equals("")){
-            //         messageToSend = _messageLanguage.EmptyCatalogue;
-            //     }
-            //     SendMessage(_messageLanguage.CatalogueView + messageToSend);
-            // }
-            // else
-            // {
-            //     SendMessage(_messageLanguage.InvalidOption);
-            // }
+            string messageToSend = catalogue.ShowGamesOnStringList();
+            if(messageToSend.Equals("")){
+                messageToSend = _messageLanguage.EmptyCatalogue;
+            }
+            _communicator.SendMessage(CommandConstants.ViewCatalogue, _messageLanguage.CatalogueView + messageToSend);
         }
 
         private void AddGame(CommunicatorPackage package)
