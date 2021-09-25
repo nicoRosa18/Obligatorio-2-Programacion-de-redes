@@ -54,7 +54,6 @@ namespace Server
                             client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
-
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
                         var remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
                         fakeSocket.Connect(remoteEndpoint);
@@ -79,8 +78,10 @@ namespace Server
                     int threadId = threadCount;
 
                     var connectedSocket = _socketServer.Accept();
+                    Console.WriteLine("b");
                     _serverAttributes.AddClient(connectedSocket);
 
+                    Console.WriteLine($"Nueva coneccion {threadId} aceptada");
                     var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
                     threadConnection.Start();
                 }
@@ -100,39 +101,25 @@ namespace Server
 
         private void HandleConnection(Socket connectedSocket, int threadId)
         {
-            while(!_serverAttributes.EndConnection){ //probar sacarlo
-                try
-                {
-                    Message spanishMessage = new SpanishMessage();
-                    CommunicationSocket communicationViaClient = new CommunicationSocket(connectedSocket);
-                    Session session = new Session(communicationViaClient, spanishMessage);
+            Message spanishMessage = new SpanishMessage();
+            CommunicationSocket communicationViaClient = new CommunicationSocket(connectedSocket);
+            Session session = new Session(communicationViaClient, spanishMessage);
 
-                    while (session.Active && !_serverAttributes.EndConnection)
-                    {
-                        session.Listen();
-                    }
-
-                    if(!_serverAttributes.EndConnection){
-                        connectedSocket.Shutdown(SocketShutdown.Both);
-                        connectedSocket.Close();
-                        _serverAttributes.Clients.Remove(connectedSocket);
-                    }
-             
-                    Console.WriteLine($"{threadId}: Cerrando coneccion...");
-                    return;
-                }
-                catch(SocketException se) //sacar si no es necesario
-                {
-                    Console.WriteLine(se);
-                    _serverAttributes.EndConnection = true;
-                }
-                catch (Exception e) //sacar si no es necesario
-                {
-                    Console.WriteLine(e);
-                    _serverAttributes.EndConnection = true;
-                } 
+            while (session.Active && !_serverAttributes.EndConnection)
+            {
+                session.Listen();
             }
+
+            if(!_serverAttributes.EndConnection){
+                connectedSocket.Shutdown(SocketShutdown.Both);
+                connectedSocket.Close();
+                _serverAttributes.RemoveClient(connectedSocket);
+            }
+        
+            Console.WriteLine($"{threadId}: Cerrando coneccion...");
+            return;
         }
+
         private void StartUpMenu()
         {
             Console.WriteLine("Bienvenido al Sistema Server");

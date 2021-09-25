@@ -45,7 +45,7 @@ namespace Common.Protocol
                 IFileSize = int.Parse(fileSize);
                 return true;
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return false;
             }

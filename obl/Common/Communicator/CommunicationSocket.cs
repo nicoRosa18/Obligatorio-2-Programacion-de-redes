@@ -115,7 +115,7 @@ namespace Common.Communicator
 
                     iRecv += localRecv;
                 }
-                catch (SocketException se)
+                catch (SocketException)
                 {
                     throw new ClientClosingException();
                 }

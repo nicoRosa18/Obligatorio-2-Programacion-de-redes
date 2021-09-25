@@ -72,6 +72,7 @@ namespace Client
             }
             catch (SocketException)
             {
+                _socket.Close();
                 Console.WriteLine(_message.ServerClosed);
             }
             catch(Exception e)

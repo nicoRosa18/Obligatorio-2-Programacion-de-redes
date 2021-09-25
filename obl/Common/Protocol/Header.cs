@@ -59,7 +59,7 @@ namespace Common.Protocol
                 
                 return true;
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return false;
             }
