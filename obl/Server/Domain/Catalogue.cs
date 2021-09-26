@@ -18,7 +18,14 @@ namespace Server.Domain
 
         public bool ExistsGame(Game game)
         {
-            return Games.Contains(game);
+            if(Games.Contains(game))
+            {
+                return true;
+            }
+            else
+            {
+                throw new GameAlreadyExists();
+            }    
         }
 
         public string  SearchGame(string title, string genre, int qualification)
@@ -89,6 +96,24 @@ namespace Server.Domain
         public void AddGame(Game gameToAdd)
         {
             this.Games.Add(gameToAdd);
+        }
+
+        public void DeleteGame(string gameName)
+        {
+            Game gameToDelete = SearchGameByTitle(gameName);
+
+            this.Games.Remove(gameToDelete);
+        }
+
+        public void ModifyGame(string oldGameTitle, Game newGame)
+        {
+            Game gameToModify = SearchGameByTitle(oldGameTitle);
+
+            if(!newGame.Title.Equals("")) gameToModify.Title = newGame.Title;
+            if(!newGame.Cover.Equals("")) gameToModify.Cover = newGame.Cover;
+            if(!newGame.Genre.Equals("")) gameToModify.Genre = newGame.Genre;
+            if(!newGame.Synopsis.Equals("")) gameToModify.Synopsis = newGame.Synopsis;
+            if(!newGame.AgeRating.Equals("")) gameToModify.AgeRating = newGame.AgeRating;
         }
         
         private Collection<Game> SearchGameByGenre(string genre)

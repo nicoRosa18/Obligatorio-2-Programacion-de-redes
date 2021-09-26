@@ -55,6 +55,10 @@ namespace Server.Domain
                 case CommandConstants.buyGame:
                     BuyGame(package);
                     break;
+                case CommandConstants.RemoveGame:
+                    break;
+                case CommandConstants.ModifyGame:
+                    break;
                 case CommandConstants.MyGames:
                     MyGames();
                     break;
@@ -69,7 +73,7 @@ namespace Server.Domain
                     break;
                 case CommandConstants.SendCover:
                     SendCover(package);
-                    break; 
+                    break;
                      
                 // case "":
                 //     CloseConnection();
@@ -88,11 +92,72 @@ namespace Server.Domain
                 Game gameBeacon = new Game();
                 gameBeacon.Title = package.Message;
                 _usersAndCatalogueManager.ExistsGame(gameBeacon);
-                _communicator.SendMessage(CommandConstants.GameNotExits,"");
+                _communicator.SendMessage(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
             }
             catch (GameAlreadyExists)
             {
                 _communicator.SendMessage(CommandConstants.GameExists,"");
+            }
+        }
+
+        private void RemoveGame(CommunicatorPackage package)
+        {
+            if(_userLogged != null)
+            {
+                try
+                {
+                    Game removeGameBeacon = new Game();
+                    removeGameBeacon.Title = package.Message;
+                    _usersAndCatalogueManager.RemoveGame(_userLogged, removeGameBeacon);
+                    _communicator.SendMessage(CommandConstants.RemoveGame, _messageLanguage.GameRemovedCorrectly);
+                }
+                catch(UserNotOwnerofGame)
+                {
+                    _communicator.SendMessage(CommandConstants.RemoveGame, _messageLanguage.UserNotGameOwner);
+                }
+            }
+            else
+            {
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+            }
+        }
+
+        private void ModifyGame(CommunicatorPackage package)
+        {
+            if(_userLogged != null)
+            {
+                string[] data= new string[5];
+                data = package.Message.Split("#");
+                string oldTitle = data[0];
+                string newTitle = data[1];
+                string newGenre = data[2];
+                string newSynopsis = data[3];     
+                string newAgeRating = data[4];
+
+                string newCover = "";
+
+                _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.SendGameCover);
+                if(_communicator.ReceiveMessage().Command == CommandConstants.ReceiveCover)
+                {
+                    newCover = _communicator.ReceiveFile();
+                }
+                Game newGame = new Game(newTitle, newCover, newGenre, newSynopsis, newAgeRating);
+                Game oldGameBeacon = new Game();
+                oldGameBeacon.Title = oldTitle;
+
+                try
+                {
+                    _usersAndCatalogueManager.ModifyGame(_userLogged, oldGameBeacon, newGame);
+                    _communicator.SendMessage(CommandConstants.ModifyGame, _messageLanguage.GameModifiedCorrectly);
+                }
+                catch(UserNotOwnerofGame)
+                {
+                    _communicator.SendMessage(CommandConstants.ModifyGame, _messageLanguage.UserNotGameOwner);
+                }
+            }
+            else
+            {
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -275,7 +340,7 @@ namespace Server.Domain
 
                 Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);
 
-                _usersAndCatalogueManager.AddGame(gameToAdd);
+                _usersAndCatalogueManager.AddGame(_userLogged, gameToAdd);
 
                 _communicator.SendMessage(CommandConstants.AddGame, _messageLanguage.GameAdded);
             }

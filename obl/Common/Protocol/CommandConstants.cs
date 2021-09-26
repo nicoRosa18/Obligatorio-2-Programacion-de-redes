@@ -10,6 +10,8 @@
         public const int ViewCatalogue = 5;
         public const int PublishGame = 6;
         public const int buyGame = 7;
+        public const int RemoveGame = 8;
+        public const int ModifyGame = 9;
         public const int SearchGame = 10;
         public const int AddGame = 11;
         public const int MyGames = 12;
@@ -21,5 +23,7 @@
         public const int userLogged = 20;
         public const int userNotLogged = 21;
         public const int SendCover = 22;
+        public const int UserNotOwnerofGame = 23;
+        public const int ReceiveCover = 24;
     }
 }

@@ -50,4 +50,11 @@ public abstract class Message
     public abstract  string QualificationComment { get; set; }
     public abstract  string UserNotLogged { get; set; }
     public abstract  string GameAlreadyInLibrary { get; set; }
+    public abstract  string GameModifiedCorrectly { get; set; }
+    public abstract  string GameRemovedCorrectly { get; set; }
+    public abstract  string UserNotGameOwner { get; set; }
+    public abstract  string ChangeMenu { get; set; }
+    public abstract  string GameDeleted { get; set; }
+    public abstract  string GameModified { get; set; }
+    public abstract  string GameModifiedNewInfo { get; set; }  
 }

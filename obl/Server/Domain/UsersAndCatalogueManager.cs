@@ -69,9 +69,10 @@ namespace Server.Domain
             return ContainsUser(user);
         }
 
-        public void AddGame(Game gameToAdd)
+        public void AddGame(User publisher, Game gameToAdd)
         {
             this.Catalogue.AddGame(gameToAdd);
+            publisher.CreateGame(gameToAdd);
         }
 
         public bool ExistsGame(Game gameToAdd)
@@ -79,11 +80,30 @@ namespace Server.Domain
             bool toReturn = false;
             if(this.Catalogue.ExistsGame(gameToAdd))
                 toReturn = true;
-            else
-            {
-                throw new GameAlreadyExists();
-            }
             return toReturn;
+        }
+
+        public void RemoveGame(User publisher, Game gameToRemove)
+        {
+            publisher.RemoveFromPublishedGames(gameToRemove);
+
+            foreach (User user in this.Users)
+            {
+                user.RemoveFromAcquiredGames(gameToRemove);
+            }
+
+            this.Catalogue.DeleteGame(gameToRemove.Title);
+        }
+
+        public void ModifyGame(User publisher, Game oldGame, Game newGame)
+        {
+            publisher.ModifyGameForOwner(oldGame, newGame);
+            foreach (User user in this.Users)
+            {
+                user.ModifyGameForNotOwner(oldGame, newGame);
+            }
+
+            this.Catalogue.ModifyGame(oldGame.Title, newGame);
         }
     }
 }

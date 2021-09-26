@@ -68,7 +68,7 @@ namespace Client
                     {
                         MessageInterpreter(message);
                     }
-                }        
+                }    
             }
             catch (SocketException)
             {
@@ -77,6 +77,7 @@ namespace Client
             }
             catch(Exception e)
             {
+                _socket.Close();
                 Console.WriteLine(e.Message);
             }
             CloseConnection();
@@ -114,6 +115,12 @@ namespace Client
                         break;
                     case CommandConstants.buyGame:
                         BuyGame();
+                        break;
+                    case CommandConstants.RemoveGame:
+                        RemoveGame();
+                        break;
+                    case CommandConstants.ModifyGame:
+                        ModifyGame();
                         break;
                     case CommandConstants.PublishQualification:
                         PublishQualification();
@@ -211,8 +218,6 @@ namespace Client
                 Console.WriteLine(_message.SavedPathAt);
                 Console.WriteLine(pathSavedAt);
             }
-
-            MainMenu();
         }
 
         private void ShowMyGames()
@@ -266,7 +271,7 @@ namespace Client
             string games = _communication.ReceiveMessage().Message;
             ShowGameList(games);
 
-            Console.WriteLine(_message.SearchGameOptions);
+            Console.WriteLine(_message.ChangeMenu);
         }
 
         private void BuyGame()
@@ -276,6 +281,113 @@ namespace Client
             _communication.SendMessage(CommandConstants.buyGame, gameName);
             Console.WriteLine(_communication.ReceiveMessage().Message);
 
+            MainMenu();
+        }
+
+        private void RemoveGame()
+        {
+            Console.WriteLine(_message.GameDeleted);
+
+            string gameToDelete = Console.ReadLine();
+            _communication.SendMessage(CommandConstants.GameExists, gameToDelete);
+
+            CommunicatorPackage existsPackage = _communication.ReceiveMessage();
+            if(existsPackage.Command == CommandConstants.GameExists)
+            {
+                _communication.SendMessage(CommandConstants.RemoveGame, gameToDelete);
+                Console.WriteLine(_communication.ReceiveMessage().Message);
+            }
+            else
+            {
+                Console.WriteLine(existsPackage.Message);
+            }
+
+            MainMenu();
+        }
+
+        private void ModifyGame()
+        {
+            Console.WriteLine(_message.GameModified);
+            string oldGameTitle = Console.ReadLine();
+            _communication.SendMessage(CommandConstants.GameExists, oldGameTitle);
+            CommunicatorPackage existsPackage = _communication.ReceiveMessage();
+
+            if(existsPackage.Command == CommandConstants.GameExists)
+            {
+                ModifyGameData(oldGameTitle);
+            }
+            else
+            {
+                Console.WriteLine(existsPackage.Message);
+            }
+            
+            MainMenu();
+        }
+
+        private void ModifyGameData(string oldGameTitle)
+        {
+            Console.WriteLine(_message.GameModifiedNewInfo);
+
+            bool titleOk = false;
+            string title = "";
+            while (!titleOk)
+            {
+                Console.WriteLine(_message.NewGameInit);
+                title = Console.ReadLine();
+                
+                _communication.SendMessage(CommandConstants.GameExists, title);
+                int res = _communication.ReceiveMessage().Command;
+                if (res == CommandConstants.GameExists)
+                {
+                    Console.WriteLine(_message.RepeatedGame);
+                }
+                else
+                {
+                    titleOk = true;
+                }
+            }
+
+            string genre = "";
+            Console.WriteLine(_message.GameGenre);
+            genre = Console.ReadLine();
+
+            Console.WriteLine(_message.GameSynopsis);
+            string synopsis = "";
+            synopsis = Console.ReadLine();
+
+            string ageRating = "";
+            Console.WriteLine(_message.GameAgeRestriction);
+            ageRating = Console.ReadLine();
+
+            string dataToSend = $"{oldGameTitle}#{title}#{genre}#{synopsis}#{ageRating}";
+
+            _communication.SendMessage(CommandConstants.AddGame, dataToSend);
+            
+            CommunicatorPackage received = _communication.ReceiveMessage();
+            Console.WriteLine(received.Message);
+
+            if(received.Command != CommandConstants.userNotLogged)
+            {
+                string path = Console.ReadLine();
+                if(!path.Equals(""))
+                {
+                    _communication.SendMessage(CommandConstants.ReceiveCover, "");
+                    bool fileNotFound = true;
+                    while(fileNotFound)
+                    {
+                        try
+                        {
+                            _communication.SendFile(path);
+                            fileNotFound = false;
+                        }
+                        catch(FileNotFoundException)
+                        {
+                            Console.WriteLine(_message.FileNotFound);
+                        }
+                    }
+                }
+                Console.WriteLine(_communication.ReceiveMessage().Message);
+            }
             MainMenu();
         }
 

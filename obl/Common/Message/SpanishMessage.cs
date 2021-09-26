@@ -53,7 +53,14 @@ public class SpanishMessage : Message
     public override string QualificationComment { get; set; }
     public override string UserNotLogged { get; set; }
     public override string GameAlreadyInLibrary { get; set; }
-
+    public override string GameModifiedCorrectly { get; set; }
+    public override string GameRemovedCorrectly { get; set; }
+    public override string UserNotGameOwner { get; set; }
+    public override string ChangeMenu { get; set; }
+    public override string GameDeleted { get; set; }
+    public override string GameModified { get; set; }
+    public override string GameModifiedNewInfo { get; set; }
+    
     public SpanishMessage()
     {
         Setup();
@@ -81,6 +88,19 @@ public class SpanishMessage : Message
                             $" {CommandConstants.SearchGame}-Buscar juego \n "+
                             $" {CommandConstants.AddGame}-Agregar juego (Agrega un nuevo juego a la tienda) \n " +
                             $" {CommandConstants.MyGames}-Ver mis juegos adiquiridos";
+
+        ChangeMenu = $"{CommandConstants.MainMenu}-Para vover al menu \n" +
+                    "Estas opciones solo estan permitidas si es el publicador del juego: \n" +
+                        $" {CommandConstants.RemoveGame}-Para remover el juego \n"+
+                        $" {CommandConstants.ModifyGame}-Para modificar el juego \n";
+
+        GameDeleted = "Eliminacion de juego \n" +
+                        "Ingrese el nombre del juego a borrar:";
+
+        GameModified = "Mofificacion de juego \n" +
+                        "Ingrese el nombre del juego a modificar:";
+
+        GameModifiedNewInfo = "Ingrese la nueva informacion (Si se deja en blanco se asumen los valores anteriores)";
        
         UserRegistration = "Registro de usuario \n" +
                             "nombre de usuario: ";
@@ -179,5 +199,11 @@ public class SpanishMessage : Message
         SavedPathAt = "Archivo guardado en la siguiente direccion:";
 
         GameAlreadyInLibrary = "El juego ya esta en tu libreria";
+        
+        GameModifiedCorrectly = "Juego modificado correctamente!";
+
+        GameRemovedCorrectly = "Juego eliminado correctamente!";
+
+        UserNotGameOwner = "Tu usuario no es el dueno del juego, no cuenta con permisos";
     }
 }

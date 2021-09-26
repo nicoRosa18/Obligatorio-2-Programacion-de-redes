@@ -11,7 +11,7 @@ namespace Server.Domain
 
         public int AverageMark { get; set; }
         
-        public  GameDetails(Game game)
+        public GameDetails(Game game)
         {
             this.Game = game;
             this.Reviews = game.CommunityQualifications;

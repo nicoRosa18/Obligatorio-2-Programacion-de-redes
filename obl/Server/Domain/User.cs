@@ -9,9 +9,7 @@ namespace Server.Domain
     public class User
     {
         public string Name { get; set; }
-        
         public ICollection<Game> AcquireGames { get; set; }
-        
         public ArrayList PublishedGames { get; set; }
         
         public void PublishGame(Game game)
@@ -39,6 +37,52 @@ namespace Server.Domain
             else
             {
                 this.AcquireGames.Add(game);
+            }
+        }
+
+        public void CreateGame(Game gameCreated)
+        {
+            this.PublishedGames.Add(gameCreated);
+        }
+
+        public void RemoveFromAcquiredGames(Game gameToRemove)
+        {
+            if (AcquireGames.Contains(gameToRemove))
+            {
+                AcquireGames.Remove(gameToRemove);
+            }
+        }
+
+        public void RemoveFromPublishedGames(Game gameNameToRemove)
+        {
+            IsOwner(gameNameToRemove);
+            PublishedGames.Remove(gameNameToRemove);
+        }
+
+        public void ModifyGameForOwner(Game oldGame, Game NewGame)
+        {
+            IsOwner(oldGame);
+            if(this.AcquireGames.Remove(oldGame))
+            {
+                this.AcquireGames.Add(NewGame);
+            }
+            this.PublishedGames.Remove(oldGame);
+            this.PublishedGames.Add(NewGame);
+        }
+
+        public void ModifyGameForNotOwner(Game oldGame, Game NewGame)
+        {
+            if(this.AcquireGames.Remove(oldGame))
+            {
+                this.AcquireGames.Add(NewGame);
+            }
+        }
+
+        public void IsOwner(Game GameName)
+        {
+            if(!PublishedGames.Contains(GameName))
+            {
+                throw new UserNotOwnerofGame();
             }
         }
 

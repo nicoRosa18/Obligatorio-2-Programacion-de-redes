@@ -43,6 +43,13 @@ namespace Server.Domain
             UpdateStars();
         }
 
+        public string GameInfo()
+        {
+            return this.Title + "#" + this.Cover + "#" + this.Genre + "#" + this.Synopsis + "#" 
+                + this.AgeRating;
+
+        }
+
         private void UpdateStars()
         {
             GameDetails gameDetails = new GameDetails(this);
