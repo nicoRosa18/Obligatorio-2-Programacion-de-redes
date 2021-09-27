@@ -50,6 +50,34 @@ namespace Server.Domain
 
         }
 
+        public Game GameCopy()
+        {
+            Game cleanCopyGame = new Game();
+            cleanCopyGame.Title = this.Title;
+            cleanCopyGame.Cover = this.Cover;
+            cleanCopyGame.Genre = this.Genre;
+            cleanCopyGame.Synopsis = this.Synopsis;
+            cleanCopyGame.AgeRating = this.AgeRating;
+            cleanCopyGame.Stars = this.Stars;
+            CommunityQualifications = Qualificationcopy(cleanCopyGame);
+
+            return cleanCopyGame;
+        }
+
+        private Collection<Qualification> Qualificationcopy(Game cleanCopyGame)
+        {
+            Collection<Qualification> copyQualifications = new Collection<Qualification>();
+            foreach(Qualification quali in CommunityQualifications)
+            {
+                Qualification copyQualification = new Qualification();
+                copyQualification.Game = cleanCopyGame;
+                copyQualification.User = quali.User;
+                copyQualification.Stars = quali.Stars;
+                copyQualification.Comment = quali.Comment;
+            }
+            return copyQualifications;
+        }
+
         private void UpdateStars()
         {
             GameDetails gameDetails = new GameDetails(this);

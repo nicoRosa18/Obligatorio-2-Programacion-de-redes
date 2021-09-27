@@ -80,14 +80,34 @@ namespace Server.Domain
             return userToReturn;
         }
 
-        public Catalogue GetCatalogue()
+        public string GetCatalogue()
         {
-            Catalogue copyCatalogue = new Catalogue();
+            string copyCatalogue;
             lock(_catalogueLock)
             {
-                copyCatalogue = this.Catalogue;
+                copyCatalogue = this.Catalogue.ShowGamesOnStringList();
             }
             return copyCatalogue;
+        }
+
+        public Game GetGame(string gameName)
+        {
+            Game cleanCopyGame = new Game();
+            lock(_catalogueLock)
+            {
+                cleanCopyGame = this.Catalogue.GetGameByNameCopy(gameName);
+            }
+            return cleanCopyGame;
+        }
+
+        public string SearchGames(string title, string genre, int qualification)
+        {
+            string SearchGamesCopy;
+            lock(_catalogueLock)
+            {
+                SearchGamesCopy = this.Catalogue.SearchGame(title, genre, qualification);
+            }
+            return SearchGamesCopy;
         }
 
         public void AddGame(User publisher, Game gameToAdd)
@@ -108,6 +128,14 @@ namespace Server.Domain
                     toReturn = true;
             }
             return toReturn;
+        }
+
+        public void AddCommunityQualification(string gameName, Qualification newQualification)
+        {
+            lock(_catalogueLock)
+            {
+                this.Catalogue.AddGameQualification(gameName, newQualification);
+            }
         }
 
         public void RemoveGame(User publisher, Game gameToRemove)

@@ -59,7 +59,7 @@ namespace Server.Domain
             return matchedGamesOnString;
         }
 
-        public Game GetGameByName(string name)
+        public Game GetGameByNameCopy(string name)
         {
             Game game = SearchGameByTitle(name); 
             return game;
@@ -98,6 +98,13 @@ namespace Server.Domain
             this.Games.Add(gameToAdd);
         }
 
+        public void AddGameQualification(string gameTitle, Qualification newQualification)
+        {
+            Game game = GetGameByReference(gameTitle);
+            newQualification.Game = game;
+            game.AddCommunityQualification(newQualification);
+        }
+
         public void DeleteGame(string gameName)
         {
             Game gameToDelete = SearchGameByTitle(gameName);
@@ -117,13 +124,23 @@ namespace Server.Domain
 
             return gameToModify;
         }
+
+        private Game GetGameByReference(string title)
+        {
+            for (int i = 0; i < this.Games.Count; i++)
+            {
+                if (this.Games[i].Title.Equals(title)) return this.Games[i];
+            }
+
+            throw new GameNotFound();
+        }
         
         private Collection<Game> SearchGameByGenre(string genre)
         {
             Collection<Game> matchingGames = new Collection<Game>();
             for (int i = 0; i < this.Games.Count; i++)
             {
-                if (this.Games[i].Genre.Equals(genre)) matchingGames.Add(this.Games[i]);
+                if (this.Games[i].Genre.Equals(genre)) matchingGames.Add(this.Games[i].GameCopy());
             }
 
             if (matchingGames.Count == 0) throw new Exception("there are no games of this genre");
@@ -135,7 +152,7 @@ namespace Server.Domain
         {
             for (int i = 0; i < this.Games.Count; i++)
             {
-                if (this.Games[i].Title.Equals(title)) return this.Games[i];
+                if (this.Games[i].Title.Equals(title)) return this.Games[i].GameCopy();
             }
 
             throw new GameNotFound();
@@ -146,7 +163,7 @@ namespace Server.Domain
             Collection<Game> matchingGames = new Collection<Game>();
             for (int i = 0; i < this.Games.Count; i++)
             {
-                if (this.Games[i].Stars==(qualification)) matchingGames.Add(this.Games[i]);
+                if (this.Games[i].Stars==(qualification)) matchingGames.Add(this.Games[i].GameCopy());
             }
             if (matchingGames.Count == 0) throw new Exception("there are no games of this qualification");
             return matchingGames;

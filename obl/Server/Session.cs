@@ -7,8 +7,9 @@ using Server.Domain.ServerExceptions;
 using Common.Communicator.Exceptions;
 using Common.Communicator;
 using Common.FileManagement.Exceptions;
+using Server.Domain;
 
-namespace Server.Domain
+namespace Server
 {
     public class Session
     {
@@ -177,13 +178,11 @@ namespace Server.Domain
                 int stars= Int32.Parse(data[1]);
                 string comment = data[2];
 
-                Game game = _usersAndCatalogueManager.GetCatalogue().GetGameByName(gameName);
                 Qualification q = new Qualification();
-                q.comment = comment;
+                q.Comment = comment;
                 q.Stars = stars;
                 q.User = _userLogged.Name;
-                q.game = game;
-                game.AddCommunityQualification(q);
+                _usersAndCatalogueManager.AddCommunityQualification(gameName, q);
                 _communicator.SendMessage(CommandConstants.PublishQualification, _messageLanguage.QualificationAdded);
             }
             else
@@ -196,8 +195,7 @@ namespace Server.Domain
         {
             try
             {
-                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
-                Game game = catalogue.GetGameByName(package.Message);
+                Game game = _usersAndCatalogueManager.GetGame(package.Message);
                 GameDetails gameDetails = new GameDetails(game);
                 _communicator.SendMessage(CommandConstants.GameDetails, gameDetails.DetailsOnstring());
             }
@@ -207,9 +205,9 @@ namespace Server.Domain
             }
         }
 
-        private void SendCover(CommunicatorPackage package){
-            Catalogue catalogue = _usersAndCatalogueManager.Catalogue;
-            Game game = catalogue.GetGameByName(package.Message);
+        private void SendCover(CommunicatorPackage package)
+        {    
+            Game game = _usersAndCatalogueManager.GetGame(package.Message);
             string path = game.Cover;
 
             try{
@@ -243,7 +241,7 @@ namespace Server.Domain
             stars = Int32.Parse(values[2]);
             
 
-            string games = _usersAndCatalogueManager.GetCatalogue().SearchGame(title, genre, stars);
+            string games = _usersAndCatalogueManager.SearchGames(title, genre, stars);
             
             _communicator.SendMessage(CommandConstants.SearchGame, games);
         }
@@ -293,9 +291,7 @@ namespace Server.Domain
             {
                 try
                 {
-                    Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
-                    string gameName = package.Message;
-                    Game game = catalogue.GetGameByName(gameName);
+                    Game game = _usersAndCatalogueManager.GetGame(package.Message);
                     _userLogged.BuyGame(game.Title);
                     _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GamePurchased);
                 }
@@ -316,9 +312,8 @@ namespace Server.Domain
 
         private void ShowCatalogue()
         {
-            Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
+            string messageToSend = _usersAndCatalogueManager.GetCatalogue();
 
-            string messageToSend = catalogue.ShowGamesOnStringList();
             if(messageToSend.Equals("")){
                 messageToSend = _messageLanguage.EmptyCatalogue;
             }
@@ -379,6 +374,7 @@ namespace Server.Domain
         private void CloseSession()
         {
             this.Active = false;
+            this.LogOut();
         }
                
     }

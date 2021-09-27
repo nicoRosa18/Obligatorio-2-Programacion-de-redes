@@ -78,7 +78,6 @@ namespace Server
                     int threadId = threadCount;
 
                     var connectedSocket = _socketServer.Accept();
-                    Console.WriteLine("b");
                     _serverAttributes.AddClient(connectedSocket);
 
                     Console.WriteLine($"Nueva coneccion {threadId} aceptada");
