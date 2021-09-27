@@ -9,7 +9,7 @@ namespace Server.Domain
     public class User
     {
         public string Name { get; set; }
-        
+        public bool loggedIn {get; set;}
         public ArrayList AcquireGames { get; set; }
         public ArrayList PublishedGames { get; set; }
 
@@ -18,6 +18,24 @@ namespace Server.Domain
         {
             this.AcquireGames = new ArrayList();
             this.PublishedGames = new ArrayList();
+            loggedIn = false;
+        }
+
+        public void LogIn()
+        {
+            if(!loggedIn)
+            {
+                this.loggedIn = true;
+            }
+            else
+            {
+                throw new UserAlreadyLoggedIn();
+            }
+        }
+
+        public void LogOut()
+        {
+            this.loggedIn = false;
         }
 
         public void BuyGame(string boughtGameName)

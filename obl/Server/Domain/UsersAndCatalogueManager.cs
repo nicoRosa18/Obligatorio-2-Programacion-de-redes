@@ -70,7 +70,11 @@ namespace Server.Domain
             {
                 foreach (User user in Users)
                 {
-                    if (user.Name == userName) userToReturn = user;
+                    if (user.Name == userName) 
+                    {
+                        user.LogIn();
+                        userToReturn = user;
+                    }
                 }
             }
             return userToReturn;

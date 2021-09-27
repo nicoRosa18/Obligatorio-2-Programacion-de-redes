@@ -57,4 +57,5 @@ public abstract class Message
     public abstract  string GameDeleted { get; set; }
     public abstract  string GameModified { get; set; }
     public abstract  string GameModifiedNewInfo { get; set; }  
+    public abstract  string UserAlreadyLoggedIn { get; set; }  
 }

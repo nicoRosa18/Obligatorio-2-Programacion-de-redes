@@ -109,7 +109,8 @@ namespace Server
             {
                 session.Listen();
             }
-
+            session.LogOut();
+            
             if(!_serverAttributes.EndConnection){
                 connectedSocket.Shutdown(SocketShutdown.Both);
                 connectedSocket.Close();

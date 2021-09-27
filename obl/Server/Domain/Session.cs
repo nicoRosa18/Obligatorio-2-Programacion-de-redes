@@ -29,7 +29,15 @@ namespace Server.Domain
             this._messageLanguage = messageLanguage;
         }
 
-        public void MessageInterpreter(CommunicatorPackage package)
+        public void LogOut()
+        {
+            if(_userLogged != null)
+            {
+                _userLogged.LogOut();
+            }
+        }
+
+        private void MessageInterpreter(CommunicatorPackage package)
         {
             string messageReturn = "";
             switch (package.Command)
@@ -273,6 +281,10 @@ namespace Server.Domain
             {
                 _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserIncorrect);
             }
+            catch(UserAlreadyLoggedIn)
+            {
+                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserAlreadyLoggedIn);
+            }
         }
 
         private void BuyGame(CommunicatorPackage package)
@@ -360,7 +372,7 @@ namespace Server.Domain
             catch (Exception e)
             {
                 Console.WriteLine($"Error {e.Message}.."); 
-                CloseSession();   
+                CloseSession();
             }
         }
 

@@ -60,6 +60,7 @@ public class SpanishMessage : Message
     public override string GameDeleted { get; set; }
     public override string GameModified { get; set; }
     public override string GameModifiedNewInfo { get; set; }
+    public override string UserAlreadyLoggedIn { get; set; }
     
     public SpanishMessage()
     {
@@ -205,5 +206,7 @@ public class SpanishMessage : Message
         GameRemovedCorrectly = "Juego eliminado correctamente!";
 
         UserNotGameOwner = "Tu usuario no es el dueno del juego, no cuenta con permisos";
+
+        UserAlreadyLoggedIn = "Este usuario ya tiene una sesion iniciada";
     }
 }
