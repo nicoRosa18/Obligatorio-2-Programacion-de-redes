@@ -61,7 +61,6 @@ namespace Server.Domain
 
         public void ModifyGameForOwner(Game oldGame, Game NewGame)
         {
-            IsOwner(oldGame);
             if(this.AcquireGames.Remove(oldGame))
             {
                 this.AcquireGames.Add(NewGame);

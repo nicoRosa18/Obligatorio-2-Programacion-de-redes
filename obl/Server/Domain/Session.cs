@@ -56,8 +56,10 @@ namespace Server.Domain
                     BuyGame(package);
                     break;
                 case CommandConstants.RemoveGame:
+                    RemoveGame(package);
                     break;
                 case CommandConstants.ModifyGame:
+                    ModifyGame(package);
                     break;
                 case CommandConstants.MyGames:
                     MyGames();
@@ -74,10 +76,6 @@ namespace Server.Domain
                 case CommandConstants.SendCover:
                     SendCover(package);
                     break;
-                     
-                // case "":
-                //     CloseConnection();
-                //     break;
                 default:
                     messageReturn = "por favor envie una opcion correcta";
                     _communicator.SendMessage(CommandConstants.StartupMenu, messageReturn);

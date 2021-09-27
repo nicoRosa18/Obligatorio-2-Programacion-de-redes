@@ -105,7 +105,7 @@ namespace Server.Domain
             this.Games.Remove(gameToDelete);
         }
 
-        public void ModifyGame(string oldGameTitle, Game newGame)
+        public Game ModifyGame(string oldGameTitle, Game newGame)
         {
             Game gameToModify = SearchGameByTitle(oldGameTitle);
 
@@ -114,6 +114,8 @@ namespace Server.Domain
             if(!newGame.Genre.Equals("")) gameToModify.Genre = newGame.Genre;
             if(!newGame.Synopsis.Equals("")) gameToModify.Synopsis = newGame.Synopsis;
             if(!newGame.AgeRating.Equals("")) gameToModify.AgeRating = newGame.AgeRating;
+
+            return gameToModify;
         }
         
         private Collection<Game> SearchGameByGenre(string genre)

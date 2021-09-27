@@ -97,13 +97,13 @@ namespace Server.Domain
 
         public void ModifyGame(User publisher, Game oldGame, Game newGame)
         {
-            publisher.ModifyGameForOwner(oldGame, newGame);
+            publisher.IsOwner(oldGame);
+            Game newGameFullData = this.Catalogue.ModifyGame(oldGame.Title, newGame);
+            publisher.ModifyGameForOwner(oldGame, newGameFullData);
             foreach (User user in this.Users)
             {
-                user.ModifyGameForNotOwner(oldGame, newGame);
+                user.ModifyGameForNotOwner(oldGame, newGameFullData);
             }
-
-            this.Catalogue.ModifyGame(oldGame.Title, newGame);
         }
     }
 }
