@@ -169,7 +169,7 @@ namespace Server.Domain
                 int stars= Int32.Parse(data[1]);
                 string comment = data[2];
 
-                Game game = _usersAndCatalogueManager.Catalogue.GetGameByName(gameName);
+                Game game = _usersAndCatalogueManager.GetCatalogue().GetGameByName(gameName);
                 Qualification q = new Qualification();
                 q.comment = comment;
                 q.Stars = stars;
@@ -188,7 +188,7 @@ namespace Server.Domain
         {
             try
             {
-                Catalogue catalogue = _usersAndCatalogueManager.Catalogue;
+                Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
                 Game game = catalogue.GetGameByName(package.Message);
                 GameDetails gameDetails = new GameDetails(game);
                 _communicator.SendMessage(CommandConstants.GameDetails, gameDetails.DetailsOnstring());
@@ -232,13 +232,10 @@ namespace Server.Domain
             string title = values[0];
             string genre = values[1];
             int stars = -1;
-            try
-            {
-                stars = Int32.Parse(values[2]);
-            }
-            catch(FormatException) {}
+            stars = Int32.Parse(values[2]);
+            
 
-            string games = _usersAndCatalogueManager.Catalogue.SearchGame(title, genre, stars);
+            string games = _usersAndCatalogueManager.GetCatalogue().SearchGame(title, genre, stars);
             
             _communicator.SendMessage(CommandConstants.SearchGame, games);
         }
@@ -252,10 +249,12 @@ namespace Server.Domain
         private void UserRegistration(CommunicatorPackage received)
         {
             string userName = received.Message;
-            if (_usersAndCatalogueManager.ContainsUser(userName))
+            try
+            {
+                _usersAndCatalogueManager.ContainsUser(userName);
                 _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
-                
-            else
+            }
+            catch(UserNotFound)
             {
                 _usersAndCatalogueManager.AddUser(userName);
                 _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserCreated + _usersAndCatalogueManager.Users.Count + "\n");
@@ -265,12 +264,12 @@ namespace Server.Domain
         private void UserLogin(CommunicatorPackage received)
         {
             string user = received.Message;
-            if (_usersAndCatalogueManager.Login(user))
+            try
             {
+                _userLogged = _usersAndCatalogueManager.Login(user);
                 _communicator.SendMessage(CommandConstants.userLogged, _messageLanguage.UserLogged);
-                _userLogged = _usersAndCatalogueManager.GetUser(user);
             }
-            else
+            catch(UserNotFound)
             {
                 _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserIncorrect);
             }
@@ -285,7 +284,7 @@ namespace Server.Domain
                     Catalogue catalogue = _usersAndCatalogueManager.GetCatalogue();
                     string gameName = package.Message;
                     Game game = catalogue.GetGameByName(gameName);
-                    _userLogged.BuyGame(game);
+                    _userLogged.BuyGame(game.Title);
                     _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GamePurchased);
                 }
                 catch(GameNotFound)

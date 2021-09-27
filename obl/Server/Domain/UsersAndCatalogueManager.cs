@@ -27,8 +27,9 @@ namespace Server.Domain
         }
 
         public Collection<User>  Users { get; set; }
-        
         public Catalogue Catalogue { get; set; }
+        private readonly object _userCollectionLock = new object();
+        private readonly object _catalogueLock = new object();
 
         public UsersAndCatalogueManager() 
         {
@@ -38,71 +39,109 @@ namespace Server.Domain
 
         public void AddUser(string username)
         {
-            User user = new User();
-            user.Name = username;
-            this.Users.Add(user);
+            lock(_userCollectionLock)
+            {
+                User user = new User();
+                user.Name = username;
+                this.Users.Add(user);
+            }
         }
 
-        public User GetUser(string userId)
+        public void ContainsUser(string userName)
         {
-            foreach (User user in Users)
+            User userToCompare = new User();
+            userToCompare.Name = userName;
+            
+            lock(_userCollectionLock)
             {
-                if (user.Name == userId) return user;
+                if(!Users.Contains(userToCompare))
+                {
+                    throw new UserNotFound();
+                }
             }
-            throw new Exception("User does not exists");
+        }
+
+        public User Login(string userName)
+        {
+            ContainsUser(userName);
+
+            User userToReturn = new User();
+            lock(_userCollectionLock)
+            {
+                foreach (User user in Users)
+                {
+                    if (user.Name == userName) userToReturn = user;
+                }
+            }
+            return userToReturn;
         }
 
         public Catalogue GetCatalogue()
         {
-            return this.Catalogue;
-        }
-
-        public bool ContainsUser(string userName)
-        {
-            User userToCompare = new User();
-            userToCompare.Name = userName;
-            return Users.Contains(userToCompare);
-        }
-
-        public bool Login(string user)
-        {
-            return ContainsUser(user);
+            Catalogue copyCatalogue = new Catalogue();
+            lock(_catalogueLock)
+            {
+                copyCatalogue = this.Catalogue;
+            }
+            return copyCatalogue;
         }
 
         public void AddGame(User publisher, Game gameToAdd)
         {
-            this.Catalogue.AddGame(gameToAdd);
-            publisher.CreateGame(gameToAdd);
+            lock(_catalogueLock)
+            {
+                this.Catalogue.AddGame(gameToAdd);
+            }
+            publisher.CreateGame(gameToAdd.Title);
         }
 
         public bool ExistsGame(Game gameToAdd)
         {
             bool toReturn = false;
-            if(this.Catalogue.ExistsGame(gameToAdd))
-                toReturn = true;
+            lock(_catalogueLock)
+            {
+                if(this.Catalogue.ExistsGame(gameToAdd))
+                    toReturn = true;
+            }
             return toReturn;
         }
 
         public void RemoveGame(User publisher, Game gameToRemove)
         {
-            publisher.RemoveFromPublishedGames(gameToRemove);
+            publisher.RemoveFromPublishedGames(gameToRemove.Title);
 
-            foreach (User user in this.Users)
+            lock(_userCollectionLock)
             {
-                user.RemoveFromAcquiredGames(gameToRemove);
+                foreach (User user in this.Users)
+                {
+                    user.RemoveFromAcquiredGames(gameToRemove.Title);
+                }
             }
 
-            this.Catalogue.DeleteGame(gameToRemove.Title);
+            lock(_catalogueLock)
+            {
+                this.Catalogue.DeleteGame(gameToRemove.Title);
+            }
         }
 
         public void ModifyGame(User publisher, Game oldGame, Game newGame)
         {
-            publisher.IsOwner(oldGame);
-            Game newGameFullData = this.Catalogue.ModifyGame(oldGame.Title, newGame);
-            publisher.ModifyGameForOwner(oldGame, newGameFullData);
-            foreach (User user in this.Users)
+            publisher.IsOwner(oldGame.Title);
+
+            Game newGameFullData = new Game();
+            lock(_catalogueLock)
             {
-                user.ModifyGameForNotOwner(oldGame, newGameFullData);
+                newGameFullData = this.Catalogue.ModifyGame(oldGame.Title, newGame);
+            }
+
+            publisher.ModifyGameForOwner(oldGame.Title, newGameFullData.Title);
+
+            lock(_userCollectionLock)
+            {
+                foreach (User user in this.Users)
+                {
+                    user.ModifyGameForNotOwner(oldGame.Title, newGameFullData.Title);
+                }
             }
         }
     }

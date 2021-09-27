@@ -9,75 +9,70 @@ namespace Server.Domain
     public class User
     {
         public string Name { get; set; }
-        public ICollection<Game> AcquireGames { get; set; }
-        public ArrayList PublishedGames { get; set; }
         
-        public void PublishGame(Game game)
-        {
-            this.PublishedGames.Add(game);
-        }
+        public ArrayList AcquireGames { get; set; }
+        public ArrayList PublishedGames { get; set; }
+
 
         public User()
         {
-            this.AcquireGames = new Collection<Game>();
+            this.AcquireGames = new ArrayList();
             this.PublishedGames = new ArrayList();
         }
 
-        public void PublishQualification(Qualification qualification)
+        public void BuyGame(string boughtGameName)
         {
-            qualification.game.AddCommunityQualification(qualification);
-        }
-
-        public void BuyGame(Game game)
-        {
-            if (AcquireGames.Contains(game))
+            if (AcquireGames.Contains(boughtGameName))
             {
                 throw new GameAlreadyPurchased();
             }
             else
             {
-                this.AcquireGames.Add(game);
+                this.AcquireGames.Add(boughtGameName);
             }
         }
 
-        public void CreateGame(Game gameCreated)
+        public void CreateGame(string newGameName)
         {
-            this.PublishedGames.Add(gameCreated);
+            this.PublishedGames.Add(newGameName);
         }
 
-        public void RemoveFromAcquiredGames(Game gameToRemove)
+        public void RemoveFromAcquiredGames(string gameNameToRemove)
         {
-            if (AcquireGames.Contains(gameToRemove))
+            if (AcquireGames.Contains(gameNameToRemove))
             {
-                AcquireGames.Remove(gameToRemove);
+                AcquireGames.Remove(gameNameToRemove);
             }
         }
 
-        public void RemoveFromPublishedGames(Game gameNameToRemove)
+        public void RemoveFromPublishedGames(string gameNameToRemove)
         {
             IsOwner(gameNameToRemove);
             PublishedGames.Remove(gameNameToRemove);
         }
 
-        public void ModifyGameForOwner(Game oldGame, Game NewGame)
+        public void ModifyGameForOwner(string oldGameName, string NewGameName)
         {
-            if(this.AcquireGames.Remove(oldGame))
+            if(AcquireGames.Contains(oldGameName))
             {
-                this.AcquireGames.Add(NewGame);
+                this.AcquireGames.Remove(oldGameName);
+                this.AcquireGames.Add(NewGameName);
             }
-            this.PublishedGames.Remove(oldGame);
-            this.PublishedGames.Add(NewGame);
+
+            this.PublishedGames.Remove(oldGameName);
+            this.PublishedGames.Add(NewGameName);
         }
 
-        public void ModifyGameForNotOwner(Game oldGame, Game NewGame)
+        public void ModifyGameForNotOwner(string oldGameName, string NewGameName)
         {
-            if(this.AcquireGames.Remove(oldGame))
+            if(AcquireGames.Contains(oldGameName))
             {
-                this.AcquireGames.Add(NewGame);
+                this.AcquireGames.Remove(oldGameName);
+                this.AcquireGames.Add(NewGameName);
             }
         }
 
-        public void IsOwner(Game GameName)
+        public void IsOwner(string GameName)
         {
             if(!PublishedGames.Contains(GameName))
             {
@@ -90,7 +85,7 @@ namespace Server.Domain
             string ret = "";
             foreach (var game in AcquireGames)
             {
-                ret += $"{game.Title} \n";
+                ret += $"{game} \n";
             }
 
             return ret;

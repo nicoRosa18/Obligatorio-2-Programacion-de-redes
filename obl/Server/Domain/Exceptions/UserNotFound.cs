@@ -2,13 +2,13 @@ using System;
 
 namespace Server.Domain.ServerExceptions
 {
-    public class UserNotOwnerofGame : Exception
+    public class UserNotFound : Exception
     {
-        public UserNotOwnerofGame()
+        public UserNotFound()
         {
         }
 
-        public override string Message => "User does not have permission of this game";
+        public override string Message => "User does not exist";
 
         public override string ToString()
         {
