@@ -47,7 +47,7 @@ namespace Server.Domain
             foreach (var qualification in this.Game.CommunityQualifications)
             {
                 string qual = $" Usuario: {qualification.User} \n" +
-                              $" Comentario: {qualification.comment} \n" +
+                              $" Comentario: {qualification.Comment} \n" +
                               $" Estrellas: {qualification.Stars} \n \n";
 
                 ret += qual;
