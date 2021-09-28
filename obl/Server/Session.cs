@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Net.Sockets;
-using System.Text;
 using Common.Protocol;
 using Server.Domain.ServerExceptions;
 using Common.Communicator.Exceptions;
@@ -238,12 +235,21 @@ namespace Server
             string title = values[0];
             string genre = values[1];
             int stars = -1;
-            stars = Int32.Parse(values[2]);
-            
+            try
+            {
+                stars = Int32.Parse(values[2]);
+            }
+            catch { }
 
-            string games = _usersAndCatalogueManager.SearchGames(title, genre, stars);
-            
-            _communicator.SendMessage(CommandConstants.SearchGame, games);
+            try
+            {
+                string games = _usersAndCatalogueManager.SearchGames(title, genre, stars);
+                _communicator.SendMessage(CommandConstants.SearchGame, games);
+            }
+            catch (GameNotFound)
+            {
+                _communicator.SendMessage(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
+            }
         }
 
         private void StartUpMenu()
@@ -331,15 +337,19 @@ namespace Server
                 string synopsis =data[2];     
                 string ageRating = data[3];
                 _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.SendGameCover);
-
+                bool okReceived = false;
                 string coverPath = "Default";
-                try
+                while (!okReceived)
                 {
-                    coverPath = _communicator.ReceiveFile();
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e.Message);
+                    try
+                    {
+                        coverPath = _communicator.ReceiveFile();
+                        okReceived = true;
+                    }
+                    catch (Exception e)
+                    {
+                        _communicator.SendMessage(CommandConstants.SendCover,_messageLanguage.ErrorGameCover);
+                    }
                 }
 
                 Game gameToAdd = new Game(title, coverPath, genre, synopsis, ageRating);

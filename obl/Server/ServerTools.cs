@@ -1,16 +1,15 @@
-using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Sockets;
 
 namespace Server
 {
     public class ServerTools
     {
-        public bool EndConnection {get; set;}
-        public List<Socket> Clients {get; set;}
+        public bool EndConnection { get; set; }
+        public List<Socket> Clients { get; set; }
 
-        public ServerTools(){
+        public ServerTools()
+        {
             EndConnection = false;
             Clients = new List<Socket>();
         }

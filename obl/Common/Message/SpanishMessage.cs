@@ -1,5 +1,4 @@
-﻿using System;
-using Common.Protocol;
+﻿using Common.Protocol;
 
 public class SpanishMessage : Message
 {
@@ -61,7 +60,9 @@ public class SpanishMessage : Message
     public override string GameModified { get; set; }
     public override string GameModifiedNewInfo { get; set; }
     public override string UserAlreadyLoggedIn { get; set; }
-    
+    public override string NoParametersToSearch { get; set; }
+    public override string ErrorGameCover { get; set; }
+
     public SpanishMessage()
     {
         Setup();
@@ -85,12 +86,12 @@ public class SpanishMessage : Message
 
         MainMenuMessage = "Menu del Sistema \n" +
                             "Escriba el comando para la opcion elegida \n " +
-                            $" {CommandConstants.ViewCatalogue}-Ver catalogo de juegos \n "+
                             $" {CommandConstants.SearchGame}-Buscar juego \n "+
                             $" {CommandConstants.AddGame}-Agregar juego (Agrega un nuevo juego a la tienda) \n " +
                             $" {CommandConstants.MyGames}-Ver mis juegos adiquiridos";
 
         ChangeMenu = $"{CommandConstants.MainMenu}-Para vover al menu \n" +
+                     $"{CommandConstants.buyGame}- Para comprar un juego \n \n"+
                     "Estas opciones solo estan permitidas si es el publicador del juego: \n" +
                         $" {CommandConstants.RemoveGame}-Para remover el juego \n"+
                         $" {CommandConstants.ModifyGame}-Para modificar el juego \n";
@@ -117,7 +118,8 @@ public class SpanishMessage : Message
 
         UserLogged = "Usuario loggeado";
         
-        UserIncorrect = "Usuario incorrecto, vuelva a intentarlo.";
+        UserIncorrect = "Usuario incorrecto, vuelva a intentarlo.\n" +
+                        $"{CommandConstants.StartupMenu} para volver al menu de inico";
 
         UserNotLogged = "No es posible realizar la accion porque no se loggeo el usuario";
 
@@ -161,7 +163,8 @@ public class SpanishMessage : Message
                             $" {CommandConstants.PublishQualification}-Para agregar una calificacion";
 
         MyGamesOptions = $"{CommandConstants.MainMenu}-Para vover al menu \n" +
-                        $"{CommandConstants.GameDetails}-Para ver los detalles de un juego";
+                        $"{CommandConstants.GameDetails}-Para ver los detalles de un juego \n"+
+                        $"{CommandConstants.PublishQualification} Para agregar una calificacion";
 
         GameDetails = $"Ingrese el nombre del juego que quiere ver los detalles";
 
@@ -207,6 +210,11 @@ public class SpanishMessage : Message
 
         UserNotGameOwner = "Tu usuario no es el dueno del juego, no cuenta con permisos";
 
-        UserAlreadyLoggedIn = "Este usuario ya tiene una sesion iniciada";
+        UserAlreadyLoggedIn = $"Este usuario ya tiene una sesion iniciada \n" +
+                              $"{CommandConstants.StartupMenu} para volver al menu de inico ";
+        
+        NoParametersToSearch = "No se especifican parametros para la busqueda, volviendo al menu principal.";
+
+        ErrorGameCover = "No se encuentra el archivo en la ruta especificado, por favor igresela de nuevo";
     }
 }

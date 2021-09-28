@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using Common.Communicator;
 using Common.Protocol;
 using Common.SettingsManager;
-using Common.Communicator.Exceptions;
 using Common.FileManagement.Exceptions;
 
 namespace Client
@@ -35,18 +34,20 @@ namespace Client
 
             this._communication = new CommunicationSocket(_socket);
         }
-        
+
         public void Start()
         {
-            try{
+            try
+            {
                 _socket.Connect(_remoteEndpoint);
                 Menu();
             }
-            catch(SocketException){
+            catch (SocketException)
+            {
                 Console.WriteLine(_message.ServerClosed);
             }
         }
-        
+
         private void Menu()
         {
             Console.WriteLine(_message.ClientConnectedWithServer);
@@ -68,18 +69,19 @@ namespace Client
                     {
                         MessageInterpreter(message);
                     }
-                }    
+                }
             }
             catch (SocketException)
             {
                 _socket.Close();
                 Console.WriteLine(_message.ServerClosed);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _socket.Close();
                 Console.WriteLine(e.Message);
             }
+
             CloseConnection();
         }
 
@@ -125,21 +127,24 @@ namespace Client
                     case CommandConstants.PublishQualification:
                         PublishQualification();
                         break;
+                    case CommandConstants.ViewCatalogue:
+                        ShowCatalogue();
+                        break;
                     default:
                         Console.WriteLine(_message.WrongOption);
                         break;
                 }
             }
-            catch(FormatException)
+            catch (FormatException)
             {
                 Console.WriteLine(_message.WrongOption);
             }
         }
 
-        public void ShowCatalogue()
+        private void ShowCatalogue()
         {
             _communication.SendMessage(CommandConstants.ViewCatalogue, "");
-            
+
             Console.WriteLine(_communication.ReceiveMessage().Message);
             Console.WriteLine(_message.SearchGameOptions);
         }
@@ -176,13 +181,13 @@ namespace Client
                     if (starsInt >= 0 && starsInt <= 5) starsOk = true;
                     else Console.WriteLine(_message.InvalidStars);
                 }
-                catch(FormatException)
+                catch (FormatException)
                 {
                     Console.WriteLine(_message.InvalidStars);
                 }
             }
 
-            Console.WriteLine(_message.QualificationComment); 
+            Console.WriteLine(_message.QualificationComment);
             string comment = Console.ReadLine();
             string message = $"{gameName}#{stars}#{comment}";
             _communication.SendMessage(CommandConstants.PublishQualification, message);
@@ -190,19 +195,19 @@ namespace Client
             MainMenu();
         }
 
-        private void  ShowGameDetails() 
+        private void ShowGameDetails()
         {
             Console.WriteLine(_message.GameDetails);
             string gameName = Console.ReadLine();
-            
+
             _communication.SendMessage(CommandConstants.GameDetails, gameName);
-            Console.WriteLine(_communication.ReceiveMessage().Message); 
+            Console.WriteLine(_communication.ReceiveMessage().Message);
 
             Console.WriteLine(_message.DownloadCover);
 
             string descargarCaratula = Console.ReadLine();
-            int command; 
-            if(descargarCaratula.Equals("1"))
+            int command;
+            if (descargarCaratula.Equals("1"))
             {
                 command = CommandConstants.SendCover;
                 _communication.SendMessage(command, gameName);
@@ -211,12 +216,14 @@ namespace Client
                 {
                     pathSavedAt = _communication.ReceiveFile();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
+
                 Console.WriteLine(_message.SavedPathAt);
                 Console.WriteLine(pathSavedAt);
+                MainMenu();
             }
         }
 
@@ -225,14 +232,15 @@ namespace Client
             _communication.SendMessage(CommandConstants.MyGames, "");
 
             CommunicatorPackage received = _communication.ReceiveMessage();
-            if(received.Command !=  CommandConstants.userNotLogged)
+            if (received.Command != CommandConstants.userNotLogged)
             {
                 string games = received.Message;
                 ShowGameList(games);
 
                 Console.WriteLine(_message.MyGamesOptions);
             }
-            else{
+            else
+            {
                 Console.WriteLine(received.Message);
             }
         }
@@ -258,20 +266,26 @@ namespace Client
                     if (starsInt >= 0 && starsInt <= 5) starsOk = true;
                     else Console.WriteLine(_message.InvalidStars);
                 }
-                catch(FormatException)
+                catch (FormatException)
                 {
                     if (stars.Equals("")) starsOk = true;
                     else Console.WriteLine(_message.InvalidStars);
                 }
             }
 
-            string searchConcat = $"{title}#{genre}#{stars}";
-            _communication.SendMessage(CommandConstants.SearchGame, searchConcat);
-            
-            string games = _communication.ReceiveMessage().Message;
-            ShowGameList(games);
-
-            Console.WriteLine(_message.ChangeMenu);
+            if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(genre) && string.IsNullOrEmpty(stars))
+            {
+                Console.WriteLine(_message.NoParametersToSearch);
+                MainMenu();
+            }
+            else
+            {
+                string searchConcat = $"{title}#{genre}#{stars}";
+                _communication.SendMessage(CommandConstants.SearchGame, searchConcat);
+                string games = _communication.ReceiveMessage().Message;
+                ShowGameList(games);
+                Console.WriteLine(_message.ChangeMenu);
+            }
         }
 
         private void BuyGame()
@@ -292,7 +306,7 @@ namespace Client
             _communication.SendMessage(CommandConstants.GameExists, gameToDelete);
 
             CommunicatorPackage existsPackage = _communication.ReceiveMessage();
-            if(existsPackage.Command == CommandConstants.GameExists)
+            if (existsPackage.Command == CommandConstants.GameExists)
             {
                 _communication.SendMessage(CommandConstants.RemoveGame, gameToDelete);
                 Console.WriteLine(_communication.ReceiveMessage().Message);
@@ -312,7 +326,7 @@ namespace Client
             _communication.SendMessage(CommandConstants.GameExists, oldGameTitle);
             CommunicatorPackage existsPackage = _communication.ReceiveMessage();
 
-            if(existsPackage.Command == CommandConstants.GameExists)
+            if (existsPackage.Command == CommandConstants.GameExists)
             {
                 ModifyGameData(oldGameTitle);
             }
@@ -320,7 +334,7 @@ namespace Client
             {
                 Console.WriteLine(existsPackage.Message);
             }
-            
+
             MainMenu();
         }
 
@@ -334,7 +348,7 @@ namespace Client
             {
                 Console.WriteLine(_message.NewGameInit);
                 title = Console.ReadLine();
-                
+
                 _communication.SendMessage(CommandConstants.GameExists, title);
                 int res = _communication.ReceiveMessage().Command;
                 if (res == CommandConstants.GameExists)
@@ -362,32 +376,34 @@ namespace Client
             string dataToSend = $"{oldGameTitle}#{title}#{genre}#{synopsis}#{ageRating}";
 
             _communication.SendMessage(CommandConstants.AddGame, dataToSend);
-            
+
             CommunicatorPackage received = _communication.ReceiveMessage();
             Console.WriteLine(received.Message);
 
-            if(received.Command != CommandConstants.userNotLogged)
+            if (received.Command != CommandConstants.userNotLogged)
             {
                 string path = Console.ReadLine();
-                if(!path.Equals(""))
+                if (!path.Equals(""))
                 {
                     _communication.SendMessage(CommandConstants.ReceiveCover, "");
                     bool fileNotFound = true;
-                    while(fileNotFound)
+                    while (fileNotFound)
                     {
                         try
                         {
                             _communication.SendFile(path);
                             fileNotFound = false;
                         }
-                        catch(FileNotFoundException)
+                        catch (FileNotFoundException)
                         {
                             Console.WriteLine(_message.FileNotFound);
                         }
                     }
                 }
+
                 Console.WriteLine(_communication.ReceiveMessage().Message);
             }
+
             MainMenu();
         }
 
@@ -427,7 +443,7 @@ namespace Client
                 if (!string.IsNullOrWhiteSpace(genre))
                 {
                     genreOk = true;
-                } 
+                }
                 else
                 {
                     Console.WriteLine(_message.InvalidGenre);
@@ -440,7 +456,7 @@ namespace Client
             {
                 Console.WriteLine(_message.GameSynopsis);
                 synopsis = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(synopsis)) 
+                if (!string.IsNullOrWhiteSpace(synopsis))
                 {
                     synOk = true;
                 }
@@ -459,7 +475,7 @@ namespace Client
                 if (!string.IsNullOrWhiteSpace(synopsis))
                 {
                     ageOk = true;
-                } 
+                }
                 else
                 {
                     Console.WriteLine(_message.InvalidAge);
@@ -472,20 +488,23 @@ namespace Client
             CommunicatorPackage received = _communication.ReceiveMessage();
             Console.WriteLine(received.Message);
 
-            if(received.Command !=  CommandConstants.userNotLogged){
+            if (received.Command != CommandConstants.userNotLogged)
+            {
                 bool fileNotFound = true;
-                while(fileNotFound)
+                while (fileNotFound)
                 {
-                    try{
+                    try
+                    {
                         string path = Console.ReadLine();
                         _communication.SendFile(path);
                         fileNotFound = false;
                     }
-                    catch(FileNotFoundException){
+                    catch (Exception)
+                    {
                         Console.WriteLine(_message.FileNotFound);
                     }
                 }
-            
+
                 Console.WriteLine(_communication.ReceiveMessage().Message);
                 MainMenu();
             }
@@ -493,20 +512,26 @@ namespace Client
 
         private void CloseConnection()
         {
-            Console.WriteLine(_message.Disconnected);
-            _socket.Shutdown(SocketShutdown.Both);
-            _socket.Close();
+            try
+            {
+                Console.WriteLine(_message.Disconnected);
+                _socket.Shutdown(SocketShutdown.Both);
+                _socket.Close();
+            }
+            catch
+            {
+            }
         }
 
         private void UserLogin()
         {
             Console.WriteLine(_message.UserLogIn);
             bool okLogin = false;
-            bool menu = false;
-            while (!okLogin && !menu)
+            while (!okLogin)
             {
                 string user = Console.ReadLine();
-                if(string.IsNullOrWhiteSpace(user)) Console.WriteLine(_message.InvalidUsername);
+                if (user.Equals(CommandConstants.StartupMenu.ToString())) break;
+                if (string.IsNullOrWhiteSpace(user)) Console.WriteLine(_message.InvalidUsername);
                 else
                 {
                     _communication.SendMessage(CommandConstants.LoginUser, user);
@@ -515,7 +540,11 @@ namespace Client
                     Console.WriteLine(receive.Message);
                 }
             }
-            MainMenu();
+
+            if (okLogin)
+                MainMenu();
+            else
+                StartUpMenu();
         }
 
         private void UserRegistration()
@@ -544,7 +573,7 @@ namespace Client
 
         private void ShowGameList(string games)
         {
-            if(string.IsNullOrEmpty(games))
+            if (string.IsNullOrEmpty(games))
             {
                 Console.WriteLine(_message.GamesNotFound);
             }

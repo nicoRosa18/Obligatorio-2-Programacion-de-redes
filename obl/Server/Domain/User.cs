@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections;
 using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
@@ -9,7 +6,7 @@ namespace Server.Domain
     public class User
     {
         public string Name { get; set; }
-        public bool loggedIn {get; set;}
+        public bool loggedIn { get; set; }
         public ArrayList AcquireGames { get; set; }
         public ArrayList PublishedGames { get; set; }
 
@@ -23,7 +20,7 @@ namespace Server.Domain
 
         public void LogIn()
         {
-            if(!loggedIn)
+            if (!loggedIn)
             {
                 this.loggedIn = true;
             }
@@ -71,7 +68,7 @@ namespace Server.Domain
 
         public void ModifyGameForOwner(string oldGameName, string NewGameName)
         {
-            if(AcquireGames.Contains(oldGameName))
+            if (AcquireGames.Contains(oldGameName))
             {
                 this.AcquireGames.Remove(oldGameName);
                 this.AcquireGames.Add(NewGameName);
@@ -83,7 +80,7 @@ namespace Server.Domain
 
         public void ModifyGameForNotOwner(string oldGameName, string NewGameName)
         {
-            if(AcquireGames.Contains(oldGameName))
+            if (AcquireGames.Contains(oldGameName))
             {
                 this.AcquireGames.Remove(oldGameName);
                 this.AcquireGames.Add(NewGameName);
@@ -92,7 +89,7 @@ namespace Server.Domain
 
         public void IsOwner(string GameName)
         {
-            if(!PublishedGames.Contains(GameName))
+            if (!PublishedGames.Contains(GameName))
             {
                 throw new UserNotOwnerofGame();
             }

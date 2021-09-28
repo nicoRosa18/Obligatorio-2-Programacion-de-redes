@@ -6,20 +6,22 @@ namespace Server.Domain
     public class Game
     {
         public string Title { get; set; }
-        
-        public string Cover { get; set; } 
-        
+
+        public string Cover { get; set; }
+
         public string Genre { get; set; }
-        
+
         public string Synopsis { get; set; }
-        
+
         public string AgeRating { get; set; }
 
         public int Stars { get; set; }
 
         public Collection<Qualification> CommunityQualifications { get; set; }
 
-        public Game(){}
+        public Game()
+        {
+        }
 
         public Game(string title, string cover, string genre, string synopsis, string ageRating)
         {
@@ -33,21 +35,14 @@ namespace Server.Domain
         }
 
         public override bool Equals(object obj)
-        {   
-            return Title.Equals(((Game)obj).Title);
+        {
+            return Title.Equals(((Game) obj).Title);
         }
 
         public void AddCommunityQualification(Qualification qualification)
         {
             this.CommunityQualifications.Add(qualification);
             UpdateStars();
-        }
-
-        public string GameInfo()
-        {
-            return this.Title + "#" + this.Cover + "#" + this.Genre + "#" + this.Synopsis + "#" 
-                + this.AgeRating;
-
         }
 
         public Game GameCopy()
@@ -59,29 +54,29 @@ namespace Server.Domain
             cleanCopyGame.Synopsis = this.Synopsis;
             cleanCopyGame.AgeRating = this.AgeRating;
             cleanCopyGame.Stars = this.Stars;
-            CommunityQualifications = Qualificationcopy(cleanCopyGame);
+            Qualificationcopy(cleanCopyGame);
 
             return cleanCopyGame;
         }
 
-        private Collection<Qualification> Qualificationcopy(Game cleanCopyGame)
+        private void Qualificationcopy(Game cleanCopyGame)
         {
-            Collection<Qualification> copyQualifications = new Collection<Qualification>();
-            foreach(Qualification quali in CommunityQualifications)
+            cleanCopyGame.CommunityQualifications = new Collection<Qualification>();
+            foreach (Qualification quali in CommunityQualifications)
             {
                 Qualification copyQualification = new Qualification();
                 copyQualification.Game = cleanCopyGame;
                 copyQualification.User = quali.User;
                 copyQualification.Stars = quali.Stars;
                 copyQualification.Comment = quali.Comment;
+                cleanCopyGame.CommunityQualifications.Add(copyQualification);
             }
-            return copyQualifications;
         }
 
         private void UpdateStars()
         {
             GameDetails gameDetails = new GameDetails(this);
             Stars = gameDetails.AverageMark;
-        }        
+        }
     }
 }

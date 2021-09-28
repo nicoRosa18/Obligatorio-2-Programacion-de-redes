@@ -1,16 +1,15 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace Server.Domain
 {
     public class GameDetails
     {
         public Game Game { get; set; }
-        
+
         public Collection<Qualification> Reviews { get; set; }
 
         public int AverageMark { get; set; }
-        
+
         public GameDetails(Game game)
         {
             this.Game = game;
@@ -42,7 +41,7 @@ namespace Server.Domain
                    $" Genero: {this.Game.Genre} \n" +
                    $" Sinopsis: {this.Game.Synopsis} \n" +
                    $" Clasificacion de edad:{this.Game.AgeRating} \n" +
-                   $" Promedio de estrellas {this.Game.Stars} \n"  +
+                   $" Promedio de estrellas {this.Game.Stars} \n" +
                    $"Comentarios: \n";
             foreach (var qualification in this.Game.CommunityQualifications)
             {

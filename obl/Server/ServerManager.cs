@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -11,10 +10,11 @@ namespace Server
 {
     public class ServerManager
     {
-        private ServerTools _serverAttributes {get; set;}
-        private Socket _socketServer {get; set;}
-        private string _serverIpAddress {get; set;}
-        private string _serverPort {get; set;}
+        private ServerTools _serverAttributes { get; set; }
+        private Socket _socketServer { get; set; }
+        private string _serverIpAddress { get; set; }
+        private string _serverPort { get; set; }
+
         public ServerManager()
         {
             _socketServer = new Socket(AddressFamily.InterNetwork,
@@ -25,7 +25,7 @@ namespace Server
             Session._usersAndCatalogueManager = _usersAndCatalogueManager;
 
             _serverAttributes = new ServerTools();
-            
+
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
@@ -37,8 +37,9 @@ namespace Server
             CreateConnections();
         }
 
-        private void CreateConnections(){
-            var threadServer = new Thread(()=> ListenForConnections());
+        private void CreateConnections()
+        {
+            var threadServer = new Thread(() => ListenForConnections());
             threadServer.Start();
 
             while (!_serverAttributes.EndConnection)
@@ -47,18 +48,19 @@ namespace Server
                 switch (userInput)
                 {
                     case "exit":
-                        
+
                         _serverAttributes.EndConnection = true;
                         foreach (var client in _serverAttributes.Clients)
                         {
                             client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
-                        var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
+
+                        var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         var remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
                         fakeSocket.Connect(remoteEndpoint);
 
-                        _socketServer.Close(); 
+                        _socketServer.Close();
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta ingresada, ingrese de nuevo");
@@ -84,7 +86,7 @@ namespace Server
                     var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
                     threadConnection.Start();
                 }
-                catch(SocketException se)
+                catch (SocketException se)
                 {
                     Console.WriteLine(se);
                     Console.WriteLine("a");
@@ -95,6 +97,7 @@ namespace Server
                     _serverAttributes.EndConnection = true;
                 }
             }
+
             Console.WriteLine("Cerrando el server...");
         }
 
@@ -108,14 +111,16 @@ namespace Server
             {
                 session.Listen();
             }
+
             session.LogOut();
-            
-            if(!_serverAttributes.EndConnection){
+
+            if (!_serverAttributes.EndConnection)
+            {
                 connectedSocket.Shutdown(SocketShutdown.Both);
                 connectedSocket.Close();
                 _serverAttributes.RemoveClient(connectedSocket);
             }
-        
+
             Console.WriteLine($"{threadId}: Cerrando coneccion...");
             return;
         }
@@ -127,6 +132,6 @@ namespace Server
             Console.WriteLine("Inserte: ");
             Console.WriteLine("exit -> Para cerrar todas las conecciones y abandonar el programa");
             Console.WriteLine("Se mostraran las conecciones realizadas");
-        }   
+        }
     }
 }
