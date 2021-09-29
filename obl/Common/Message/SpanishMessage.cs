@@ -2,6 +2,7 @@
 
 public class SpanishMessage : Message
 {
+    public override string ModifyCover { get; set; }
     public override string MainMenuMessage { get;set;} 
     public override string StartUpMessage { get; set; }
     public override string UserRegistration { get; set; } 
@@ -91,7 +92,7 @@ public class SpanishMessage : Message
                             $" {CommandConstants.MyGames}-Ver mis juegos adiquiridos";
 
         ChangeMenu = $"{CommandConstants.MainMenu}-Para vover al menu \n" +
-                     $"{CommandConstants.buyGame}- Para comprar un juego \n \n"+
+                     $"{CommandConstants.buyGame}- Para comprar un juego \n"+
                     "Estas opciones solo estan permitidas si es el publicador del juego: \n" +
                         $" {CommandConstants.RemoveGame}-Para remover el juego \n"+
                         $" {CommandConstants.ModifyGame}-Para modificar el juego \n";
@@ -216,5 +217,11 @@ public class SpanishMessage : Message
         NoParametersToSearch = "No se especifican parametros para la busqueda, volviendo al menu principal.";
 
         ErrorGameCover = "No se encuentra el archivo en la ruta especificado, por favor igresela de nuevo";
+        
+        ModifyCover = "Desea modificar la caratula?" +
+                        " 1-Si \n" +
+                        " Cualquier otro input para seguir \n";
     }
+
+ 
 }

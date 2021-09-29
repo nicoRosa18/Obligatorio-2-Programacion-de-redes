@@ -3,7 +3,6 @@ using Common.Protocol;
 using Server.Domain.ServerExceptions;
 using Common.Communicator.Exceptions;
 using Common.Communicator;
-using Common.FileManagement.Exceptions;
 using Server.Domain;
 
 namespace Server
@@ -137,10 +136,8 @@ namespace Server
                 string newGenre = data[2];
                 string newSynopsis = data[3];     
                 string newAgeRating = data[4];
-
                 string newCover = "";
-
-                _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.SendGameCover);
+                _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.ModifyCover);
                 if(_communicator.ReceiveMessage().Command == CommandConstants.ReceiveCover)
                 {
                     newCover = _communicator.ReceiveFile();
@@ -148,7 +145,6 @@ namespace Server
                 Game newGame = new Game(newTitle, newCover, newGenre, newSynopsis, newAgeRating);
                 Game oldGameBeacon = new Game();
                 oldGameBeacon.Title = oldTitle;
-
                 try
                 {
                     _usersAndCatalogueManager.ModifyGame(_userLogged, oldGameBeacon, newGame);
@@ -210,7 +206,7 @@ namespace Server
             try{
                 _communicator.SendFile(path);
             }
-            catch(FileNotFoundException)
+            catch(System.IO.FileNotFoundException)
             {
                 _communicator.SendFile(path); //hacer una imagen comun que sea un ejemplo o hablar q hacer
             }

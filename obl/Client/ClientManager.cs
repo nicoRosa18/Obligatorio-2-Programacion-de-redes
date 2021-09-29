@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using Common.Communicator;
 using Common.Protocol;
 using Common.SettingsManager;
-using Common.FileManagement.Exceptions;
 
 namespace Client
 {
@@ -223,8 +222,8 @@ namespace Client
 
                 Console.WriteLine(_message.SavedPathAt);
                 Console.WriteLine(pathSavedAt);
-                MainMenu();
             }
+            MainMenu();
         }
 
         private void ShowMyGames()
@@ -375,36 +374,41 @@ namespace Client
 
             string dataToSend = $"{oldGameTitle}#{title}#{genre}#{synopsis}#{ageRating}";
 
-            _communication.SendMessage(CommandConstants.AddGame, dataToSend);
+            _communication.SendMessage(CommandConstants.ModifyGame, dataToSend);
 
             CommunicatorPackage received = _communication.ReceiveMessage();
             Console.WriteLine(received.Message);
-
+            
             if (received.Command != CommandConstants.userNotLogged)
             {
-                string path = Console.ReadLine();
-                if (!path.Equals(""))
+                string option = Console.ReadLine();
+                if (option.Equals("1"))
                 {
-                    _communication.SendMessage(CommandConstants.ReceiveCover, "");
-                    bool fileNotFound = true;
-                    while (fileNotFound)
+                    string path = Console.ReadLine();
+                    if (!path.Equals(""))
                     {
-                        try
+                        _communication.SendMessage(CommandConstants.ReceiveCover, "");
+                        bool fileNotFound = true;
+                        while (fileNotFound)
                         {
-                            _communication.SendFile(path);
-                            fileNotFound = false;
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            Console.WriteLine(_message.FileNotFound);
+                            try
+                            {
+                                _communication.SendFile(path);
+                                fileNotFound = false;
+                            }
+                            catch (System.IO.FileNotFoundException)
+                            {
+                                Console.WriteLine(_message.FileNotFound);
+                            }
                         }
                     }
                 }
-
+                else
+                {
+                    _communication.SendMessage(CommandConstants.NoModifyCover,"");
+                }
                 Console.WriteLine(_communication.ReceiveMessage().Message);
             }
-
-            MainMenu();
         }
 
         private void AddGame()
@@ -499,7 +503,7 @@ namespace Client
                         _communication.SendFile(path);
                         fileNotFound = false;
                     }
-                    catch (Exception)
+                    catch (System.IO.FileNotFoundException)
                     {
                         Console.WriteLine(_message.FileNotFound);
                     }

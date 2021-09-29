@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
 {
     public class Catalogue
     {
+        public const int NOQUALIFICATION = -1;
+        public const string NOTITLE = "";
+        public const string NOGENRE = "";
         public Collection<Game> Games { get; set; }
 
         public Catalogue()
@@ -30,29 +31,27 @@ namespace Server.Domain
         public string SearchGame(string title, string genre, int qualification)
         {
             List<Game> matchedGames = new List<Game>();
-            if (!title.Equals("")) matchedGames.Add(SearchGameByTitle(title));
+            if (!title.Equals(NOTITLE)) matchedGames.Add(SearchGameByTitle(title));
             else
             {
-                if (!genre.Equals(""))
+                if (!genre.Equals(NOGENRE))
                 {
-                    Collection<Game> gamesByGenre = SearchGameByGenre(genre);
+                    List<Game> gamesByGenre = SearchGameByGenre(genre);
                     matchedGames.AddRange(gamesByGenre);
                 }
 
-                if (qualification != -1) //-1 qualification does not exists
+                if (qualification != NOQUALIFICATION)
                 {
-                    Collection<Game> gamesByCualification = SearchGameByQualification(qualification);
+                    List<Game> gamesByCualification = SearchGameByQualification(qualification);
 
-                    if (matchedGames.Count != 0) //if it was also searched by gender
+                    if (matchedGames.Count != 0)
                     {
-                        matchedGames =
-                            (List<Game>) matchedGames.Intersect(
-                                gamesByCualification); //intersects matching games by genre and by qualification
+                        matchedGames = Intersect(matchedGames, gamesByCualification);
                     }
                     else
                     {
-                        // add only games by qualification
-                        matchedGames.AddRange(gamesByCualification);
+                        if (genre.Equals(NOGENRE))
+                            matchedGames.AddRange(gamesByCualification);
                     }
                 }
             }
@@ -65,11 +64,6 @@ namespace Server.Domain
         {
             Game game = SearchGameByTitle(name);
             return game;
-        }
-
-        public Collection<Game> Show()
-        {
-            return this.Games;
         }
 
         public string ShowGamesOnStringList()
@@ -112,7 +106,7 @@ namespace Server.Domain
 
         public Game ModifyGame(string oldGameTitle, Game newGame)
         {
-            Game gameToModify = SearchGameByTitle(oldGameTitle);
+            Game gameToModify = GetGameByReference(oldGameTitle);
 
             if (!newGame.Title.Equals("")) gameToModify.Title = newGame.Title;
             if (!newGame.Cover.Equals("")) gameToModify.Cover = newGame.Cover;
@@ -133,15 +127,13 @@ namespace Server.Domain
             throw new GameNotFound();
         }
 
-        private Collection<Game> SearchGameByGenre(string genre)
+        private List<Game> SearchGameByGenre(string genre)
         {
-            Collection<Game> matchingGames = new Collection<Game>();
+            List<Game> matchingGames = new List<Game>();
             for (int i = 0; i < this.Games.Count; i++)
             {
                 if (this.Games[i].Genre.Equals(genre)) matchingGames.Add(this.Games[i].GameCopy());
             }
-
-            if (matchingGames.Count == 0) throw new Exception("there are no games of this genre");
 
             return matchingGames;
         }
@@ -156,15 +148,14 @@ namespace Server.Domain
             throw new GameNotFound();
         }
 
-        private Collection<Game> SearchGameByQualification(int qualification)
+        private List<Game> SearchGameByQualification(int qualification)
         {
-            Collection<Game> matchingGames = new Collection<Game>();
+            List<Game> matchingGames = new List<Game>();
             for (int i = 0; i < this.Games.Count; i++)
             {
                 if (this.Games[i].Stars == (qualification)) matchingGames.Add(this.Games[i].GameCopy());
             }
 
-            if (matchingGames.Count == 0) throw new Exception("there are no games of this qualification");
             return matchingGames;
         }
 
@@ -177,6 +168,17 @@ namespace Server.Domain
             }
 
             return ret;
+        }
+
+        private List<Game> Intersect(List<Game> collection1, List<Game> collection2)
+        {
+            List<Game> games = new List<Game>();
+            foreach (var game in collection1)
+            {
+                if (collection2.Contains(game)) games.Add(game);
+            }
+
+            return games;
         }
     }
 }

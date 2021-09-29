@@ -25,5 +25,6 @@
         public const int SendCover = 22;
         public const int UserNotOwnerofGame = 23;
         public const int ReceiveCover = 24;
+        public const int NoModifyCover = 25;
     }
 }
