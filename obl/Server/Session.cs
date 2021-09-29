@@ -342,7 +342,7 @@ namespace Server
                         coverPath = _communicator.ReceiveFile();
                         okReceived = true;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         _communicator.SendMessage(CommandConstants.SendCover,_messageLanguage.ErrorGameCover);
                     }
