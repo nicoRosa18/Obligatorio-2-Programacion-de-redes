@@ -86,10 +86,9 @@ namespace Server
                     var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
                     threadConnection.Start();
                 }
-                catch (SocketException se)
+                catch (SocketException )
                 {
-                    Console.WriteLine(se);
-                    Console.WriteLine("a");
+                    _serverAttributes.EndConnection = true;
                 }
                 catch (Exception e)
                 {
