@@ -5,6 +5,7 @@ namespace Server
 {
     public class ServerTools
     {
+        private readonly object padlock = new object();
         public bool EndConnection { get; set; }
         public List<Socket> Clients { get; set; }
 
@@ -16,12 +17,31 @@ namespace Server
 
         public void AddClient(Socket socket)
         {
-            Clients.Add(socket);
+            lock(padlock)
+            {
+                Clients.Add(socket);
+            }
         }
 
         public void RemoveClient(Socket socket)
         {
-            Clients.Remove(socket);
+            lock(padlock)
+            {
+                Clients.Remove(socket);
+            }
+        }
+
+        public List<Socket> GetClients()
+        {
+            List<Socket> copyList = new List<Socket>();
+            lock(padlock)
+            {
+                foreach(Socket client in Clients)
+                {
+                    copyList.Add(client);
+                }
+            }
+            return copyList;
         }
     }
 }

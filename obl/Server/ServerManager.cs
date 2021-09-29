@@ -5,6 +5,7 @@ using System.Threading;
 using Server.Domain;
 using Common.Communicator;
 using Common.SettingsManager;
+using System.Collections.Generic;
 
 namespace Server
 {
@@ -48,17 +49,20 @@ namespace Server
                 switch (userInput)
                 {
                     case "exit":
+                        
+                        var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
+                        fakeSocket.Connect(remoteEndpoint);
 
                         _serverAttributes.EndConnection = true;
-                        foreach (var client in _serverAttributes.Clients)
+                        List<Socket> clientSocketList = _serverAttributes.GetClients();
+                        foreach (var client in clientSocketList)
                         {
                             client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
 
-                        var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
-                        fakeSocket.Connect(remoteEndpoint);
+                        
 
                         _socketServer.Close();
                         break;
@@ -86,8 +90,9 @@ namespace Server
                     var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
                     threadConnection.Start();
                 }
-                catch (SocketException )
+                catch (SocketException e)
                 {
+                    Console.WriteLine(e);
                     _serverAttributes.EndConnection = true;
                 }
                 catch (Exception e)
