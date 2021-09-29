@@ -65,7 +65,6 @@ namespace Server.Domain
             foreach (Qualification quali in CommunityQualifications)
             {
                 Qualification copyQualification = new Qualification();
-                copyQualification.Game = cleanCopyGame;
                 copyQualification.User = quali.User;
                 copyQualification.Stars = quali.Stars;
                 copyQualification.Comment = quali.Comment;

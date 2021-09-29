@@ -93,7 +93,6 @@ namespace Server.Domain
         public void AddGameQualification(string gameTitle, Qualification newQualification)
         {
             Game game = GetGameByReference(gameTitle);
-            newQualification.Game = game;
             game.AddCommunityQualification(newQualification);
         }
 
