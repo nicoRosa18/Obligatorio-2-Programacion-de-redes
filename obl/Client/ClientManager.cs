@@ -29,9 +29,9 @@ namespace Client
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
-            
+
             _pathsManager = new PathsConfiguration();
-            
+
             System.IO.Directory.CreateDirectory(_pathsManager.ReadSetting("CoversPath"));
 
             _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
@@ -218,7 +218,6 @@ namespace Client
                 string pathSavedAt = "";
                 try
                 {
-                   
                     string path = _pathsManager.ReadSetting("CoversPath");
                     pathSavedAt = _communication.ReceiveFile(path);
                 }
@@ -230,6 +229,7 @@ namespace Client
                 Console.WriteLine(_message.SavedPathAt);
                 Console.WriteLine(pathSavedAt);
             }
+
             MainMenu();
         }
 
@@ -374,10 +374,19 @@ namespace Client
             Console.WriteLine(_message.GameSynopsis);
             string synopsis = "";
             synopsis = Console.ReadLine();
-
             string ageRating = "";
-            Console.WriteLine(_message.GameAgeRestriction);
-            ageRating = Console.ReadLine();
+            try
+            {
+               
+                Console.WriteLine(_message.GameAgeRestriction);
+                ageRating = Console.ReadLine();
+                if (!string.IsNullOrEmpty(ageRating))
+                    Int32.Parse(ageRating);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine(_message.InvalidAge);
+            }
 
             string dataToSend = $"{oldGameTitle}#{title}#{genre}#{synopsis}#{ageRating}";
 
@@ -385,7 +394,7 @@ namespace Client
 
             CommunicatorPackage received = _communication.ReceiveMessage();
             Console.WriteLine(received.Message);
-            
+
             if (received.Command != CommandConstants.userNotLogged)
             {
                 string option = Console.ReadLine();
@@ -412,8 +421,9 @@ namespace Client
                 }
                 else
                 {
-                    _communication.SendMessage(CommandConstants.NoModifyCover,"");
+                    _communication.SendMessage(CommandConstants.NoModifyCover, "");
                 }
+
                 Console.WriteLine(_communication.ReceiveMessage().Message);
             }
         }
@@ -421,6 +431,7 @@ namespace Client
         private void AddGame()
         {
             bool titleOk = false;
+
             string title = "";
             while (!titleOk)
             {
@@ -446,6 +457,7 @@ namespace Client
             }
 
             bool genreOk = false;
+
             string genre = "";
             while (!genreOk)
             {
@@ -462,6 +474,7 @@ namespace Client
             }
 
             bool synOk = false;
+
             string synopsis = "";
             while (!synOk)
             {
@@ -478,16 +491,25 @@ namespace Client
             }
 
             bool ageOk = false;
+
             string ageRating = "";
             while (!ageOk)
             {
                 Console.WriteLine(_message.GameAgeRestriction);
                 ageRating = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(synopsis))
+                try
                 {
-                    ageOk = true;
+                    if (!string.IsNullOrWhiteSpace(ageRating))
+                    {
+                        Int32.Parse(ageRating);
+                        ageOk = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine(_message.InvalidAge);
+                    }
                 }
-                else
+                catch (FormatException)
                 {
                     Console.WriteLine(_message.InvalidAge);
                 }
@@ -495,10 +517,8 @@ namespace Client
 
             string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
             _communication.SendMessage(CommandConstants.AddGame, dataToSend);
-
             CommunicatorPackage received = _communication.ReceiveMessage();
             Console.WriteLine(received.Message);
-
             if (received.Command != CommandConstants.userNotLogged)
             {
                 bool fileNotFound = true;
