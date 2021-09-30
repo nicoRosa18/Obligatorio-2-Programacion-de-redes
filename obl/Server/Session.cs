@@ -4,6 +4,7 @@ using Common.Protocol;
 using Server.Domain.ServerExceptions;
 using Common.Communicator.Exceptions;
 using Common.Communicator;
+using Common.FileManagement;
 using Common.SettingsManager;
 using Server.Domain;
 
@@ -218,26 +219,11 @@ namespace Server
             }
             catch (System.IO.FileNotFoundException)
             {
-                Bitmap defaultImage = DrawFilledRectangle(1024, 1024);
+                FileDefaultCoverCreation cover = new FileDefaultCoverCreation();
+                Bitmap defaultImage = cover.DrawFilledRectangle(1024, 1024);
                 defaultImage.Save(_pathsManager.ReadSetting("DefaultPath"));
                 _communicator.SendFile(_pathsManager.ReadSetting("DefaultPath"));
             }
-        }
-
-        private Bitmap DrawFilledRectangle(int x, int y)
-        {
-            Bitmap bmp = new Bitmap(x, y);
-            PointF firstLocation = new PointF(10f, 10f);
-            using (Graphics graph = Graphics.FromImage(bmp))
-            {
-                using (Font arialFont = new Font("Arial", 10))
-                {
-                    Rectangle ImageSize = new Rectangle(0, 0, x, y);
-                    graph.FillRectangle(Brushes.White, ImageSize);
-                    graph.DrawString("COVER NOT FOUND", arialFont, Brushes.Black, firstLocation);
-                }
-            }
-            return bmp;
         }
 
         private void MyGames()
@@ -377,7 +363,7 @@ namespace Server
                         Console.WriteLine(coverPath);
                         okReceived = true;
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
                         _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.ErrorGameCover);
                     }
