@@ -1,12 +1,11 @@
-﻿using System;
-
-namespace Client
+﻿namespace Client
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-        } 
+            ClientManager manager = new ClientManager();
+            manager.Start();
+        }
     }
 }

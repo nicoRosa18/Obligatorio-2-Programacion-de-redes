@@ -1,12 +1,10 @@
-﻿using System;
-
-namespace Server
+﻿namespace Server
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            ServerManager serverManager = new ServerManager();
         }
     }
 }
