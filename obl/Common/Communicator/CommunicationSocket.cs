@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using Common.Protocol;
 using Common.Communicator.Exceptions;
 using Common.FileManagement;
+using Common.SettingsManager;
 
 namespace Common.Communicator
 {
@@ -44,7 +45,7 @@ namespace Common.Communicator
             SendData(Encoding.UTF8.GetBytes(message));
         }
 
-        public string ReceiveFile()
+        public string ReceiveFile(string path)
         {
             HeaderFile header = new HeaderFile();
             int headerLength = header.GetLength();
@@ -59,14 +60,14 @@ namespace Common.Communicator
             ReceiveData(fileNameSize, buffer);
             string fileName = Encoding.UTF8.GetString(buffer);
 
-            string existingFile = _fileHandler.GetPath(fileName);
+            string existingFile = _fileHandler.GetPath(path+fileName);
             if(_fileHandler.FileExists(existingFile))
             {
                 _fileHandler.DeleteFile(existingFile);
             }
-            ReceiveParts(fileName, fileSize);
+            ReceiveParts(path+fileName, fileSize);
 
-            string filePath = _fileHandler.GetPath(fileName);
+            string filePath = _fileHandler.GetPath(path+fileName);
 
             return filePath;
         }

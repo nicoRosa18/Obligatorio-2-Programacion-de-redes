@@ -30,6 +30,9 @@ namespace Server
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
 
+            ISettingsManager _serverConfiguration = new PathsConfiguration();
+            System.IO.Directory.CreateDirectory(_serverConfiguration.ReadSetting("CoversPath"));
+
             _socketServer.Bind(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
             _socketServer.Listen(10);
 

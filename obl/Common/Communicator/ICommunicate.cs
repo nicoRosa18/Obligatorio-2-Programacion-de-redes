@@ -5,6 +5,6 @@ namespace Common.Communicator
         void SendMessage(int command, string message);
         CommunicatorPackage ReceiveMessage();  
         void SendFile(string message);
-        string ReceiveFile();       
+        string ReceiveFile(string path);       
     }
 }
