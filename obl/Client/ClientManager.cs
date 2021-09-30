@@ -16,6 +16,7 @@ namespace Client
         private string _serverIpAddress;
         private string _serverPort;
         private bool _endConnection;
+        private ISettingsManager _pathsManager;
 
         public ClientManager()
         {
@@ -28,6 +29,10 @@ namespace Client
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
+            
+            _pathsManager = new PathsConfiguration();
+            
+            System.IO.Directory.CreateDirectory(_pathsManager.ReadSetting("CoversPath"));
 
             _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
 
@@ -213,7 +218,9 @@ namespace Client
                 string pathSavedAt = "";
                 try
                 {
-                    pathSavedAt = _communication.ReceiveFile();
+                   
+                    string path = _pathsManager.ReadSetting("CoversPath");
+                    pathSavedAt = _communication.ReceiveFile(path);
                 }
                 catch (Exception e)
                 {
