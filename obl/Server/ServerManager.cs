@@ -12,16 +12,12 @@ namespace Server
     public class ServerManager
     {
         private ServerTools _serverAttributes { get; set; }
-        private Socket _socketServer { get; set; }
+        private TcpListener _tcpListener { get; set; }
         private string _serverIpAddress { get; set; }
         private string _serverPort { get; set; }
 
         public ServerManager()
         {
-            _socketServer = new Socket(AddressFamily.InterNetwork,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-
             UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
             Session._usersAndCatalogueManager = _usersAndCatalogueManager;
 
@@ -34,8 +30,8 @@ namespace Server
             ISettingsManager _serverConfiguration = new PathsConfiguration();
             System.IO.Directory.CreateDirectory(_serverConfiguration.ReadSetting("CoversPath"));
 
-            _socketServer.Bind(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
-            _socketServer.Listen(10);
+            _tcpListener  = new TcpListener(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
+            _tcpListener.Start(10);
 
             StartUpMenu();
             CreateConnections();
@@ -52,22 +48,18 @@ namespace Server
                 switch (userInput)
                 {
                     case "exit":
-                        
-                        var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        var remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
-                        fakeSocket.Connect(remoteEndpoint);
-
                         _serverAttributes.EndConnection = true;
-                        List<Socket> clientSocketList = _serverAttributes.GetClients();
-                        foreach (var client in clientSocketList)
+
+                        List<TcpClient> clientTcpListenerList = _serverAttributes.GetClients();
+                        foreach (var client in clientTcpListenerList)
                         {
-                            client.Shutdown(SocketShutdown.Both);
+                            client.GetStream().Close();
                             client.Close();
                         }
 
+                        TcpClient fakeTcp  = new TcpClient(new IPEndPoint(IPAddress.Parse(_serverIpAddress), 0));
+                        fakeTcp.Connect(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
                         
-
-                        _socketServer.Close();
                         break;
                     default:
                         Console.WriteLine("Opcion incorrecta ingresada, ingrese de nuevo");
@@ -81,37 +73,25 @@ namespace Server
             int threadCount = 0;
             while (!_serverAttributes.EndConnection)
             {
-                try
-                {
-                    threadCount++;
-                    int threadId = threadCount;
+                threadCount++;
+                int threadId = threadCount;
 
-                    var connectedSocket = _socketServer.Accept();
-                    _serverAttributes.AddClient(connectedSocket);
+                TcpClient connectedTcpClient = _tcpListener.AcceptTcpClient();
+                _serverAttributes.AddClient(connectedTcpClient);
 
-                    Console.WriteLine($"Nueva coneccion {threadId} aceptada");
-                    var threadConnection = new Thread(() => HandleConnection(connectedSocket, threadId));
-                    threadConnection.Start();
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine(e);
-                    _serverAttributes.EndConnection = true;
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    _serverAttributes.EndConnection = true;
-                }
+                Console.WriteLine($"Nueva coneccion {threadId} aceptada");
+                var threadConnection = new Thread(() => HandleConnection(connectedTcpClient, threadId));
+                threadConnection.Start();
             }
 
+            _tcpListener.Stop();
             Console.WriteLine("Cerrando el server...");
         }
 
-        private void HandleConnection(Socket connectedSocket, int threadId)
+        private void HandleConnection(TcpClient connectedTcpClient, int threadId)
         {
             Message spanishMessage = new SpanishMessage();
-            CommunicationSocket communicationViaClient = new CommunicationSocket(connectedSocket);
+            CommunicationTcp communicationViaClient = new CommunicationTcp(connectedTcpClient);
             Session session = new Session(communicationViaClient, spanishMessage);
 
             while (session.Active && !_serverAttributes.EndConnection)
@@ -123,9 +103,8 @@ namespace Server
 
             if (!_serverAttributes.EndConnection)
             {
-                connectedSocket.Shutdown(SocketShutdown.Both);
-                connectedSocket.Close();
-                _serverAttributes.RemoveClient(connectedSocket);
+                connectedTcpClient.Close();
+                _serverAttributes.RemoveClient(connectedTcpClient);
             }
 
             Console.WriteLine($"{threadId}: Cerrando coneccion...");

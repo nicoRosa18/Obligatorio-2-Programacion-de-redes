@@ -7,36 +7,36 @@ namespace Server
     {
         private readonly object padlock = new object();
         public bool EndConnection { get; set; }
-        public List<Socket> Clients { get; set; }
+        public List<TcpClient> Clients { get; set; }
 
         public ServerTools()
         {
             EndConnection = false;
-            Clients = new List<Socket>();
+            Clients = new List<TcpClient>();
         }
 
-        public void AddClient(Socket socket)
+        public void AddClient(TcpClient tcpClient)
         {
             lock(padlock)
             {
-                Clients.Add(socket);
+                Clients.Add(tcpClient);
             }
         }
 
-        public void RemoveClient(Socket socket)
+        public void RemoveClient(TcpClient tcpClient)
         {
             lock(padlock)
             {
-                Clients.Remove(socket);
+                Clients.Remove(tcpClient);
             }
         }
 
-        public List<Socket> GetClients()
+        public List<TcpClient> GetClients()
         {
-            List<Socket> copyList = new List<Socket>();
+            List<TcpClient> copyList = new List<TcpClient>();
             lock(padlock)
             {
-                foreach(Socket client in Clients)
+                foreach(TcpClient client in Clients)
                 {
                     copyList.Add(client);
                 }

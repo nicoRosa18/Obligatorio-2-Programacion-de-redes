@@ -7,14 +7,14 @@ using Common.SettingsManager;
 
 namespace Common.Communicator
 {
-    public class CommunicationSocket : ICommunicator
+    public class CommunicationTcp : ICommunicator
     {
-        private readonly Socket _connectedSocket;
+        private readonly NetworkStream  _connectedNetworkStream;
         private readonly IFileStreamHandler _fileStreamHandler;
         private readonly IFileHandler _fileHandler;
         
-        public CommunicationSocket(Socket connectedSocket){
-            _connectedSocket = connectedSocket;
+        public CommunicationTcp(TcpClient connectedTcpClient){
+            _connectedNetworkStream = connectedTcpClient.GetStream();
             _fileHandler = new FileHandler();
             _fileStreamHandler = new FileStreamHandler();
         }
@@ -89,10 +89,13 @@ namespace Common.Communicator
 
         private void SendData(byte[] toSend)
         {
-            var sentBytes = 0;
-            while (sentBytes < toSend.Length)
+            try
             {
-                sentBytes += this._connectedSocket.Send(toSend, sentBytes, toSend.Length - sentBytes, SocketFlags.None);
+                this._connectedNetworkStream.Write(toSend, 0, toSend.Length);
+            }
+            catch(System.IO.IOException)
+            {
+                throw new ClientClosingException();
             }
         }
 
@@ -103,7 +106,7 @@ namespace Common.Communicator
             {
                 try
                 {
-                    int localRecv = this._connectedSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
+                    int localRecv = this._connectedNetworkStream.Read(buffer, iRecv, length - iRecv);
                     if (localRecv == 0) 
                     {
                         throw new ClientClosingException();
@@ -111,7 +114,7 @@ namespace Common.Communicator
 
                     iRecv += localRecv;
                 }
-                catch (SocketException)
+                catch (System.IO.IOException)
                 {
                     throw new ClientClosingException();
                 }
