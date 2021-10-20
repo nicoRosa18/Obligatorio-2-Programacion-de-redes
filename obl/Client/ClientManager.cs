@@ -4,15 +4,19 @@ using System.Net.Sockets;
 using Common.Communicator;
 using Common.Protocol;
 using Common.SettingsManager;
+using Common.Communicator.Exceptions;
 
 namespace Client
 {
     public class ClientManager
     {
-        private Socket _socket;
+        private TcpClient _tcpClient;
         private IPEndPoint _remoteEndpoint;
-        private CommunicationSocket _communication;
+        private IPEndPoint _localEndpoint;
+        private CommunicationTcp _communication;
         private Message _message;
+        private string _clientIpAddress;
+        private string _clientPort;
         private string _serverIpAddress;
         private string _serverPort;
         private bool _endConnection;
@@ -20,33 +24,33 @@ namespace Client
 
         public ClientManager()
         {
-            _socket = new Socket(AddressFamily.InterNetwork,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-
             _message = new SpanishMessage();
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
+            _clientIpAddress = _ipConfiguration.ReadSetting("ClientIpAddress");
+            _clientPort = _ipConfiguration.ReadSetting("ClientPort");
             _serverIpAddress = _ipConfiguration.ReadSetting("ServerIpAddress");
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
+
+            _localEndpoint = new IPEndPoint(IPAddress.Parse(_clientIpAddress), int.Parse(_clientPort));
+            _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
+
+            _tcpClient = new TcpClient(_localEndpoint);
 
             _pathsManager = new PathsConfiguration();
 
             System.IO.Directory.CreateDirectory(_pathsManager.ReadSetting("CoversPath"));
-
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
-
-            this._communication = new CommunicationSocket(_socket);
         }
 
         public void Start()
         {
             try
             {
-                _socket.Connect(_remoteEndpoint);
+                _tcpClient.Connect(_remoteEndpoint);
+                this._communication = new CommunicationTcp(_tcpClient);
                 Menu();
             }
-            catch (SocketException)
+            catch (ClientClosingException)
             {
                 Console.WriteLine(_message.ServerClosed);
             }
@@ -55,7 +59,7 @@ namespace Client
         private void Menu()
         {
             Console.WriteLine(_message.ClientConnectedWithServer);
-            CommunicationSocket communication = new CommunicationSocket(_socket);
+            CommunicationTcp communication = new CommunicationTcp(_tcpClient);
             _endConnection = false;
             try
             {
@@ -77,15 +81,9 @@ namespace Client
             }
             catch (SocketException)
             {
-                _socket.Close();
+                _tcpClient.Close();
                 Console.WriteLine(_message.ServerClosed);
             }
-            catch (Exception e)
-            {
-                _socket.Close();
-                Console.WriteLine(e.Message);
-            }
-
             CloseConnection();
         }
 
@@ -543,15 +541,8 @@ namespace Client
 
         private void CloseConnection()
         {
-            try
-            {
-                Console.WriteLine(_message.Disconnected);
-                _socket.Shutdown(SocketShutdown.Both);
-                _socket.Close();
-            }
-            catch
-            {
-            }
+            Console.WriteLine(_message.Disconnected);
+            _tcpClient.Close();
         }
 
         private void UserLogin()

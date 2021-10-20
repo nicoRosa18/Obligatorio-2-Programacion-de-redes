@@ -249,7 +249,7 @@ namespace Server
             {
                 stars = Int32.Parse(values[2]);
             }
-            catch
+            catch(FormatException)
             {
             }
 
@@ -363,7 +363,7 @@ namespace Server
                         Console.WriteLine(coverPath);
                         okReceived = true;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.ErrorGameCover);
                     }
@@ -389,11 +389,6 @@ namespace Server
             }
             catch (ClientClosingException)
             {
-                CloseSession();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error {e.Message}..");
                 CloseSession();
             }
         }
