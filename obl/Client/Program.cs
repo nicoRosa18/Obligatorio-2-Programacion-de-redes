@@ -1,11 +1,13 @@
-﻿namespace Client
+﻿using System.Threading.Tasks;
+
+namespace Client
 {
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             ClientManager manager = new ClientManager();
-            manager.Start();
+            await manager.Start();
         }
     }
 }

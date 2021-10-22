@@ -6,6 +6,7 @@ using Server.Domain;
 using Common.Communicator;
 using Common.SettingsManager;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Server
 {
@@ -17,6 +18,11 @@ namespace Server
         private string _serverPort { get; set; }
 
         public ServerManager()
+        {
+            Task server = ServerManagerAsync();
+        }
+
+        public async Task ServerManagerAsync()
         {
             UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
             Session._usersAndCatalogueManager = _usersAndCatalogueManager;
@@ -34,13 +40,14 @@ namespace Server
             _tcpListener.Start(10);
 
             StartUpMenu();
-            CreateConnections();
+            await CreateConnectionsAsync();
         }
 
-        private void CreateConnections()
+        private async Task CreateConnectionsAsync()
         {
-            var threadServer = new Thread(() => ListenForConnections());
-            threadServer.Start();
+            Task task = Task.Run(async () => await ListenForConnectionsAsync().ConfigureAwait(false));
+            //var threadServer = new Thread(() => ListenForConnections());
+            //threadServer.Start();
 
             while (!_serverAttributes.EndConnection)
             {
@@ -58,7 +65,7 @@ namespace Server
                         }
 
                         TcpClient fakeTcp  = new TcpClient(new IPEndPoint(IPAddress.Parse(_serverIpAddress), 0));
-                        fakeTcp.Connect(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
+                        await fakeTcp.ConnectAsync(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
                         
                         break;
                     default:
@@ -66,9 +73,10 @@ namespace Server
                         break;
                 }
             }
+            Task.WaitAll();
         }
 
-        private void ListenForConnections()
+        private async Task ListenForConnectionsAsync()
         {
             int threadCount = 0;
             while (!_serverAttributes.EndConnection)
@@ -76,19 +84,22 @@ namespace Server
                 threadCount++;
                 int threadId = threadCount;
 
-                TcpClient connectedTcpClient = _tcpListener.AcceptTcpClient();
+                TcpClient connectedTcpClient = await _tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
+                //TcpClient connectedTcpClient = _tcpListener.AcceptTcpClient();
+                
                 _serverAttributes.AddClient(connectedTcpClient);
 
                 Console.WriteLine($"Nueva coneccion {threadId} aceptada");
-                var threadConnection = new Thread(() => HandleConnection(connectedTcpClient, threadId));
-                threadConnection.Start();
+                //var threadConnection = new Thread(() => HandleConnection(connectedTcpClient, threadId));
+                //threadConnection.Start();
+                Task task = Task.Run(async () => await HandleConnection(connectedTcpClient, threadId).ConfigureAwait(false));
             }
 
             _tcpListener.Stop();
             Console.WriteLine("Cerrando el server...");
         }
 
-        private void HandleConnection(TcpClient connectedTcpClient, int threadId)
+        private async Task HandleConnection(TcpClient connectedTcpClient, int threadId)
         {
             Message spanishMessage = new SpanishMessage();
             CommunicationTcp communicationViaClient = new CommunicationTcp(connectedTcpClient);
