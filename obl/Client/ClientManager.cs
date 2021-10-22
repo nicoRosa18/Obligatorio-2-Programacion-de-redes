@@ -5,6 +5,7 @@ using Common.Communicator;
 using Common.Protocol;
 using Common.SettingsManager;
 using Common.Communicator.Exceptions;
+using System.Threading.Tasks;
 
 namespace Client
 {
@@ -33,7 +34,6 @@ namespace Client
             _serverPort = _ipConfiguration.ReadSetting("ServerPort");
 
             _localEndpoint = new IPEndPoint(IPAddress.Parse(_clientIpAddress), int.Parse(_clientPort));
-            _remoteEndpoint = new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort));
 
             _tcpClient = new TcpClient(_localEndpoint);
 
@@ -42,15 +42,15 @@ namespace Client
             System.IO.Directory.CreateDirectory(_pathsManager.ReadSetting("CoversPath"));
         }
 
-        public void Start()
+        public async Task Start()
         {
             try
             {
-                _tcpClient.Connect(_remoteEndpoint);
+                await _tcpClient.ConnectAsync(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)).ConfigureAwait(false);;
                 this._communication = new CommunicationTcp(_tcpClient);
                 Menu();
             }
-            catch (ClientClosingException)
+            catch (SocketException)
             {
                 Console.WriteLine(_message.ServerClosed);
             }
@@ -63,8 +63,10 @@ namespace Client
             _endConnection = false;
             try
             {
-                communication.SendMessage(CommandConstants.StartupMenu, "");
-                Console.WriteLine(communication.ReceiveMessage().Message);
+                communication.SendMessageAsync(CommandConstants.StartupMenu, "");
+
+                CommunicatorPackage StartupMenu = communication.ReceiveMessageAsync().Result;
+                Console.WriteLine(StartupMenu.Message);
 
                 while (!_endConnection)
                 {
@@ -79,7 +81,7 @@ namespace Client
                     }
                 }
             }
-            catch (SocketException)
+            catch (ClientClosingException)
             {
                 _tcpClient.Close();
                 Console.WriteLine(_message.ServerClosed);
@@ -145,9 +147,10 @@ namespace Client
 
         private void ShowCatalogue()
         {
-            _communication.SendMessage(CommandConstants.ViewCatalogue, "");
+            _communication.SendMessageAsync(CommandConstants.ViewCatalogue, "");
 
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            CommunicatorPackage showCatalogue = _communication.ReceiveMessageAsync().Result;
+            Console.WriteLine(showCatalogue.Message);
             Console.WriteLine(_message.SearchGameOptions);
         }
 
@@ -159,9 +162,10 @@ namespace Client
             while (!gameNameOk)
             {
                 gameName = Console.ReadLine();
-                _communication.SendMessage(CommandConstants.GameExists, gameName);
-                int res = _communication.ReceiveMessage().Command;
-                if (res == CommandConstants.GameExists)
+                _communication.SendMessageAsync(CommandConstants.GameExists, gameName);
+
+                CommunicatorPackage gameExists = _communication.ReceiveMessageAsync().Result;
+                if (gameExists.Command == CommandConstants.GameExists)
                 {
                     gameNameOk = true;
                 }
@@ -192,8 +196,10 @@ namespace Client
             Console.WriteLine(_message.QualificationComment);
             string comment = Console.ReadLine();
             string message = $"{gameName}#{stars}#{comment}";
-            _communication.SendMessage(CommandConstants.PublishQualification, message);
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            _communication.SendMessageAsync(CommandConstants.PublishQualification, message);
+
+            CommunicatorPackage publishQualification = _communication.ReceiveMessageAsync().Result;
+            Console.WriteLine(publishQualification.Message);
             MainMenu();
         }
 
@@ -202,8 +208,10 @@ namespace Client
             Console.WriteLine(_message.GameDetails);
             string gameName = Console.ReadLine();
 
-            _communication.SendMessage(CommandConstants.GameDetails, gameName);
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            _communication.SendMessageAsync(CommandConstants.GameDetails, gameName);
+
+            CommunicatorPackage gameDetails = _communication.ReceiveMessageAsync().Result;
+            Console.WriteLine(gameDetails.Message);
 
             Console.WriteLine(_message.DownloadCover);
 
@@ -212,12 +220,12 @@ namespace Client
             if (descargarCaratula.Equals("1"))
             {
                 command = CommandConstants.SendCover;
-                _communication.SendMessage(command, gameName);
+                _communication.SendMessageAsync(command, gameName);
                 string pathSavedAt = "";
                 try
                 {
                     string path = _pathsManager.ReadSetting("CoversPath");
-                    pathSavedAt = _communication.ReceiveFile(path);
+                    pathSavedAt = _communication.ReceiveFileAsync(path).Result;
                 }
                 catch (Exception e)
                 {
@@ -233,19 +241,19 @@ namespace Client
 
         private void ShowMyGames()
         {
-            _communication.SendMessage(CommandConstants.MyGames, "");
+            _communication.SendMessageAsync(CommandConstants.MyGames, "");
 
-            CommunicatorPackage received = _communication.ReceiveMessage();
-            if (received.Command != CommandConstants.userNotLogged)
+            CommunicatorPackage myGamesReceived = _communication.ReceiveMessageAsync().Result;
+            if (myGamesReceived.Command != CommandConstants.userNotLogged)
             {
-                string games = received.Message;
+                string games = myGamesReceived.Message;
                 ShowGameList(games);
 
                 Console.WriteLine(_message.MyGamesOptions);
             }
             else
             {
-                Console.WriteLine(received.Message);
+                Console.WriteLine(myGamesReceived.Message);
             }
         }
 
@@ -285,8 +293,10 @@ namespace Client
             else
             {
                 string searchConcat = $"{title}#{genre}#{stars}";
-                _communication.SendMessage(CommandConstants.SearchGame, searchConcat);
-                string games = _communication.ReceiveMessage().Message;
+                _communication.SendMessageAsync(CommandConstants.SearchGame, searchConcat);
+
+                CommunicatorPackage searchGame = _communication.ReceiveMessageAsync().Result;
+                string games = searchGame.Message;
                 ShowGameList(games);
                 Console.WriteLine(_message.ChangeMenu);
             }
@@ -296,8 +306,10 @@ namespace Client
         {
             Console.WriteLine(_message.BuyGame);
             string gameName = Console.ReadLine();
-            _communication.SendMessage(CommandConstants.buyGame, gameName);
-            Console.WriteLine(_communication.ReceiveMessage().Message);
+            _communication.SendMessageAsync(CommandConstants.buyGame, gameName);
+
+            CommunicatorPackage buyGame = _communication.ReceiveMessageAsync().Result;
+            Console.WriteLine(buyGame.Message);
 
             MainMenu();
         }
@@ -307,13 +319,15 @@ namespace Client
             Console.WriteLine(_message.GameDeleted);
 
             string gameToDelete = Console.ReadLine();
-            _communication.SendMessage(CommandConstants.GameExists, gameToDelete);
+            _communication.SendMessageAsync(CommandConstants.GameExists, gameToDelete);
 
-            CommunicatorPackage existsPackage = _communication.ReceiveMessage();
+            CommunicatorPackage existsPackage = _communication.ReceiveMessageAsync().Result;
             if (existsPackage.Command == CommandConstants.GameExists)
             {
-                _communication.SendMessage(CommandConstants.RemoveGame, gameToDelete);
-                Console.WriteLine(_communication.ReceiveMessage().Message);
+                _communication.SendMessageAsync(CommandConstants.RemoveGame, gameToDelete);
+
+                CommunicatorPackage removeGame = _communication.ReceiveMessageAsync().Result;
+                Console.WriteLine(removeGame.Message);
             }
             else
             {
@@ -327,8 +341,8 @@ namespace Client
         {
             Console.WriteLine(_message.GameModified);
             string oldGameTitle = Console.ReadLine();
-            _communication.SendMessage(CommandConstants.GameExists, oldGameTitle);
-            CommunicatorPackage existsPackage = _communication.ReceiveMessage();
+            _communication.SendMessageAsync(CommandConstants.GameExists, oldGameTitle);
+            CommunicatorPackage existsPackage = _communication.ReceiveMessageAsync().Result;
 
             if (existsPackage.Command == CommandConstants.GameExists)
             {
@@ -353,8 +367,10 @@ namespace Client
                 Console.WriteLine(_message.NewGameInit);
                 title = Console.ReadLine();
 
-                _communication.SendMessage(CommandConstants.GameExists, title);
-                int res = _communication.ReceiveMessage().Command;
+                _communication.SendMessageAsync(CommandConstants.GameExists, title);
+
+                CommunicatorPackage gameExists = _communication.ReceiveMessageAsync().Result;
+                int res = gameExists.Command;
                 if (res == CommandConstants.GameExists)
                 {
                     Console.WriteLine(_message.RepeatedGame);
@@ -388,9 +404,9 @@ namespace Client
 
             string dataToSend = $"{oldGameTitle}#{title}#{genre}#{synopsis}#{ageRating}";
 
-            _communication.SendMessage(CommandConstants.ModifyGame, dataToSend);
+            _communication.SendMessageAsync(CommandConstants.ModifyGame, dataToSend);
 
-            CommunicatorPackage received = _communication.ReceiveMessage();
+            CommunicatorPackage received = _communication.ReceiveMessageAsync().Result;
             Console.WriteLine(received.Message);
 
             if (received.Command != CommandConstants.userNotLogged)
@@ -401,13 +417,13 @@ namespace Client
                     string path = Console.ReadLine();
                     if (!path.Equals(""))
                     {
-                        _communication.SendMessage(CommandConstants.ReceiveCover, "");
+                        _communication.SendMessageAsync(CommandConstants.ReceiveCover, "");
                         bool fileNotFound = true;
                         while (fileNotFound)
                         {
                             try
                             {
-                                _communication.SendFile(path);
+                                _communication.SendFileAsync(path);
                                 fileNotFound = false;
                             }
                             catch (System.IO.FileNotFoundException)
@@ -419,10 +435,11 @@ namespace Client
                 }
                 else
                 {
-                    _communication.SendMessage(CommandConstants.NoModifyCover, "");
+                    _communication.SendMessageAsync(CommandConstants.NoModifyCover, "");
                 }
 
-                Console.WriteLine(_communication.ReceiveMessage().Message);
+                CommunicatorPackage noModifyCover = _communication.ReceiveMessageAsync().Result;
+                Console.WriteLine(noModifyCover.Message);
             }
         }
 
@@ -437,9 +454,10 @@ namespace Client
                 title = Console.ReadLine();
                 if (!string.IsNullOrEmpty(title))
                 {
-                    _communication.SendMessage(CommandConstants.GameExists, title);
-                    int res = _communication.ReceiveMessage().Command;
-                    if (res == CommandConstants.GameExists)
+                    _communication.SendMessageAsync(CommandConstants.GameExists, title);
+
+                    CommunicatorPackage gameExists = _communication.ReceiveMessageAsync().Result;
+                    if (gameExists.Command == CommandConstants.GameExists)
                     {
                         Console.WriteLine(_message.RepeatedGame);
                     }
@@ -514,8 +532,9 @@ namespace Client
             }
 
             string dataToSend = $"{title}#{genre}#{synopsis}#{ageRating}";
-            _communication.SendMessage(CommandConstants.AddGame, dataToSend);
-            CommunicatorPackage received = _communication.ReceiveMessage();
+            _communication.SendMessageAsync(CommandConstants.AddGame, dataToSend);
+
+            CommunicatorPackage received = _communication.ReceiveMessageAsync().Result;
             Console.WriteLine(received.Message);
             if (received.Command != CommandConstants.userNotLogged)
             {
@@ -525,7 +544,7 @@ namespace Client
                     try
                     {
                         string path = Console.ReadLine();
-                        _communication.SendFile(path);
+                        _communication.SendFileAsync(path);
                         fileNotFound = false;
                     }
                     catch (System.IO.FileNotFoundException)
@@ -534,7 +553,8 @@ namespace Client
                     }
                 }
 
-                Console.WriteLine(_communication.ReceiveMessage().Message);
+                CommunicatorPackage addGame = _communication.ReceiveMessageAsync().Result;
+                Console.WriteLine(addGame.Message);
                 MainMenu();
             }
         }
@@ -556,8 +576,9 @@ namespace Client
                 if (string.IsNullOrWhiteSpace(user)) Console.WriteLine(_message.InvalidUsername);
                 else
                 {
-                    _communication.SendMessage(CommandConstants.LoginUser, user);
-                    CommunicatorPackage receive = _communication.ReceiveMessage();
+                    _communication.SendMessageAsync(CommandConstants.LoginUser, user);
+
+                    CommunicatorPackage receive = _communication.ReceiveMessageAsync().Result;
                     if (receive.Command != CommandConstants.userNotLogged) okLogin = true;
                     Console.WriteLine(receive.Message);
                 }
@@ -576,8 +597,10 @@ namespace Client
             if (string.IsNullOrWhiteSpace(user)) Console.WriteLine(_message.InvalidUsername);
             else
             {
-                _communication.SendMessage(CommandConstants.RegisterUser, user);
-                Console.WriteLine(_communication.ReceiveMessage().Message);
+                _communication.SendMessageAsync(CommandConstants.RegisterUser, user);
+
+                CommunicatorPackage registerUser = _communication.ReceiveMessageAsync().Result;
+                Console.WriteLine(registerUser.Message);
             }
 
             StartUpMenu();
