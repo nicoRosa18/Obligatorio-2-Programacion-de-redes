@@ -46,8 +46,6 @@ namespace Server
         private async Task CreateConnectionsAsync()
         {
             Task task = Task.Run(async () => await ListenForConnectionsAsync().ConfigureAwait(false));
-            //var threadServer = new Thread(() => ListenForConnections());
-            //threadServer.Start();
 
             while (!_serverAttributes.EndConnection)
             {
@@ -85,13 +83,10 @@ namespace Server
                 int threadId = threadCount;
 
                 TcpClient connectedTcpClient = await _tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
-                //TcpClient connectedTcpClient = _tcpListener.AcceptTcpClient();
-                
-                _serverAttributes.AddClient(connectedTcpClient);
 
+                _serverAttributes.AddClient(connectedTcpClient);
                 Console.WriteLine($"Nueva coneccion {threadId} aceptada");
-                //var threadConnection = new Thread(() => HandleConnection(connectedTcpClient, threadId));
-                //threadConnection.Start();
+
                 Task task = Task.Run(async () => await HandleConnection(connectedTcpClient, threadId).ConfigureAwait(false));
             }
 

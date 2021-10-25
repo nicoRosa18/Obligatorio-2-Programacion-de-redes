@@ -7,7 +7,7 @@ namespace Client
         static async Task Main(string[] args)
         {
             ClientManager manager = new ClientManager();
-            await manager.Start();
+            await manager.StartAsync();
         }
     }
 }
