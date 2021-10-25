@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Common.Communicator;
@@ -46,7 +47,9 @@ namespace Client
         {
             try
             {
-                await _tcpClient.ConnectAsync(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)).ConfigureAwait(false);;
+                await _tcpClient.ConnectAsync(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort))
+                    .ConfigureAwait(false);
+                ;
                 this._communication = new CommunicationTcp(_tcpClient);
                 Menu();
             }
@@ -81,11 +84,12 @@ namespace Client
                     }
                 }
             }
-            catch (ClientClosingException)
+            catch (AggregateException)
             {
                 _tcpClient.Close();
                 Console.WriteLine(_message.ServerClosed);
             }
+
             CloseConnection();
         }
 
@@ -207,33 +211,45 @@ namespace Client
         {
             Console.WriteLine(_message.GameDetails);
             string gameName = Console.ReadLine();
-
             _communication.SendMessageAsync(CommandConstants.GameDetails, gameName);
-
             CommunicatorPackage gameDetails = _communication.ReceiveMessageAsync().Result;
-            Console.WriteLine(gameDetails.Message);
-
-            Console.WriteLine(_message.DownloadCover);
-
-            string descargarCaratula = Console.ReadLine();
-            int command;
-            if (descargarCaratula.Equals("1"))
+            if (gameDetails.Command == CommandConstants.GameNotExits)
             {
-                command = CommandConstants.SendCover;
-                _communication.SendMessageAsync(command, gameName);
-                string pathSavedAt = "";
-                try
-                {
-                    string path = _pathsManager.ReadSetting("CoversPath");
-                    pathSavedAt = _communication.ReceiveFileAsync(path).Result;
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                Console.WriteLine(gameDetails.Message);
+            }
+            else
+            {
+                Console.WriteLine(_message.DownloadCover);
 
-                Console.WriteLine(_message.SavedPathAt);
-                Console.WriteLine(pathSavedAt);
+                string descargarCaratula = Console.ReadLine();
+                int command;
+                if (descargarCaratula.Equals("1"))
+                {
+                    _communication.SendMessageAsync(CommandConstants.GameExists, "");
+                    CommunicatorPackage gameExists = _communication.ReceiveMessageAsync().Result;
+                    if (gameExists.Command == CommandConstants.GameExists)
+                    {
+                        command = CommandConstants.SendCover;
+                        _communication.SendMessageAsync(command, gameName);
+                        string pathSavedAt = "";
+                        try
+                        {
+                            string path = _pathsManager.ReadSetting("CoversPath");
+                            pathSavedAt = _communication.ReceiveFileAsync(path).Result;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+
+                        Console.WriteLine(_message.SavedPathAt);
+                        Console.WriteLine(pathSavedAt);
+                    }
+                    else
+                    {
+                        Console.WriteLine(_message.GameNotFound);
+                    }
+                }
             }
 
             MainMenu();
@@ -391,7 +407,6 @@ namespace Client
             string ageRating = "";
             try
             {
-               
                 Console.WriteLine(_message.GameAgeRestriction);
                 ageRating = Console.ReadLine();
                 if (!string.IsNullOrEmpty(ageRating))
@@ -414,22 +429,21 @@ namespace Client
                 string option = Console.ReadLine();
                 if (option.Equals("1"))
                 {
-                    string path = Console.ReadLine();
-                    if (!path.Equals(""))
+                    _communication.SendMessageAsync(CommandConstants.ReceiveCover, "");
+                    bool fileNotFound = true;
+                    string path;
+                    while (fileNotFound)
                     {
-                        _communication.SendMessageAsync(CommandConstants.ReceiveCover, "");
-                        bool fileNotFound = true;
-                        while (fileNotFound)
+                        try
                         {
-                            try
-                            {
-                                _communication.SendFileAsync(path);
-                                fileNotFound = false;
-                            }
-                            catch (System.IO.FileNotFoundException)
-                            {
+                            path = Console.ReadLine();
+                            _communication.SendFileAsync(path).Wait();
+                            fileNotFound = false;
+                        }
+                        catch (AggregateException e)
+                        {
+                            if (e.InnerExceptions[0] is FileNotFoundException)
                                 Console.WriteLine(_message.FileNotFound);
-                            }
                         }
                     }
                 }
@@ -544,12 +558,13 @@ namespace Client
                     try
                     {
                         string path = Console.ReadLine();
-                        _communication.SendFileAsync(path);
+                        _communication.SendFileAsync(path).Wait();
                         fileNotFound = false;
                     }
-                    catch (System.IO.FileNotFoundException)
+                    catch (AggregateException e)
                     {
-                        Console.WriteLine(_message.FileNotFound);
+                        if (e.InnerExceptions[0] is FileNotFoundException)
+                            Console.WriteLine(_message.FileNotFound);
                     }
                 }
 

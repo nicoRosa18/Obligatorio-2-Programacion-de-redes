@@ -188,8 +188,17 @@ namespace Server
                 q.Comment = comment;
                 q.Stars = stars;
                 q.User = _userLogged.Name;
-                _usersAndCatalogueManager.AddCommunityQualification(gameName, q);
-                _communicator.SendMessageAsync(CommandConstants.PublishQualification, _messageLanguage.QualificationAdded);
+                string messageToReturn;
+                try
+                {
+                    _usersAndCatalogueManager.AddCommunityQualification(gameName, q);
+                    messageToReturn=_messageLanguage.QualificationAdded;
+                }
+                catch (GameNotFound)
+                {
+                   messageToReturn= _messageLanguage.GameNotFound;
+                }
+                _communicator.SendMessageAsync(CommandConstants.PublishQualification, messageToReturn);
             }
             else
             {
@@ -207,26 +216,26 @@ namespace Server
             }
             catch (GameNotFound)
             {
-                _communicator.SendMessageAsync(package.Command, _messageLanguage.GameNotFound);
+                _communicator.SendMessageAsync(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
             }
         }
 
         private void SendCover(CommunicatorPackage package)
         {
             Game game = _usersAndCatalogueManager.GetGame(package.Message);
-            string path = game.Cover;
-            Console.WriteLine($"en game details: {path}");
-            try
-            {
-                _communicator.SendFileAsync(path);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                FileDefaultCoverCreation cover = new FileDefaultCoverCreation();
-                Bitmap defaultImage = cover.DrawFilledRectangle(1024, 1024);
-                defaultImage.Save(_pathsManager.ReadSetting("DefaultPath"));
-                _communicator.SendFileAsync(_pathsManager.ReadSetting("DefaultPath"));
-            }
+                string path = game.Cover;
+                Console.WriteLine($"en game details: {path}");
+                try
+                {
+                    _communicator.SendFileAsync(path);
+                }
+                catch (System.IO.FileNotFoundException)
+                {
+                    FileDefaultCoverCreation cover = new FileDefaultCoverCreation();
+                    Bitmap defaultImage = cover.DrawFilledRectangle(1024, 1024);
+                    defaultImage.Save(_pathsManager.ReadSetting("DefaultPath"));
+                    _communicator.SendFileAsync(_pathsManager.ReadSetting("DefaultPath"));
+                }
         }
 
         private void MyGames()
