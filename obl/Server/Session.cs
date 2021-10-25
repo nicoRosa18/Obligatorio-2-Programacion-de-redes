@@ -7,6 +7,7 @@ using Common.Communicator;
 using Common.FileManagement;
 using Common.SettingsManager;
 using Server.Domain;
+using System.Threading.Tasks;
 
 namespace Server
 {
@@ -90,7 +91,7 @@ namespace Server
                     break;
                 default:
                     messageReturn = "por favor envie una opcion correcta";
-                    _communicator.SendMessage(CommandConstants.StartupMenu, messageReturn);
+                    _communicator.SendMessageAsync(CommandConstants.StartupMenu, messageReturn);
                     break;
             }
         }
@@ -102,11 +103,11 @@ namespace Server
                 Game gameBeacon = new Game();
                 gameBeacon.Title = package.Message;
                 _usersAndCatalogueManager.ExistsGame(gameBeacon);
-                _communicator.SendMessage(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
+                _communicator.SendMessageAsync(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
             }
             catch (GameAlreadyExists)
             {
-                _communicator.SendMessage(CommandConstants.GameExists, "");
+                _communicator.SendMessageAsync(CommandConstants.GameExists, "");
             }
         }
 
@@ -119,16 +120,16 @@ namespace Server
                     Game removeGameBeacon = new Game();
                     removeGameBeacon.Title = package.Message;
                     _usersAndCatalogueManager.RemoveGame(_userLogged, removeGameBeacon);
-                    _communicator.SendMessage(CommandConstants.RemoveGame, _messageLanguage.GameRemovedCorrectly);
+                    _communicator.SendMessageAsync(CommandConstants.RemoveGame, _messageLanguage.GameRemovedCorrectly);
                 }
                 catch (UserNotOwnerofGame)
                 {
-                    _communicator.SendMessage(CommandConstants.RemoveGame, _messageLanguage.UserNotGameOwner);
+                    _communicator.SendMessageAsync(CommandConstants.RemoveGame, _messageLanguage.UserNotGameOwner);
                 }
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -144,12 +145,14 @@ namespace Server
                 string newSynopsis = data[3];
                 string newAgeRating = data[4];
                 string newCover = "";
-                _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.ModifyCover);
-                if (_communicator.ReceiveMessage().Command == CommandConstants.ReceiveCover)
+                _communicator.SendMessageAsync(CommandConstants.SendCover, _messageLanguage.ModifyCover);
+
+                CommunicatorPackage modifyCoverOption = _communicator.ReceiveMessageAsync().Result;
+                if (modifyCoverOption.Command == CommandConstants.ReceiveCover)
                 {
                     ISettingsManager settingsManager = new PathsConfiguration();
                     string path = settingsManager.ReadSetting("CoversPath");
-                    newCover = _communicator.ReceiveFile(path);
+                    newCover = _communicator.ReceiveFileAsync(path).Result;
                 }
 
                 Game newGame = new Game(newTitle, newCover, newGenre, newSynopsis, newAgeRating);
@@ -158,16 +161,16 @@ namespace Server
                 try
                 {
                     _usersAndCatalogueManager.ModifyGame(_userLogged, oldGameBeacon, newGame);
-                    _communicator.SendMessage(CommandConstants.ModifyGame, _messageLanguage.GameModifiedCorrectly);
+                    _communicator.SendMessageAsync(CommandConstants.ModifyGame, _messageLanguage.GameModifiedCorrectly);
                 }
                 catch (UserNotOwnerofGame)
                 {
-                    _communicator.SendMessage(CommandConstants.ModifyGame, _messageLanguage.UserNotGameOwner);
+                    _communicator.SendMessageAsync(CommandConstants.ModifyGame, _messageLanguage.UserNotGameOwner);
                 }
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -185,12 +188,21 @@ namespace Server
                 q.Comment = comment;
                 q.Stars = stars;
                 q.User = _userLogged.Name;
-                _usersAndCatalogueManager.AddCommunityQualification(gameName, q);
-                _communicator.SendMessage(CommandConstants.PublishQualification, _messageLanguage.QualificationAdded);
+                string messageToReturn;
+                try
+                {
+                    _usersAndCatalogueManager.AddCommunityQualification(gameName, q);
+                    messageToReturn=_messageLanguage.QualificationAdded;
+                }
+                catch (GameNotFound)
+                {
+                   messageToReturn= _messageLanguage.GameNotFound;
+                }
+                _communicator.SendMessageAsync(CommandConstants.PublishQualification, messageToReturn);
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -200,41 +212,41 @@ namespace Server
             {
                 Game game = _usersAndCatalogueManager.GetGame(package.Message);
                 GameDetails gameDetails = new GameDetails(game);
-                _communicator.SendMessage(CommandConstants.GameDetails, gameDetails.DetailsOnstring());
+                _communicator.SendMessageAsync(CommandConstants.GameDetails, gameDetails.DetailsOnstring());
             }
             catch (GameNotFound)
             {
-                _communicator.SendMessage(package.Command, _messageLanguage.GameNotFound);
+                _communicator.SendMessageAsync(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
             }
         }
 
         private void SendCover(CommunicatorPackage package)
         {
             Game game = _usersAndCatalogueManager.GetGame(package.Message);
-            string path = game.Cover;
-            Console.WriteLine($"en game details: {path}");
-            try
-            {
-                _communicator.SendFile(path);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                FileDefaultCoverCreation cover = new FileDefaultCoverCreation();
-                Bitmap defaultImage = cover.DrawFilledRectangle(1024, 1024);
-                defaultImage.Save(_pathsManager.ReadSetting("DefaultPath"));
-                _communicator.SendFile(_pathsManager.ReadSetting("DefaultPath"));
-            }
+                string path = game.Cover;
+                Console.WriteLine($"en game details: {path}");
+                try
+                {
+                    _communicator.SendFileAsync(path);
+                }
+                catch (System.IO.FileNotFoundException)
+                {
+                    FileDefaultCoverCreation cover = new FileDefaultCoverCreation();
+                    Bitmap defaultImage = cover.DrawFilledRectangle(1024, 1024);
+                    defaultImage.Save(_pathsManager.ReadSetting("DefaultPath"));
+                    _communicator.SendFileAsync(_pathsManager.ReadSetting("DefaultPath"));
+                }
         }
 
         private void MyGames()
         {
             if (_userLogged != null)
             {
-                _communicator.SendMessage(CommandConstants.MyGames, _userLogged.GetMyGames());
+                _communicator.SendMessageAsync(CommandConstants.MyGames, _userLogged.GetMyGames());
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -249,25 +261,25 @@ namespace Server
             {
                 stars = Int32.Parse(values[2]);
             }
-            catch
+            catch(FormatException)
             {
             }
 
             try
             {
                 string games = _usersAndCatalogueManager.SearchGames(title, genre, stars);
-                _communicator.SendMessage(CommandConstants.SearchGame, games);
+                _communicator.SendMessageAsync(CommandConstants.SearchGame, games);
             }
             catch (GameNotFound)
             {
-                _communicator.SendMessage(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
+                _communicator.SendMessageAsync(CommandConstants.GameNotExits, _messageLanguage.GameNotFound);
             }
         }
 
         private void StartUpMenu()
         {
             string messageToSend = _messageLanguage.StartUpMessage;
-            _communicator.SendMessage(CommandConstants.StartupMenu, messageToSend);
+            _communicator.SendMessageAsync(CommandConstants.StartupMenu, messageToSend);
         }
 
         private void UserRegistration(CommunicatorPackage received)
@@ -276,12 +288,12 @@ namespace Server
             try
             {
                 _usersAndCatalogueManager.ContainsUser(userName);
-                _communicator.SendMessage(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
+                _communicator.SendMessageAsync(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
             }
             catch (UserNotFound)
             {
                 _usersAndCatalogueManager.AddUser(userName);
-                _communicator.SendMessage(CommandConstants.RegisterUser,
+                _communicator.SendMessageAsync(CommandConstants.RegisterUser,
                     _messageLanguage.UserCreated + _usersAndCatalogueManager.Users.Count + "\n");
             }
         }
@@ -292,15 +304,15 @@ namespace Server
             try
             {
                 _userLogged = _usersAndCatalogueManager.Login(user);
-                _communicator.SendMessage(CommandConstants.userLogged, _messageLanguage.UserLogged);
+                _communicator.SendMessageAsync(CommandConstants.userLogged, _messageLanguage.UserLogged);
             }
             catch (UserNotFound)
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserIncorrect);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserIncorrect);
             }
             catch (UserAlreadyLoggedIn)
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserAlreadyLoggedIn);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserAlreadyLoggedIn);
             }
         }
 
@@ -312,20 +324,20 @@ namespace Server
                 {
                     Game game = _usersAndCatalogueManager.GetGame(package.Message);
                     _userLogged.BuyGame(game.Title);
-                    _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GamePurchased);
+                    _communicator.SendMessageAsync(CommandConstants.buyGame, _messageLanguage.GamePurchased);
                 }
                 catch (GameNotFound)
                 {
-                    _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GameNotFound);
+                    _communicator.SendMessageAsync(CommandConstants.buyGame, _messageLanguage.GameNotFound);
                 }
                 catch (GameAlreadyPurchased)
                 {
-                    _communicator.SendMessage(CommandConstants.buyGame, _messageLanguage.GameAlreadyInLibrary);
+                    _communicator.SendMessageAsync(CommandConstants.buyGame, _messageLanguage.GameAlreadyInLibrary);
                 }
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -338,7 +350,7 @@ namespace Server
                 messageToSend = _messageLanguage.EmptyCatalogue;
             }
 
-            _communicator.SendMessage(CommandConstants.ViewCatalogue, _messageLanguage.CatalogueView + messageToSend);
+            _communicator.SendMessageAsync(CommandConstants.ViewCatalogue, _messageLanguage.CatalogueView + messageToSend);
         }
 
         private void AddGame(CommunicatorPackage package)
@@ -351,7 +363,7 @@ namespace Server
                 string genre = data[1];
                 string synopsis = data[2];
                 string ageRating = data[3];
-                _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.SendGameCover);
+                _communicator.SendMessageAsync(CommandConstants.SendCover, _messageLanguage.SendGameCover);
                 bool okReceived = false;
                 string coverPath = "Default";
                 while (!okReceived)
@@ -359,13 +371,13 @@ namespace Server
                     try
                     {
                         string path = _pathsManager.ReadSetting("CoversPath");
-                        coverPath = _communicator.ReceiveFile(path);
+                        coverPath = _communicator.ReceiveFileAsync(path).Result;
                         Console.WriteLine(coverPath);
                         okReceived = true;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        _communicator.SendMessage(CommandConstants.SendCover, _messageLanguage.ErrorGameCover);
+                        _communicator.SendMessageAsync(CommandConstants.SendCover, _messageLanguage.ErrorGameCover);
                     }
                 }
 
@@ -373,11 +385,11 @@ namespace Server
 
                 _usersAndCatalogueManager.AddGame(_userLogged, gameToAdd);
 
-                _communicator.SendMessage(CommandConstants.AddGame, _messageLanguage.GameAdded);
+                _communicator.SendMessageAsync(CommandConstants.AddGame, _messageLanguage.GameAdded);
             }
             else
             {
-                _communicator.SendMessage(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
+                _communicator.SendMessageAsync(CommandConstants.userNotLogged, _messageLanguage.UserNotLogged);
             }
         }
 
@@ -385,15 +397,11 @@ namespace Server
         {
             try
             {
-                this.MessageInterpreter(this._communicator.ReceiveMessage());
+                Task<CommunicatorPackage> taskPackage = this._communicator.ReceiveMessageAsync();
+                this.MessageInterpreter(taskPackage.Result);
             }
             catch (ClientClosingException)
             {
-                CloseSession();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error {e.Message}..");
                 CloseSession();
             }
         }

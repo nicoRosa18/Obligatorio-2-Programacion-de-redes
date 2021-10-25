@@ -4,60 +4,61 @@ using Common.Protocol;
 using Common.Communicator.Exceptions;
 using Common.FileManagement;
 using Common.SettingsManager;
+using System.Threading.Tasks;
 
 namespace Common.Communicator
 {
-    public class CommunicationSocket : ICommunicator
+    public class CommunicationTcp : ICommunicator
     {
-        private readonly Socket _connectedSocket;
+        private readonly NetworkStream  _connectedNetworkStream;
         private readonly IFileStreamHandler _fileStreamHandler;
         private readonly IFileHandler _fileHandler;
         
-        public CommunicationSocket(Socket connectedSocket){
-            _connectedSocket = connectedSocket;
+        public CommunicationTcp(TcpClient connectedTcpClient){
+            _connectedNetworkStream = connectedTcpClient.GetStream();
             _fileHandler = new FileHandler();
             _fileStreamHandler = new FileStreamHandler();
         }
 
-        public CommunicatorPackage ReceiveMessage()
+        public async Task<CommunicatorPackage> ReceiveMessageAsync()
         {
             int headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
                                    HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
 
-            ReceiveData(headerLength, buffer);
+            await ReceiveDataAsync(headerLength, buffer);
 
             Header header = new Header();
             header.DecodeData(buffer);            
             var bufferData = new byte[header.IDataLength];  
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             
             CommunicatorPackage toReturn = new CommunicatorPackage(header.ICommand, Encoding.UTF8.GetString(bufferData));
             return toReturn;
         }
 
-        public void SendMessage(int command, string message)
+        public async Task SendMessageAsync(int command, string message)
         {        
             Header header = new Header(HeaderConstants.Request, command, message.Length);
             byte[] data = header.GetRequest();
             
-            SendData(data); 
-            SendData(Encoding.UTF8.GetBytes(message));
+            await SendData(data); 
+            await SendData(Encoding.UTF8.GetBytes(message));
         }
 
-        public string ReceiveFile(string path)
+        public async Task<string> ReceiveFileAsync(string path)
         {
             HeaderFile header = new HeaderFile();
             int headerLength = header.GetLength();
             byte[] buffer = new byte[headerLength];
-            ReceiveData(headerLength, buffer);
+            await ReceiveDataAsync(headerLength, buffer);
 
             header.DecodeData(buffer);
             int fileNameSize = header.IFileNameSize;
             long fileSize = header.IFileSize;
 
             buffer = new byte[fileNameSize];
-            ReceiveData(fileNameSize, buffer);
+            await ReceiveDataAsync(fileNameSize, buffer);
             string fileName = Encoding.UTF8.GetString(buffer);
 
             string existingFile = _fileHandler.GetPath(path+fileName);
@@ -65,14 +66,14 @@ namespace Common.Communicator
             {
                 _fileHandler.DeleteFile(existingFile);
             }
-            ReceiveParts(path+fileName, fileSize);
+            await ReceivePartsAsync(path+fileName, fileSize);
 
             string filePath = _fileHandler.GetPath(path+fileName);
 
             return filePath;
         }
 
-        public void SendFile(string path)
+        public async Task SendFileAsync(string path)
         {            
             string fileName = _fileHandler.GetFileName(path);
             int fileNameSize = Encoding.UTF8.GetBytes(fileName).Length;
@@ -81,29 +82,32 @@ namespace Common.Communicator
             HeaderFile header = new HeaderFile(fileNameSize, fileSize);
             byte[] data = header.GetSendHeader();
 
-            SendData(data);
-            SendData(Encoding.UTF8.GetBytes(fileName));
+            await SendData(data);
+            await SendData(Encoding.UTF8.GetBytes(fileName));
 
-            SendParts(path, fileSize);
+            await SendPartsAsync(path, fileSize);
         }
 
-        private void SendData(byte[] toSend)
+        private async Task SendData(byte[] toSend)
         {
-            var sentBytes = 0;
-            while (sentBytes < toSend.Length)
+            try
             {
-                sentBytes += this._connectedSocket.Send(toSend, sentBytes, toSend.Length - sentBytes, SocketFlags.None);
+                await this._connectedNetworkStream.WriteAsync(toSend, 0, toSend.Length).ConfigureAwait(false);;
+            }
+            catch(System.IO.IOException)
+            {
+                throw new ClientClosingException();
             }
         }
 
-        private void ReceiveData(int length, byte[] buffer)
+        private async Task ReceiveDataAsync(int length, byte[] buffer)
         {
             int iRecv = 0;
             while (iRecv < length)
             {
                 try
                 {
-                    int localRecv = this._connectedSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
+                    int localRecv = await this._connectedNetworkStream.ReadAsync(buffer, iRecv, length - iRecv).ConfigureAwait(false);
                     if (localRecv == 0) 
                     {
                         throw new ClientClosingException();
@@ -111,14 +115,14 @@ namespace Common.Communicator
 
                     iRecv += localRecv;
                 }
-                catch (SocketException)
+                catch (System.IO.IOException)
                 {
                     throw new ClientClosingException();
                 }
             }
         }
 
-        private void SendParts(string path, long fileSize)
+        private async Task SendPartsAsync(string path, long fileSize)
         {
             long parts = PacketHandler.GetParts(fileSize);
             long offset = 0;
@@ -139,12 +143,12 @@ namespace Common.Communicator
                     offset += HeaderFileConstants.MaxPacketSize;
                 }
 
-                SendData(data);
+                await SendData(data);
                 currentPart++;
             }
         }
 
-        private void ReceiveParts(string fileName, long fileSize)
+        private async Task ReceivePartsAsync(string fileName, long fileSize)
         {    
             long parts = PacketHandler.GetParts(fileSize);
             long offset = 0;
@@ -157,13 +161,13 @@ namespace Common.Communicator
                 {
                     var lastPartSize = (int)(fileSize - offset);
                     data = new byte[lastPartSize];
-                    ReceiveData(lastPartSize, data);
+                    await ReceiveDataAsync(lastPartSize, data);
                     offset += lastPartSize;
                 }
                 else
                 {
                     data = new byte[HeaderFileConstants.MaxPacketSize];
-                    ReceiveData(HeaderFileConstants.MaxPacketSize, data);
+                    await ReceiveDataAsync(HeaderFileConstants.MaxPacketSize, data);
                     offset += HeaderFileConstants.MaxPacketSize;
                 }
                 _fileStreamHandler.Write(fileName, data);
