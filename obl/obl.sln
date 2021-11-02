@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{97896362-4AFA-48B5-8210-2814FAB6905F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerLogs", "ServerLogs\ServerLogs.csproj", "{2562D55F-F11B-447C-B435-43D5D9762E9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLogs", "CommonLogs\CommonLogs.csproj", "{663DE402-D7E7-4FE3-8CCA-C1636AB85E72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,5 +33,13 @@ Global
 		{97896362-4AFA-48B5-8210-2814FAB6905F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97896362-4AFA-48B5-8210-2814FAB6905F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97896362-4AFA-48B5-8210-2814FAB6905F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2562D55F-F11B-447C-B435-43D5D9762E9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2562D55F-F11B-447C-B435-43D5D9762E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2562D55F-F11B-447C-B435-43D5D9762E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2562D55F-F11B-447C-B435-43D5D9762E9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{663DE402-D7E7-4FE3-8CCA-C1636AB85E72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{663DE402-D7E7-4FE3-8CCA-C1636AB85E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{663DE402-D7E7-4FE3-8CCA-C1636AB85E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{663DE402-D7E7-4FE3-8CCA-C1636AB85E72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
