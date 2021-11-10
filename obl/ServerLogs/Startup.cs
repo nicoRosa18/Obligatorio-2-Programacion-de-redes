@@ -27,7 +27,7 @@ namespace ServerLogs
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<LogContainer>();
+            services.AddSingleton<ILogContainer, LogContainer>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

@@ -4,11 +4,11 @@ using CommonLogs;
 
 namespace ServerLogs.Container
 {
-    public class LogContainer
+    public class LogContainer : ILogContainer
     {
         public List<Log> Logs {get; set;}
 
-        LogContainer()
+        public LogContainer()
         {
             Logs = new List<Log>();
         }

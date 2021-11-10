@@ -16,11 +16,11 @@ namespace Server
         private ServerTools _serverAttributes { get; set; }
         private TcpListener _tcpListener { get; set; }
         private string _serverIpAddress { get; set; }
-        private string _serverPort { get; set; }        
+        private string _serverPort { get; set; }
 
         public ServerManager()
         {
-            Task server = ServerManagerAsync();
+            Task.Run(() => this.ServerManagerAsync()).Wait();
         }
 
         public async Task ServerManagerAsync()
@@ -29,7 +29,7 @@ namespace Server
             Session._usersAndCatalogueManager = usersAndCatalogueManager;
             LocalSender localSender = LocalSender.Instance;
             Session._localSender = localSender;
-
+            
             _serverAttributes = new ServerTools();
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
