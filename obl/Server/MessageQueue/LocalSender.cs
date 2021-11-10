@@ -42,7 +42,7 @@ namespace Server.MessageQueue
             _messageControl = new SendMessageQueue(channel);
         }
 
-        protected async Task ExecuteAsync(CancellationToken stoppingToken, Log logItem)
+        public async Task ExecuteAsync(Log logItem)
         {
             _messageControl.SendAsync<Log>(_QueueName, logItem);
         }

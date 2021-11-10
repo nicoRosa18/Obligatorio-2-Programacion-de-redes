@@ -9,6 +9,7 @@ using Common.SettingsManager;
 using Server.Domain;
 using System.Threading.Tasks;
 using Server.MessageQueue;
+using CommonLogs;
 
 namespace Server
 {
@@ -17,7 +18,7 @@ namespace Server
         public bool Active { get; set; }
 
         public static UsersAndCatalogueManager _usersAndCatalogueManager { get; set; }
-        
+
         public static LocalSender _localSender { get; set; }
 
         private User _userLogged;
@@ -292,6 +293,7 @@ namespace Server
             {
                 _usersAndCatalogueManager.ContainsUser(userName);
                 _communicator.SendMessageAsync(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
+                _localSender.ExecuteAsync(new Log(userName, null, "UserRegistration", "se registro pa"));
             }
             catch (UserNotFound)
             {

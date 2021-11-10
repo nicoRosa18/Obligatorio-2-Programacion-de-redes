@@ -29,7 +29,7 @@ namespace Server
             Session._usersAndCatalogueManager = usersAndCatalogueManager;
             LocalSender localSender = LocalSender.Instance;
             Session._localSender = localSender;
-            
+
             _serverAttributes = new ServerTools();
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
@@ -39,7 +39,7 @@ namespace Server
             ISettingsManager _serverConfiguration = new PathsConfiguration();
             System.IO.Directory.CreateDirectory(_serverConfiguration.ReadSetting("CoversPath"));
 
-            _tcpListener  = new TcpListener(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
+            _tcpListener = new TcpListener(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
             _tcpListener.Start(10);
 
             StartUpMenu();
