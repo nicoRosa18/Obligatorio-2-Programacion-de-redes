@@ -7,6 +7,7 @@ using Common.Communicator;
 using Common.SettingsManager;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Server.MessageQueue;
 
 namespace Server
 {
@@ -24,8 +25,10 @@ namespace Server
 
         public async Task ServerManagerAsync()
         {
-            UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
-            Session._usersAndCatalogueManager = _usersAndCatalogueManager;
+            UsersAndCatalogueManager usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
+            Session._usersAndCatalogueManager = usersAndCatalogueManager;
+            LocalSender localSender = localSender.Instance;
+            Session._localSender = localSender;
 
             _serverAttributes = new ServerTools();
 

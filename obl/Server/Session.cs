@@ -8,6 +8,7 @@ using Common.FileManagement;
 using Common.SettingsManager;
 using Server.Domain;
 using System.Threading.Tasks;
+using Server.MessageQueue;
 
 namespace Server
 {
@@ -16,6 +17,8 @@ namespace Server
         public bool Active { get; set; }
 
         public static UsersAndCatalogueManager _usersAndCatalogueManager { get; set; }
+        
+        public static LocalSender _localSender { get; set; }
 
         private User _userLogged;
 
