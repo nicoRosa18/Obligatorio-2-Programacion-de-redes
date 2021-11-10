@@ -16,7 +16,7 @@ namespace Server
         private ServerTools _serverAttributes { get; set; }
         private TcpListener _tcpListener { get; set; }
         private string _serverIpAddress { get; set; }
-        private string _serverPort { get; set; }
+        private string _serverPort { get; set; }        
 
         public ServerManager()
         {
@@ -27,9 +27,9 @@ namespace Server
         {
             UsersAndCatalogueManager usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
             Session._usersAndCatalogueManager = usersAndCatalogueManager;
-            LocalSender localSender = localSender.Instance;
+            LocalSender localSender = LocalSender.Instance;
             Session._localSender = localSender;
-
+            
             _serverAttributes = new ServerTools();
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();

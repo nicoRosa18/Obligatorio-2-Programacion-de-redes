@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonLogs;
+using CommonLogs.SettingsManager;
 using RabbitMQ.Client;
 using Server.MessageQueue.Bus;
 
@@ -32,6 +33,10 @@ namespace Server.MessageQueue
 
         public LocalSender()
         {
+            SettingsManager rabbitConfiguration = new SettingsManager();
+            _HostName = rabbitConfiguration.ReadSetting("HostName");
+            _QueueName = rabbitConfiguration.ReadSetting("QueueName");
+
             IModel channel = new ConnectionFactory() {HostName = _HostName}
                                                 .CreateConnection().CreateModel();
             _messageControl = new SendMessageQueue(channel);
