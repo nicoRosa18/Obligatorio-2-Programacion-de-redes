@@ -8,47 +8,151 @@ namespace ServerLogs.Container
 {
     public class LogContainer : ILogContainer
     {
-        private readonly object padlock = new object();
-        public ICollection<Log> Logs {get; set;}
+        private readonly object _gameDictionarylock = new object();
+        private readonly object _userDictionarylock = new object();
+        private IDictionary<string, List<Log>> _gameLogs {get; set;}
+        private IDictionary<string, List<Log>> _userLogs {get; set;}
 
         public LogContainer()
         {
-            Logs = new Collection<Log>();
+            _gameLogs = new Dictionary<string, List<Log>>();
+            _userLogs = new Dictionary<string, List<Log>>();
         }
 
         public async Task AddLogAsync(Log log)
         {
-            lock(padlock)
+            lock(_userLogs)
             {
-                //sacar
-                Console.WriteLine(log.EventType);    
-                Logs.Add(log);
+                try
+                {
+                    _userLogs[log.User].Add(DeepCopyLog(log));
+                }
+                catch(System.Collections.Generic.KeyNotFoundException)
+                {
+                    List<Log> newCollectionToKey = new List<Log>();
+                    newCollectionToKey.Add(DeepCopyLog(log));
+                    _userLogs.Add(log.User, newCollectionToKey);
+                }
+            }
+            if(!log.Game.Equals(string.Empty))
+            {
+                lock(_gameLogs)
+                {
+                    try
+                    {
+                        _gameLogs[log.Game].Add(DeepCopyLog(log));
+                    }
+                    catch(System.Collections.Generic.KeyNotFoundException)
+                    {
+                        List<Log> newCollectionToKey = new List<Log>();
+                        newCollectionToKey.Add(DeepCopyLog(log));
+                        _gameLogs.Add(log.Game, newCollectionToKey);
+                    }
+                }
             }
         }
 
-        public async Task<ICollection<Log>> ShowLogsAsync()
+        public async Task<ICollection<Log>> FilterLogsAsync(string user, string game, string date)
         {
-            ICollection<Log> copy = new Collection<Log>();
-            lock(padlock)
+            List<Log> filteredByUser = new List<Log>();
+            List<Log> filteredByGame = new List<Log>();
+            lock(_userLogs)
             {
-                copy = Copy(Logs);
+                try
+                {
+                    filteredByUser = DeepCopyLogList(FilterByUserName(user, date));
+                }
+                catch(System.Collections.Generic.KeyNotFoundException)
+                {
+                    return filteredByUser;
+                }
             }
-            return copy;
+            lock(_gameLogs)
+            {
+                try
+                {
+                    filteredByGame = DeepCopyLogList(FilterByGameName(game, date));
+                }
+                catch(System.Collections.Generic.KeyNotFoundException)
+                {
+                    return filteredByGame;
+                }
+            }
+            List<Log> filtered = Intersect(filteredByUser, filteredByGame);
+            return filtered;
         }
 
-        private ICollection<Log> Copy(ICollection<Log> logs)
+        private List<Log> Intersect(List<Log> filteredByUser, List<Log> filteredByGame)
         {
-            ICollection<Log> copy = new Collection<Log>();
+            List<Log> toReturn = new List<Log>();
+            foreach (Log log in filteredByUser)
+            {
+                if (filteredByGame.Contains(log)) toReturn.Add(log);
+            }
+            return toReturn;
+        }
+
+        private List<Log> FilterByUserName(string userName, string date)
+        {
+            List<Log> listFiltered = new List<Log>();
+            if(userName.Equals(string.Empty))
+            {
+                listFiltered = FilterByDate((List<Log>)_userLogs.Values, date);
+            }
+            else
+            {
+                listFiltered = FilterByDate(_userLogs[userName], date);
+            }
+            return listFiltered; 
+        }
+
+        private List<Log> FilterByGameName(string gameName, string date)
+        {
+            List<Log> listFiltered = new List<Log>();
+            if(gameName.Equals(string.Empty))
+            {
+                listFiltered = FilterByDate((List<Log>)_gameLogs.Values, date);
+            }
+            else
+            {
+                listFiltered = FilterByDate(_gameLogs[gameName], date);
+            }
+            return listFiltered;
+        }
+
+        private List<Log> FilterByDate(List<Log> logs, string date)
+        {
+            List<Log> listFiltered = new List<Log>();
+            if(!date.Equals(string.Empty))
+            {
+                listFiltered = logs.FindAll(l => l.Time.Equals(date));
+            }
+            else
+            {
+                listFiltered = logs;
+            }
+            return listFiltered;
+        }
+
+        private List<Log> DeepCopyLogList(List<Log> logs)
+        {
+            List<Log> copy = new List<Log>();
             foreach(Log log in logs)
             {
-                Log logCopy = new Log();
-                logCopy.User = log.User;
-                logCopy.Game = log.Game;
-                logCopy.Time = log.Time;
-                logCopy.Status = log.Status;
+                Log logCopy = DeepCopyLog(log);
                 copy.Add(logCopy);
             }
             return copy;
+        }
+
+        private Log DeepCopyLog(Log logToCopy)
+        {
+            Log logCopy = new Log();
+            logCopy.User = logToCopy.User;
+            logCopy.Game = logToCopy.Game;
+            logCopy.Time = logToCopy.Time;
+            logCopy.Status = logToCopy.Status;
+            return logCopy;
         }
     }
 }

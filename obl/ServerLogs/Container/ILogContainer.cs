@@ -8,6 +8,6 @@ namespace ServerLogs.Container
     public interface ILogContainer
     {
         Task AddLogAsync(Log log);
-        Task<ICollection<Log>> ShowLogsAsync();
+        Task<ICollection<Log>> FilterLogsAsync(string user, string game, string date);
     }
 }

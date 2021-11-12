@@ -21,7 +21,7 @@ namespace ServerLogs.Controllers
         [HttpGet]
         public async Task<ActionResult<ICollection<Log>>> Get([FromBody] SearchParameters search)
         {
-            ICollection<Log> taskLogs = await _logContainer.ShowLogsAsync();
+            ICollection<Log> taskLogs = await _logContainer.FilterLogsAsync(search.UserName, search.GameName, search.Date);
             return Ok(taskLogs);
         }
     }
