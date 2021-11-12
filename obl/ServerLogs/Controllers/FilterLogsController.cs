@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CommonLogs;
 using Microsoft.AspNetCore.Mvc;
 using ServerLogs.Container;
@@ -18,10 +19,10 @@ namespace ServerLogs.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get([FromBody] SearchParameters search)
+        public async Task<ActionResult<ICollection<Log>>> Get([FromBody] SearchParameters search)
         {
-            ICollection<Log> logs = _logContainer.ShowLogs();
-            return Ok(logs);
+            ICollection<Log> taskLogs = await _logContainer.ShowLogsAsync();
+            return Ok(taskLogs);
         }
     }
 }

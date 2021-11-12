@@ -30,28 +30,22 @@ namespace ServerLogs.MessageQueue
             SettingsManager toRead = new SettingsManager();
             _hostName = toRead.ReadSetting("HostName");
             _queueName = toRead.ReadSetting("QueueName");
-            IModel channel = new ConnectionFactory() {HostName = _hostName}
+            IModel channel = new ConnectionFactory() {HostName = _hostName, DispatchConsumersAsync = true}
                                                 .CreateConnection().CreateModel();
             _messageControl = new Message(channel);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-        await _messageControl.ReceiveAsync<Log>(_queueName,
-                    x => { Task.Run(() => { ReceiveItem(x); }, stoppingToken); });
+            await _messageControl.ReceiveAsync<Log>(_queueName,
+                    x => { Task.Run(async () => {await ReceiveItemAsync(x); }, stoppingToken); });
         }
 
-        private void ReceiveItem(Log logItem)
+        private async Task ReceiveItemAsync(Log logItem)
         {
-            
-            Console.WriteLine(logItem.User); 
-            _logger.LogInformation("Name: "+logItem.User+", Complete");
             try
             {
-                using (var scope = _serviceProvider.CreateScope())
-                { 
-                    _logContainer.AddLog(logItem);
-                }
+                await _logContainer.AddLogAsync(logItem);
             }
             catch (Exception e)
             {

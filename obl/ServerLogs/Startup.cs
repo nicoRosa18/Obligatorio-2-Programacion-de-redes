@@ -26,14 +26,14 @@ namespace ServerLogs
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
-        {
+        {  
             services.AddSingleton<ILogContainer, LogContainer>();
             services.AddControllers();
+            services.AddHostedService<LocalReceiver>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ServerLogs", Version = "v1" });
             });
-            services.AddHostedService<LocalReceiver>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -41,8 +41,6 @@ namespace ServerLogs
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ServerLogs v1"));
             }
 
             app.UseHttpsRedirection();

@@ -19,13 +19,13 @@ namespace ServerLogs.MessageQueue.Bus
         
         public async Task ReceiveAsync<Log>(string queue, Action<Log> onMessage)
         {
-            _channel.QueueDeclare(queue, false, false, false);
+            _channel.QueueDeclare(queue, false, false, false, null);
             AsyncEventingBasicConsumer consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (s, e) =>
             {
                 byte[] body = e.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
-                Log item = JsonConvert.DeserializeObject<Log>(message); //retorna el elemento deserializado o null en el caso de un error de sintaxis
+                Log item = JsonConvert.DeserializeObject<Log>(message);
                 onMessage(item);
                 await Task.Yield();
             };

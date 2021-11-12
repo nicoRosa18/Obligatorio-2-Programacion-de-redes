@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CommonLogs;
 
 namespace ServerLogs.Container
 {
     public interface ILogContainer
     {
-        void AddLog(Log log);
-        ICollection<Log> ShowLogs();
+        Task AddLogAsync(Log log);
+        Task<ICollection<Log>> ShowLogsAsync();
     }
 }

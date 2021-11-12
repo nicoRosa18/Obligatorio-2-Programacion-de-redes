@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CommonLogs;
 
 namespace ServerLogs.Container
@@ -15,16 +16,17 @@ namespace ServerLogs.Container
             Logs = new Collection<Log>();
         }
 
-        public void AddLog(Log log)
+        public async Task AddLogAsync(Log log)
         {
             lock(padlock)
             {
+                //sacar
                 Console.WriteLine(log.EventType);    
                 Logs.Add(log);
             }
         }
 
-        public ICollection<Log> ShowLogs()
+        public async Task<ICollection<Log>> ShowLogsAsync()
         {
             ICollection<Log> copy = new Collection<Log>();
             lock(padlock)
