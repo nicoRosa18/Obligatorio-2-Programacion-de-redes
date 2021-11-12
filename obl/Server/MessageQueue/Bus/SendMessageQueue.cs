@@ -20,11 +20,12 @@ namespace Server.MessageQueue.Bus
             await Task.Run(() =>
             {
                 _channel.QueueDeclare(queue, false, false, false);
+                
+                //estas dos lineas hacen que no se persista el mensaje en la cola, sacar de ser necesario
+                // IBasicProperties properties = _channel.CreateBasicProperties();
+                // properties.Persistent = false;
 
-                var properties = _channel.CreateBasicProperties();
-                properties.Persistent = false;
-
-                var output = JsonConvert.SerializeObject(log);
+                string output = JsonConvert.SerializeObject(log);
                 _channel.BasicPublish(string.Empty, queue, null, Encoding.UTF8.GetBytes(output));
             });
         }

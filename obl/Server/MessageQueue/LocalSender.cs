@@ -12,8 +12,8 @@ namespace Server.MessageQueue
     {
         private static LocalSender _instance;
         private readonly ISendMessageQueue _messageControl;
-        private readonly string _HostName;
-        private readonly string _QueueName;
+        private readonly string _hostName;
+        private readonly string _queueName;
         private static readonly object padlock = new object();
 
         public static LocalSender Instance
@@ -34,17 +34,18 @@ namespace Server.MessageQueue
         public LocalSender()
         {
             SettingsManager rabbitConfiguration = new SettingsManager();
-            _HostName = rabbitConfiguration.ReadSetting("HostName");
-            _QueueName = rabbitConfiguration.ReadSetting("QueueName");
+            _hostName = rabbitConfiguration.ReadSetting("HostName");
+            _queueName = rabbitConfiguration.ReadSetting("QueueName");
 
-            IModel channel = new ConnectionFactory() {HostName = _HostName}
+            IModel channel = new ConnectionFactory() {HostName = _hostName}
                                                 .CreateConnection().CreateModel();
             _messageControl = new SendMessageQueue(channel);
         }
 
-        public async Task ExecuteAsync(Log logItem)
+        public async Task ExecuteAsync(string user, string game, string eventType, string status)
         {
-            _messageControl.SendAsync<Log>(_QueueName, logItem);
+            Log toSend = new Log(user, game, eventType, status);
+            _messageControl.SendAsync<Log>(_queueName, toSend);
         }
     }
 }

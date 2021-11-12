@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using CommonLogs;
 using Microsoft.AspNetCore.Mvc;
 using ServerLogs.Container;
 
@@ -8,17 +10,18 @@ namespace ServerLogs.Controllers
     [ApiController]
     public class FilterLogsController : ControllerBase
     {
-        private readonly LogContainer _container;
+        private readonly ILogContainer _logContainer;
 
-        public FilterLogsController()
+        public FilterLogsController(ILogContainer logContainer)
         {
-
+            _logContainer = logContainer;
         }
 
         [HttpGet]
         public IActionResult Get([FromBody] SearchParameters search)
         {
-            return Ok();
+            ICollection<Log> logs = _logContainer.ShowLogs();
+            return Ok(logs);
         }
     }
 }

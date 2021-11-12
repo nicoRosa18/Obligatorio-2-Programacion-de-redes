@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using ServerLogs.Container;
 using ServerLogs.MessageQueue.Bus;
 
 namespace ServerLogs.MessageQueue
@@ -16,25 +17,26 @@ namespace ServerLogs.MessageQueue
         private readonly ILogger<LocalReceiver> _logger;
         private readonly IMessage _messageControl;
         private readonly IServiceProvider _serviceProvider;
-        private readonly string _HostName;
-        private readonly string _QueueName;
+        private readonly ILogContainer _logContainer;
+        private readonly string _hostName;
+        private readonly string _queueName;
 
-        public LocalReceiver(ILogger<LocalReceiver> logger, IServiceProvider serviceProvider)
+        public LocalReceiver(ILogger<LocalReceiver> logger, IServiceProvider serviceProvider, ILogContainer logContainer)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
             
             SettingsManager toRead = new SettingsManager();
-            _HostName = toRead.ReadSetting("HostName");
-            _QueueName = toRead.ReadSetting("QueueName");
-            IModel channel = new ConnectionFactory() {HostName = _HostName}
+            _hostName = toRead.ReadSetting("HostName");
+            _queueName = toRead.ReadSetting("QueueName");
+            IModel channel = new ConnectionFactory() {HostName = _hostName}
                                                 .CreateConnection().CreateModel();
             _messageControl = new Message(channel);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _messageControl.ReceiveAsync<Log>(_QueueName, x =>
+            await _messageControl.ReceiveAsync<Log>(_queueName, x =>
             {
                 Task.Run(() => { ReceiveItem(x); }, stoppingToken);
             });
@@ -43,10 +45,10 @@ namespace ServerLogs.MessageQueue
         private void ReceiveItem(Log logItem)
         {
             //sacar, solo de prueba
-            _logger.LogInformation("Name: "+logItem.EventType+", Complete");
+            _logger.LogInformation("Name: "+logItem.User+", Complete");
             try
             {
-                
+                _logContainer.AddLog(logItem);
             }
             catch (Exception e)
             {

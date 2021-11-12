@@ -293,13 +293,13 @@ namespace Server
             {
                 _usersAndCatalogueManager.ContainsUser(userName);
                 _communicator.SendMessageAsync(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
-                _localSender.ExecuteAsync(new Log(userName, null, "UserRegistration", "se registro pa"));
             }
             catch (UserNotFound)
             {
                 _usersAndCatalogueManager.AddUser(userName);
                 _communicator.SendMessageAsync(CommandConstants.RegisterUser,
                     _messageLanguage.UserCreated + _usersAndCatalogueManager.Users.Count + "\n");
+                _localSender.ExecuteAsync(userName, "", "UserRegistration", _messageLanguage.UserCreated);
             }
         }
 
