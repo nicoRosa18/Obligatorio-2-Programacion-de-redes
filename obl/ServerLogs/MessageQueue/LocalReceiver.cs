@@ -23,6 +23,7 @@ namespace ServerLogs.MessageQueue
 
         public LocalReceiver(ILogger<LocalReceiver> logger, IServiceProvider serviceProvider, ILogContainer logContainer)
         {
+            _logContainer = logContainer;
             _logger = logger;
             _serviceProvider = serviceProvider;
             
@@ -36,19 +37,21 @@ namespace ServerLogs.MessageQueue
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await _messageControl.ReceiveAsync<Log>(_queueName, x =>
-            {
-                Task.Run(() => { ReceiveItem(x); }, stoppingToken);
-            });
+        await _messageControl.ReceiveAsync<Log>(_queueName,
+                    x => { Task.Run(() => { ReceiveItem(x); }, stoppingToken); });
         }
 
         private void ReceiveItem(Log logItem)
         {
+            
             Console.WriteLine(logItem.User); 
             _logger.LogInformation("Name: "+logItem.User+", Complete");
             try
             {
-                _logContainer.AddLog(logItem);
+                using (var scope = _serviceProvider.CreateScope())
+                { 
+                    _logContainer.AddLog(logItem);
+                }
             }
             catch (Exception e)
             {
