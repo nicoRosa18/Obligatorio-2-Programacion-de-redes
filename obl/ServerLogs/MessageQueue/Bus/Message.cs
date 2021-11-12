@@ -23,9 +23,9 @@ namespace ServerLogs.MessageQueue.Bus
             AsyncEventingBasicConsumer consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (s, e) =>
             {
-                var body = e.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                var item = JsonConvert.DeserializeObject<Log>(message); //retorna el elemento deserializado o null en el caso de un error de sintaxis
+                byte[] body = e.Body.ToArray();
+                string message = Encoding.UTF8.GetString(body);
+                Log item = JsonConvert.DeserializeObject<Log>(message); //retorna el elemento deserializado o null en el caso de un error de sintaxis
                 onMessage(item);
                 await Task.Yield();
             };

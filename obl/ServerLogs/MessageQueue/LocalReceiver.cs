@@ -44,7 +44,7 @@ namespace ServerLogs.MessageQueue
 
         private void ReceiveItem(Log logItem)
         {
-            //sacar, solo de prueba
+            Console.WriteLine(logItem.User); 
             _logger.LogInformation("Name: "+logItem.User+", Complete");
             try
             {
