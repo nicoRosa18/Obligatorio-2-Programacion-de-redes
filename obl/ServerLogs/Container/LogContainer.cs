@@ -78,7 +78,24 @@ namespace ServerLogs.Container
                     return filteredByGame;
                 }
             }
-            List<Log> filtered = Intersect(filteredByUser, filteredByGame);
+            List<Log> filtered  = new List<Log>();
+            if(!user.Equals(string.Empty) && !game.Equals(string.Empty))
+            {
+                filtered = Intersect(filteredByUser, filteredByGame);
+            }
+            else if(!user.Equals(string.Empty))
+            {
+                filtered = filteredByUser;
+            }
+            else if(!game.Equals(string.Empty))
+            {
+                filtered = filteredByGame;
+            }   
+            else
+            {  
+                filteredByUser.AddRange(filteredByGame);
+                filtered = filteredByUser;
+            }
             return filtered;
         }
 
@@ -97,7 +114,7 @@ namespace ServerLogs.Container
             List<Log> listFiltered = new List<Log>();
             if(userName.Equals(string.Empty))
             {
-                listFiltered = FilterByDate((List<Log>)_userLogs.Values, date);
+                listFiltered = FilterByDate(CollectionOfListsToSingleListConverter(_userLogs.Values), date);
             }
             else
             {
@@ -111,7 +128,7 @@ namespace ServerLogs.Container
             List<Log> listFiltered = new List<Log>();
             if(gameName.Equals(string.Empty))
             {
-                listFiltered = FilterByDate((List<Log>)_gameLogs.Values, date);
+                listFiltered = FilterByDate(CollectionOfListsToSingleListConverter(_gameLogs.Values), date);
             }
             else
             {
@@ -125,13 +142,23 @@ namespace ServerLogs.Container
             List<Log> listFiltered = new List<Log>();
             if(!date.Equals(string.Empty))
             {
-                listFiltered = logs.FindAll(l => l.Time.Equals(date));
+                listFiltered = logs.FindAll(l => l.Time.Equals(DateTime.Parse(date)));
             }
             else
             {
                 listFiltered = logs;
             }
             return listFiltered;
+        }
+
+        private List<Log> CollectionOfListsToSingleListConverter(ICollection<List<Log>> toConvert)
+        {
+            List<Log> toReturn = new List<Log>();
+            foreach(List<Log> list in toConvert)
+            {
+                toReturn.AddRange(list);
+            }
+            return toReturn;
         }
 
         private List<Log> DeepCopyLogList(List<Log> logs)
@@ -148,6 +175,7 @@ namespace ServerLogs.Container
         private Log DeepCopyLog(Log logToCopy)
         {
             Log logCopy = new Log();
+            logCopy.EventType = logToCopy.EventType;
             logCopy.User = logToCopy.User;
             logCopy.Game = logToCopy.Game;
             logCopy.Time = logToCopy.Time;
