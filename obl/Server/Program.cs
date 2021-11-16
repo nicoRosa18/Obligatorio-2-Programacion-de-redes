@@ -4,7 +4,7 @@ namespace Server
 {
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             ServerManager serverManager = new ServerManager();
         }

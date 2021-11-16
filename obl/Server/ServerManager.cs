@@ -7,7 +7,6 @@ using Common.Communicator;
 using Common.SettingsManager;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Server.MessageQueue;
 
 namespace Server
 {
@@ -20,16 +19,14 @@ namespace Server
 
         public ServerManager()
         {
-            Task.Run(() => this.ServerManagerAsync()).Wait();
+            Task server = ServerManagerAsync();
         }
 
         public async Task ServerManagerAsync()
         {
-            UsersAndCatalogueManager usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
-            Session._usersAndCatalogueManager = usersAndCatalogueManager;
-            LocalSender localSender = LocalSender.Instance;
-            Session._localSender = localSender;
-            
+            UsersAndCatalogueManager _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
+            Session._usersAndCatalogueManager = _usersAndCatalogueManager;
+
             _serverAttributes = new ServerTools();
 
             ISettingsManager _ipConfiguration = new AddressIPConfiguration();
@@ -39,7 +36,7 @@ namespace Server
             ISettingsManager _serverConfiguration = new PathsConfiguration();
             System.IO.Directory.CreateDirectory(_serverConfiguration.ReadSetting("CoversPath"));
 
-            _tcpListener = new TcpListener(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
+            _tcpListener  = new TcpListener(new IPEndPoint(IPAddress.Parse(_serverIpAddress), int.Parse(_serverPort)));
             _tcpListener.Start(10);
 
             StartUpMenu();
