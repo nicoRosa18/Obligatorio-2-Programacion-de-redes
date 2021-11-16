@@ -43,7 +43,7 @@ namespace Client
             System.IO.Directory.CreateDirectory(_pathsManager.ReadSetting("CoversPath"));
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             try
             {
