@@ -6,6 +6,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Protobuf Include="AdminCommunication\Protos\greet.proto" GrpcServices="Server" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="Google.Protobuf" Version="3.19.1" />
       <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
