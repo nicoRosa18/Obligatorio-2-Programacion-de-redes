@@ -10,7 +10,6 @@ namespace Server.Domain
         public ArrayList AcquireGames { get; set; }
         public ArrayList PublishedGames { get; set; }
 
-
         public User()
         {
             this.AcquireGames = new ArrayList();

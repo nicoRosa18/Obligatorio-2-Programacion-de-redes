@@ -37,10 +37,10 @@ namespace Server.Domain
 
         public void AddUser(string username)
         {
+            User user = new User();
+            user.Name = username;
             lock (_userCollectionLock)
             {
-                User user = new User();
-                user.Name = username;
                 this.Users.Add(user);
             }
         }
@@ -75,7 +75,6 @@ namespace Server.Domain
                     }
                 }
             }
-
             return userToReturn;
         }
 
@@ -86,7 +85,6 @@ namespace Server.Domain
             {
                 copyCatalogue = this.Catalogue.ShowGamesOnStringList();
             }
-
             return copyCatalogue;
         }
 
@@ -97,7 +95,6 @@ namespace Server.Domain
             {
                 cleanCopyGame = this.Catalogue.GetGameByNameCopy(gameName);
             }
-
             return cleanCopyGame;
         }
 
