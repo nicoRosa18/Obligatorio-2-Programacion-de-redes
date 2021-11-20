@@ -6,7 +6,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="AdminCommunication\Protos\greet.proto" GrpcServices="Server"/>
+        <Protobuf Include="AdminCommunication\Protos\adminCommunication.proto" GrpcServices="Server"/>
     </ItemGroup>
 
     <ItemGroup>

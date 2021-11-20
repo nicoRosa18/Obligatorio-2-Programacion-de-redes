@@ -1,16 +1,19 @@
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Server.Domain;
 
 namespace Server.AdminCommunication
 {
-    public class GreeterService : Greeter.GreeterBase
+    public class AdminCommunicationService : Greeter.GreeterBase
     {
-        private readonly ILogger<GreeterService> _logger;
+        private readonly ILogger<AdminCommunicationService> _logger;
+        private UsersAndCatalogueManager _usersAndCatalogueManager;
 
-        public GreeterService(ILogger<GreeterService> logger)
+        public AdminCommunicationService(ILogger<AdminCommunicationService> logger)
         {
             _logger = logger;
+            _usersAndCatalogueManager = UsersAndCatalogueManager.Instance;
         }
 
         public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
@@ -25,7 +28,7 @@ namespace Server.AdminCommunication
         {            
             return Task.FromResult(new NumberReply()
             {
-                Number = 25
+
             });
         }
     }
