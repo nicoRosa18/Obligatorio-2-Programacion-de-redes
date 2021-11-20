@@ -15,7 +15,6 @@ namespace Server.AdminCommunication
 
         public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
         {
-            _logger.LogInformation("Received request with data: " + request.Name);
             return Task.FromResult(new HelloReply
             {
                 Message = "Hola cliente: " + request.Name
@@ -23,8 +22,7 @@ namespace Server.AdminCommunication
         }
 
         public override Task<NumberReply> GiveMeANumber(NumberRequest request, ServerCallContext context)
-        {
-            _logger.LogInformation("Received request with data: " + request.Name);
+        {            
             return Task.FromResult(new NumberReply()
             {
                 Number = 25

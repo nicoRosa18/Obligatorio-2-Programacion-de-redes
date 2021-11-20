@@ -1,9 +1,9 @@
 {
     "profiles": {
-        "GrpcServceServer": {
+        "Server.AdminCommunication": {
             "commandName": "Project",
             "launchBrowser": false,
-            "applicationUrl": "https://localhost:5001",
+            "applicationUrl": "https://localhost:31700",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }

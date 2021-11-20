@@ -22,7 +22,7 @@ namespace ServerAdmin.Controllers
         [HttpGet]
         public async Task<ActionResult<int>> Get()
         {
-            Task<int> test = _logic.TestMethodAsync();
+            int test = await _logic.TestMethodAsync();
             return Ok(test);
         }
     }

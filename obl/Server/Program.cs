@@ -9,7 +9,6 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            ServerManager serverManager = new ServerManager();
             CreateHostBuilder(args).Build().Run();
         }
         
@@ -19,10 +18,10 @@ namespace Server
                 {
                     webBuilder.ConfigureKestrel(options =>
                     {
-                        options.ListenLocalhost(5001, o => o.Protocols = 
+                        options.ListenLocalhost(31700, o => o.Protocols = 
                             HttpProtocols.Http2);  //possibility to change hardcoded port
                     });
                     webBuilder.UseStartup<Startup>();
-                });
+                });      
     }
 }

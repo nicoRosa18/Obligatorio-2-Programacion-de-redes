@@ -13,6 +13,7 @@ namespace Server
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ServerManager>();
             services.AddGrpc();
         }
 
