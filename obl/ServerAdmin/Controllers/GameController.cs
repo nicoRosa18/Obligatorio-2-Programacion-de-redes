@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ServerAdmin.AdminLogic;
@@ -17,22 +18,22 @@ namespace ServerAdmin.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ICollection<tipojuego>>> Get()
+        public async Task<ActionResult<ICollection<int>>> Get()
         {
             //int test = await _logic.TestMethodAsync();
-            return Ok(test);
+            return Ok();
         }
 
         [HttpPost]
-        public async Task<> NewGame()
+        public async Task<IActionResult> NewGame()
         {
-
+            return Ok();
         }
 
         [HttpPut]
-        public async Task<> ModifyGame()
+        public async Task<IActionResult> ModifyGame()
         {
-
+            return Ok();
         }
         
         [HttpDelete]
@@ -41,8 +42,5 @@ namespace ServerAdmin.Controllers
 
             return Ok();
         }
-
-        
-
     }
 }

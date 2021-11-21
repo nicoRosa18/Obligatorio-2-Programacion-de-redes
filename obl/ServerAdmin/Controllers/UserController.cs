@@ -17,22 +17,22 @@ namespace ServerAdmin.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<tipoUsuario>> Get()
+        public async Task<ActionResult<int>> Get()
         {
             //int test = await _logic.TestMethodAsync();
-            return Ok(test);
+            return Ok();
         }
 
         [HttpPost("{newName}")]
-        public async Task<> NewUser([FromRoute] string newUserName)
+        public async Task<IActionResult> NewUser([FromRoute] string newUserName)
         {
-
+            return Ok();
         }
 
         [HttpPut("{oldUserName}")]
-        public async Task<> ModifyUser([FromRoute] string oldUserName, [FromBody] )
+        public async Task<IActionResult> ModifyUser([FromRoute] string oldUserName, [FromBody] string userName)
         {
-
+            return Ok();
         }
         
         [HttpDelete("{userNameToDelete}")]
