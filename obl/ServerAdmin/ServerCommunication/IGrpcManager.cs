@@ -5,6 +5,6 @@ namespace ServerAdmin.ServerCommunication
 {
     public interface IGrpcManager
     {
-        Task<int> TestMethodAsync();
+        Task<Reply> AddUserAsync(string userName);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using ServerAdmin.Exceptions;
 using ServerAdmin.ServerCommunication;
 
 namespace ServerAdmin.AdminLogic
@@ -13,10 +14,13 @@ namespace ServerAdmin.AdminLogic
             _communication = new GrpcManager();
         }
 
-        public async Task<int> TestMethodAsync()
+        public async Task AddUserAsync(string userName)
         {
-            int numero = await _communication.TestMethodAsync();
-            return numero;
+            Reply possibleError = await _communication.AddUserAsync(userName);
+            if(possibleError.Error)
+            {
+                throw new UserException(possibleError.ErrorDescription);
+            }
         }
     }
 }
