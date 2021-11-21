@@ -151,10 +151,13 @@ namespace Server.Domain
             {
                 foreach (User user in this.Users)
                 {
-                    user.RemoveFromAcquiredGames(gameToRemove.Title);
+                    try
+                    {
+                        user.RemoveFromAcquiredGames(gameToRemove.Title);
+                    }
+                    catch(GameNotPurchased) {}  
                 }
             }
-
             lock (_catalogueLock)
             {
                 this.Catalogue.DeleteGame(gameToRemove.Title);
@@ -201,9 +204,7 @@ namespace Server.Domain
                         user.IsOwner(oldGameTitle);
                         user.ModifyGameForOwner(oldGameTitle, newGame.Title);
                     }
-                    catch (UserNotOwnerofGame)
-                    {
-                    }
+                    catch (UserNotOwnerofGame) {}
                 }
             }
         }
@@ -214,14 +215,13 @@ namespace Server.Domain
             {
                 foreach (User user in this.Users)
                 {
-                    user.RemoveFromAcquiredGames(gameToRemoveTitle);
                     try
                     {
+                        user.RemoveFromAcquiredGames(gameToRemoveTitle);
                         user.RemoveFromPublishedGames(gameToRemoveTitle);
                     }
-                    catch (UserNotOwnerofGame)
-                    {
-                    }
+                    catch (UserNotOwnerofGame){}
+                    catch (GameNotPurchased){}
                 }
             }
 
@@ -255,7 +255,7 @@ namespace Server.Domain
             }
         }
 
-        public void DeleteUserByAdmin(string userNameToDelete)
+        public void RemoveUserByAdmin(string userNameToDelete)
         {
             lock (_userCollectionLock)
             {
@@ -267,11 +267,24 @@ namespace Server.Domain
                         break;
                     }
                 }
+                throw new UserNotFound();
             }
         }
 
-        public void AsociateGameToUserByAdmin(string gameTitle, string userName)
+        public void AssociateGameToUserByAdmin(string gameTitle, string userName)
         {
+            Game gameDecoy = new Game();
+            gameDecoy.Title = gameTitle;
+            try
+            {
+                lock(_catalogueLock)
+                {
+                    Catalogue.ExistsGame(gameDecoy);
+                }
+                throw new GameNotFound();
+            }
+            catch(GameAlreadyExists) {}
+            
             lock (_userCollectionLock)
             {
                 foreach (User user in Users)
@@ -279,20 +292,34 @@ namespace Server.Domain
                     if (user.Name.Equals(userName))
                     {
                         user.BuyGame(gameTitle);
+                        break;
                     }
                 }
+                throw new UserNotFound();
             }
         }
         
-        public void DesaciociateGameToUserByAdmin(string gameTitle, string userName)
+        public void DesassociateGameToUserByAdmin(string gameTitle, string userName)
         {
+            Game gameDecoy = new Game();
+            gameDecoy.Title = gameTitle;
+            try
+            {
+                lock(_catalogueLock)
+                {
+                    Catalogue.ExistsGame(gameDecoy);
+                }
+                throw new GameNotFound();
+            }
+            catch(GameAlreadyExists) {}
+
             lock (_userCollectionLock)
             {
                 foreach (User user in Users)
                 {
                     if (user.Name.Equals(userName))
                     {
-                        user.BuyGame(gameTitle);
+                        user.RemoveFromAcquiredGames(gameTitle);
                     }
                 }
             }
