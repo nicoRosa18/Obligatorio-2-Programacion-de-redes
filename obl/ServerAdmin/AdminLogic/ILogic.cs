@@ -5,6 +5,6 @@ namespace ServerAdmin.AdminLogic
 {
     public interface ILogic
     {
-        Task<int> TestMethodAsync();
+        Task AddUserAsync(string userName);
     }
 }

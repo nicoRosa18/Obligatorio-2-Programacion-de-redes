@@ -6,22 +6,21 @@ namespace ServerAdmin.ServerCommunication
 {
     public class GrpcManager: IGrpcManager
     {
-        private Greeter.GreeterClient _client;
+        private AdminCommunication.AdminCommunicationClient _client;
         public GrpcManager()
         {
             AppContext.SetSwitch(
                 "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-            // The port number(5001) must match the port of the gRPC server.
             GrpcChannel channel = GrpcChannel.ForAddress("http://localhost:31700");
-            _client = new Greeter.GreeterClient(channel);
+            _client = new AdminCommunication.AdminCommunicationClient(channel);
         }
 
-        public async Task<int> TestMethodAsync()
+        public async Task<Reply> AddUserAsync(string userName)
         {
-            NumberReply replyNumero = await _client.GiveMeANumberAsync(new NumberRequest
-                { Name = "Pepe" }
+            Reply reply = await _client.AddUserAsync(new UserRequest
+                { UserName = userName }
             );
-            return NumberReply.NumberFieldNumber;
+            return reply;
         }
         
     }
