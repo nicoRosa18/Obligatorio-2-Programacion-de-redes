@@ -19,7 +19,7 @@ namespace Server.AdminCommunication
             _messageLanguage = new SpanishMessage();
         }
 
-        public override Task<Reply> AddUser(UserRequest request, ServerCallContext context)
+        public override Task<Reply> AddUser(UserRequestAddAndRemove request, ServerCallContext context)
         {
             bool error = false;
             string errorMessage = "";

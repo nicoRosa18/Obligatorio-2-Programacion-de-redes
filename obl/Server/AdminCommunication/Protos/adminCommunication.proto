@@ -1,16 +1,18 @@
-syntax = "proto3";  // Version de la sintaxis (puede ser proto2 o proto3)
+syntax = "proto3"; 
 
-option csharp_namespace = "Server.AdminCommunication"; //Esta opcion esta ligada al lenguaje que estamos usando
+option csharp_namespace = "Server.AdminCommunication"; 
 
-package admin; // Definimos el package de nuestro servicio
+package admin; 
 
-// The greeting service definition.
 service AdminCommunication {
-  rpc AddUser (UserRequest) returns (Reply);
-}
-
-message UserRequest {
-  string userName = 1;
+  rpc AddUser (UserRequestAddAndRemove) returns (Reply);
+  rpc ModifyUser (UserRequestModify) returns (Reply);
+  rpc RemoveUser (UserRequestAddAndRemove) returns (Reply);
+  rpc AddGame(GameRequestAdd) returns (Reply);
+  rpc ModifyGame(GameRequestModify) returns (Reply);
+  rpc RemoveGame(GameRequestRemove) returns (Reply);
+  rpc AssociateGame(VinculationRequest) returns (Reply);
+  rpc DisassociateGame(VinculationRequest) returns (Reply);
 }
 
 message Reply {
@@ -18,3 +20,37 @@ message Reply {
   string errorDescription = 2;
 }
 
+message UserRequestAddAndRemove {
+  string userName = 1;
+}
+
+message UserRequestModify {
+  string oldUserName = 1;
+  string newUserName = 2;
+}
+
+message GameRequestAdd {
+  string title = 1;
+  string cover = 2;
+  string genre = 3;
+  string synopsis = 4;
+  string ageRating = 5;
+}
+
+message GameRequestModify {
+  string newTitle = 1;
+  string newCover = 2;
+  string newGenre = 3;
+  string newSynopsis = 4;
+  string newAgeRating = 5;
+  string oldTilte = 6;
+}
+
+message GameRequestRemove {
+  string title = 1;
+}
+
+message VinculationRequest {
+  string userName = 1;
+  string gameTitle = 2;
+}

@@ -45,7 +45,7 @@ namespace ServerAdmin.Controllers
 
         [Route("association")]
         [HttpPut()]
-        public async Task<IActionResult> Association([FromRoute] UserAndGameDTO association)
+        public async Task<IActionResult> Association([FromBody] UserAndGameDTO association)
         {
 
             return Ok();
@@ -53,7 +53,7 @@ namespace ServerAdmin.Controllers
 
         [Route("desassociation")]
         [HttpPut()]
-        public async Task<IActionResult> Desassociation([FromRoute] UserAndGameDTO desAssociation)
+        public async Task<IActionResult> Desassociation([FromBody] UserAndGameDTO desAssociation)
         {
 
             return Ok();
