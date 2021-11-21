@@ -255,7 +255,7 @@ namespace Server.Domain
             }
         }
 
-        public void DeleteUserByAdmin(string userNameToDelete)
+        public void RemoveUserByAdmin(string userNameToDelete)
         {
             lock (_userCollectionLock)
             {
@@ -267,11 +267,24 @@ namespace Server.Domain
                         break;
                     }
                 }
+                throw new UserNotFound();
             }
         }
 
-        public void AsociateGameToUserByAdmin(string gameTitle, string userName)
+        public void AssociateGameToUserByAdmin(string gameTitle, string userName)
         {
+            Game gameDecoy = new Game();
+            gameDecoy.Title = gameTitle;
+            try
+            {
+                lock(_catalogueLock)
+                {
+                    Catalogue.ExistsGame(gameDecoy);
+                }
+                throw new GameNotFound();
+            }
+            catch(GameAlreadyExists) {}
+            
             lock (_userCollectionLock)
             {
                 foreach (User user in Users)
@@ -279,13 +292,27 @@ namespace Server.Domain
                     if (user.Name.Equals(userName))
                     {
                         user.BuyGame(gameTitle);
+                        break;
                     }
                 }
+                throw new UserNotFound();
             }
         }
         
-        public void DesaciociateGameToUserByAdmin(string gameTitle, string userName)
+        public void DesassociateGameToUserByAdmin(string gameTitle, string userName)
         {
+            Game gameDecoy = new Game();
+            gameDecoy.Title = gameTitle;
+            try
+            {
+                lock(_catalogueLock)
+                {
+                    Catalogue.ExistsGame(gameDecoy);
+                }
+                throw new GameNotFound();
+            }
+            catch(GameAlreadyExists) {}
+            
             lock (_userCollectionLock)
             {
                 foreach (User user in Users)

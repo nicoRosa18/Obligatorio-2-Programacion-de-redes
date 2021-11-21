@@ -61,6 +61,6 @@ public abstract class Message
     public abstract  string UserAlreadyLoggedIn { get; set; }
     public abstract string NoParametersToSearch { get; set; }
     public abstract string ErrorGameCover { get; set; }
-    
     public abstract string ModifyCover { get; set; }
+    public abstract string UserNotFound { get; set; }
 }

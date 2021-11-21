@@ -64,6 +64,7 @@ public class SpanishMessage : Message
     public override string UserAlreadyLoggedIn { get; set; }
     public override string NoParametersToSearch { get; set; }
     public override string ErrorGameCover { get; set; }
+    public override string UserNotFound { get; set; }
 
     public SpanishMessage()
     {
@@ -111,7 +112,7 @@ public class SpanishMessage : Message
        
         UserRepeated = "Ya existe un usuario con el mismo nombre";
 
-        BackToTry = "ingrese 1 para volver a intentar";
+        BackToTry = " ingrese 1 para volver a intentar";
        
         UserCreated = "Usuario Registrado!, usuarios registrados: ";
        
@@ -224,6 +225,8 @@ public class SpanishMessage : Message
         ModifyCover = "Desea modificar la caratula?" +
                         " 1-Si \n" +
                         " Cualquier otro input para seguir \n";
+        
+        UserNotFound = "No se encontro al usuario en el sistema";
     }
 
  

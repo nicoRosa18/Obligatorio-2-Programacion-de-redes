@@ -33,7 +33,76 @@ namespace Server.AdminCommunication
             {
                 _usersAndCatalogueManager.AddUser(request.UserName);
             }
+            return Task.FromResult(new Reply
+            {
+                Error = error,
+                ErrorDescription = errorMessage
+            });
+        }
 
+        public override Task<Reply> ModifyUser(UserRequestModify request, ServerCallContext context)
+        {
+            bool error = false;
+            string errorMessage = "";
+            try
+            {
+                _usersAndCatalogueManager.ModifyUserByAdmin(request.OldUserName, request.NewUserName);
+            }
+            catch(UserAlreadyExists)
+            {
+                error = true;
+                errorMessage = _messageLanguage.UserRepeated;
+            }
+            catch(UserNotFound)
+            {
+                error = true;
+                errorMessage = _messageLanguage.UserNotFound;
+            }
+            return Task.FromResult(new Reply
+            {
+                Error = error,
+                ErrorDescription = errorMessage
+            });
+        }
+
+        public override Task<Reply> RemoveUser(UserRequestAddAndRemove request, ServerCallContext context)
+        {
+            bool error = false;
+            string errorMessage = "";
+            try
+            {
+                _usersAndCatalogueManager.RemoveUserByAdmin(request.UserName);
+            }
+            catch(UserNotFound)
+            {
+                error = true;
+                errorMessage = _messageLanguage.UserNotFound;
+            }
+            return Task.FromResult(new Reply
+            {
+                Error = error,
+                ErrorDescription = errorMessage
+            });
+        }
+
+        public Task<Reply> AssociateUserAndGame(VinculationRequest request, ServerCallContext context)
+        {
+            bool error = false;
+            string errorMessage = "";
+            try
+            {
+                _usersAndCatalogueManager.AssociateGameToUserByAdmin(request.GameTitle, request.UserName);
+            }
+            catch(GameNotFound)
+            {
+                error = true;
+                errorMessage = _messageLanguage.GameNotFound;
+            }
+            catch(UserNotFound)
+            {
+                error = true;
+                errorMessage = _messageLanguage.UserNotFound;
+            }
             return Task.FromResult(new Reply
             {
                 Error = error,
