@@ -17,7 +17,7 @@ namespace ServerAdmin.ServerCommunication
 
         public async Task<Reply> AddUserAsync(string userName)
         {
-            Reply reply = await _client.AddUserAsync(new UserRequest
+            Reply reply = await _client.AddUserAsync(new UserRequestAddAndRemove()
                 { UserName = userName }
             );
             return reply;

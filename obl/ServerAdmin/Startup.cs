@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using ServerAdmin.AdminLogic;
+using WebApi.Filters;
 
 namespace ServerAdmin
 {
@@ -28,6 +29,7 @@ namespace ServerAdmin
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ILogic, Logic>();
+            services.AddControllers(options => options.Filters.Add(typeof(ExceptionFilter)));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
