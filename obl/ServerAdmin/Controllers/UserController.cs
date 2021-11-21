@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ServerAdmin.AdminLogic;
+using ServerAdmin.DTOs;
 
 namespace ServerAdmin.Controllers
 {
@@ -22,8 +19,43 @@ namespace ServerAdmin.Controllers
         [HttpGet]
         public async Task<ActionResult<int>> Get()
         {
-            int test = await _logic.TestMethodAsync();
-            return Ok(test);
+            //int test = await _logic.TestMethodAsync();
+            return Ok();
+        }
+
+        [HttpPost("{newName}")]
+        public async Task<IActionResult> NewUser([FromRoute] string newUserName)
+        {
+            return Ok();
+        }
+
+        [HttpPut("{oldUserName}")]
+        public async Task<IActionResult> ModifyUser([FromRoute] string oldUserName, [FromBody] string userName)
+        {
+            return Ok();
+        }
+        
+        [HttpDelete("{userNameToDelete}")]
+        public async Task<IActionResult> RemoveUser([FromRoute] string userNameToDelete)
+        {
+
+            return Ok();
+        }
+
+        [Route("association")]
+        [HttpPut()]
+        public async Task<IActionResult> Association([FromRoute] UserAndGameDTO association)
+        {
+
+            return Ok();
+        }
+
+        [Route("desassociation")]
+        [HttpPut()]
+        public async Task<IActionResult> Desassociation([FromRoute] UserAndGameDTO desAssociation)
+        {
+
+            return Ok();
         }
     }
 }
