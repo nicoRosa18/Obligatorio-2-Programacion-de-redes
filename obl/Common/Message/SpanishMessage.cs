@@ -7,6 +7,7 @@ public class SpanishMessage : Message
     public override string StartUpMessage { get; set; }
     public override string UserRegistration { get; set; } 
     public override string UserRepeated { get; set; } 
+    public override string BackToTry { get; set; } 
     public override string UserCreated { get; set; } 
     public override string BackToStartUpMenu { get; set; } 
     public override string UserLogIn { get; set; } 
@@ -108,7 +109,9 @@ public class SpanishMessage : Message
         UserRegistration = "Registro de usuario \n" +
                             "nombre de usuario: ";
        
-        UserRepeated = "Ya existe un usuario con el mismo nombre, ingrese 1 para volver a intentar";
+        UserRepeated = "Ya existe un usuario con el mismo nombre";
+
+        BackToTry = "ingrese 1 para volver a intentar";
        
         UserCreated = "Usuario Registrado!, usuarios registrados: ";
        

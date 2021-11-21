@@ -9,6 +9,7 @@ public abstract class Message
     public abstract string StartUpMessage {get ; set;}
     public abstract string UserRegistration {get ; set;}
     public abstract string UserRepeated {get ; set;}
+    public abstract string BackToTry {get ; set;}
     public abstract string UserCreated {get ; set;}                                  
     public abstract string BackToStartUpMenu {get ; set;}
     public abstract string UserLogIn {get ; set;}
