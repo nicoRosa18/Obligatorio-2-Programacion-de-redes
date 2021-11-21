@@ -151,10 +151,13 @@ namespace Server.Domain
             {
                 foreach (User user in this.Users)
                 {
-                    user.RemoveFromAcquiredGames(gameToRemove.Title);
+                    try
+                    {
+                        user.RemoveFromAcquiredGames(gameToRemove.Title);
+                    }
+                    catch(GameNotPurchased) {}  
                 }
             }
-
             lock (_catalogueLock)
             {
                 this.Catalogue.DeleteGame(gameToRemove.Title);
@@ -201,9 +204,7 @@ namespace Server.Domain
                         user.IsOwner(oldGameTitle);
                         user.ModifyGameForOwner(oldGameTitle, newGame.Title);
                     }
-                    catch (UserNotOwnerofGame)
-                    {
-                    }
+                    catch (UserNotOwnerofGame) {}
                 }
             }
         }
@@ -214,14 +215,13 @@ namespace Server.Domain
             {
                 foreach (User user in this.Users)
                 {
-                    user.RemoveFromAcquiredGames(gameToRemoveTitle);
                     try
                     {
+                        user.RemoveFromAcquiredGames(gameToRemoveTitle);
                         user.RemoveFromPublishedGames(gameToRemoveTitle);
                     }
-                    catch (UserNotOwnerofGame)
-                    {
-                    }
+                    catch (UserNotOwnerofGame){}
+                    catch (GameNotPurchased){}
                 }
             }
 
@@ -312,14 +312,14 @@ namespace Server.Domain
                 throw new GameNotFound();
             }
             catch(GameAlreadyExists) {}
-            
+
             lock (_userCollectionLock)
             {
                 foreach (User user in Users)
                 {
                     if (user.Name.Equals(userName))
                     {
-                        user.BuyGame(gameTitle);
+                        user.RemoveFromAcquiredGames(gameTitle);
                     }
                 }
             }

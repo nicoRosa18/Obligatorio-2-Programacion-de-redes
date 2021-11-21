@@ -65,6 +65,8 @@ public class SpanishMessage : Message
     public override string NoParametersToSearch { get; set; }
     public override string ErrorGameCover { get; set; }
     public override string UserNotFound { get; set; }
+    public override string GameNotInLibrary { get; set; }
+    public override string GameAlreadyExists { get; set; }
 
     public SpanishMessage()
     {
@@ -207,7 +209,7 @@ public class SpanishMessage : Message
         
         SavedPathAt = "Archivo guardado en la siguiente direccion:";
 
-        GameAlreadyInLibrary = "El juego ya esta en tu libreria";
+        GameAlreadyInLibrary = "El juego ya esta en la libreria";
         
         GameModifiedCorrectly = "Juego modificado correctamente!";
 
@@ -227,6 +229,10 @@ public class SpanishMessage : Message
                         " Cualquier otro input para seguir \n";
         
         UserNotFound = "No se encontro al usuario en el sistema";
+
+        GameNotInLibrary = "El usuario no cuenta con el juego en su libreria";
+
+        GameAlreadyExists = "El nombre del juego ya ha sido usado";
     }
 
  
