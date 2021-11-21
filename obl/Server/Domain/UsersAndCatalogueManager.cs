@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
@@ -75,6 +76,7 @@ namespace Server.Domain
                     }
                 }
             }
+
             return userToReturn;
         }
 
@@ -85,6 +87,7 @@ namespace Server.Domain
             {
                 copyCatalogue = this.Catalogue.ShowGamesOnStringList();
             }
+
             return copyCatalogue;
         }
 
@@ -95,6 +98,7 @@ namespace Server.Domain
             {
                 cleanCopyGame = this.Catalogue.GetGameByNameCopy(gameName);
             }
+
             return cleanCopyGame;
         }
 
@@ -174,6 +178,118 @@ namespace Server.Domain
                 foreach (User user in this.Users)
                 {
                     user.ModifyGameForNotOwner(oldGame.Title, newGameFullData.Title);
+                }
+            }
+        }
+
+        public void ModifyGameByAdmin(Game oldGame, Game newGame)
+        {
+            Game newGameFullData = new Game();
+            lock (_catalogueLock)
+            {
+                newGameFullData = this.Catalogue.ModifyGame(oldGame.Title, newGame);
+            }
+
+            lock (_userCollectionLock)
+            {
+                foreach (User user in this.Users)
+                {
+                    user.ModifyGameForNotOwner(oldGame.Title, newGameFullData.Title);
+                }
+            }
+        }
+
+        public void RemoveGameByAdmin(Game gameToRemove)
+        {
+            RemoveFromOwner(gameToRemove);
+
+            lock (_userCollectionLock)
+            {
+                foreach (User user in this.Users)
+                {
+                    user.RemoveFromAcquiredGames(gameToRemove.Title);
+                }
+            }
+
+            lock (_catalogueLock)
+            {
+                this.Catalogue.DeleteGame(gameToRemove.Title);
+            }
+        }
+
+        public void ModifyUser(string oldName, string newName)
+        {
+            try
+            {
+                ContainsUser(newName);
+                throw new Exception("new user name already exists");
+            }
+            catch
+            {
+                ContainsUser(oldName);
+                lock (_userCollectionLock)
+                {
+                    foreach (User user in Users)
+                    {
+                        if (user.Name.Equals(oldName))
+                        {
+                            user.Name = newName;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void DeleteUser(User userToDelete)
+        {
+            lock (_userCollectionLock)
+            {
+                foreach (User user in Users)
+                {
+                    if (user.Name.Equals(userToDelete.Name))
+                    {
+                        Users.Remove(user);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void AsociateGameToUser(Game game, User user)
+        {
+            lock (_userCollectionLock)
+            {
+                lock (_catalogueLock)
+                {
+                    user.BuyGame(game.Title);
+                }
+            }
+        }
+
+
+        public void DesaciociateGameToUser(Game game, User user)
+        {
+            lock (_userCollectionLock)
+            {
+                lock (_catalogueLock)
+                {
+                    user.RemoveFromAcquiredGames(game.Title);
+                }
+            }
+        }
+
+        private void RemoveFromOwner(Game game)
+        {
+            lock (_userCollectionLock)
+            {
+                foreach (User user in this.Users)
+                {
+                    if (user.PublishedGames.Contains(game))
+                    {
+                        user.RemoveFromPublishedGames(game.Title);
+                    }
                 }
             }
         }
