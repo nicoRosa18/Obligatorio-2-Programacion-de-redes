@@ -19,13 +19,14 @@ namespace ServerAdmin.Controllers
         [HttpGet]
         public async Task<ActionResult<int>> Get()
         {
-            //int test = await _logic.TestMethodAsync();
+            
             return Ok();
         }
 
-        [HttpPost("{newName}")]
+        [HttpPost("{newUserName}")]
         public async Task<IActionResult> NewUser([FromRoute] string newUserName)
         {
+            await _logic.AddUserAsync(newUserName);
             return Ok();
         }
 

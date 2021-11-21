@@ -26,12 +26,12 @@ namespace Server.AdminCommunication
             try
             {
                 _usersAndCatalogueManager.ContainsUser(request.UserName);
-                _usersAndCatalogueManager.AddUser(request.UserName);
+                error = true;
+                errorMessage = _messageLanguage.UserRepeated;
             }
             catch(UserNotFound)
             {
-                error = true;
-                errorMessage = _messageLanguage.UserRepeated;
+                _usersAndCatalogueManager.AddUser(request.UserName);
             }
 
             return Task.FromResult(new Reply
