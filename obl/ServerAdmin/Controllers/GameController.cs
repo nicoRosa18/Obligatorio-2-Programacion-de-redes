@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ServerAdmin.AdminLogic;
+using ServerAdmin.DTOs;
 
 namespace ServerAdmin.Controllers
 {
@@ -17,29 +18,31 @@ namespace ServerAdmin.Controllers
             _logic = logic;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<ICollection<int>>> Get()
+        [HttpGet("{title}")]
+        public async Task<ActionResult<ICollection<int>>> Get([FromRoute] string title)
         {
-            //int test = await _logic.TestMethodAsync();
+            Task game = _logic.GetGame(title);
             return Ok();
         }
 
         [HttpPost]
-        public async Task<IActionResult> NewGame()
+        public IActionResult NewGame([FromBody] GameDTO game)
         {
+            Task task = _logic.AddGameAsync(game);
+            return Ok(task);
+        }
+
+        [HttpPut("{title}")]
+        public async Task<IActionResult> ModifyGame([FromRoute] string title, [FromBody] GameDTO game)
+        {
+            await _logic.ModifyGameAsync(title, game);
             return Ok();
         }
 
-        [HttpPut]
-        public async Task<IActionResult> ModifyGame()
+        [HttpDelete("{title}")]
+        public async Task<IActionResult> RemoveGame([FromRoute] string title)
         {
-            return Ok();
-        }
-        
-        [HttpDelete]
-        public async Task<IActionResult> RemoveGame()
-        {
-
+            await _logic.RemoveGameAsync(title);
             return Ok();
         }
     }

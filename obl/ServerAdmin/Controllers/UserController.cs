@@ -16,10 +16,10 @@ namespace ServerAdmin.Controllers
             _logic = logic;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<int>> Get()
+        [HttpGet("{id}")]
+        public async Task<ActionResult<int>> Get([FromRoute] string id)
         {
-            
+            await _logic.GetUser(id);
             return Ok();
         }
 
@@ -33,13 +33,14 @@ namespace ServerAdmin.Controllers
         [HttpPut("{oldUserName}")]
         public async Task<IActionResult> ModifyUser([FromRoute] string oldUserName, [FromBody] string userName)
         {
+            await _logic.ModifyUserAsync(oldUserName, userName);
             return Ok();
         }
         
         [HttpDelete("{userNameToDelete}")]
         public async Task<IActionResult> RemoveUser([FromRoute] string userNameToDelete)
         {
-
+            await _logic.RemoveUserAsync(userNameToDelete);
             return Ok();
         }
 
@@ -47,7 +48,7 @@ namespace ServerAdmin.Controllers
         [HttpPut()]
         public async Task<IActionResult> Association([FromBody] UserAndGameDTO association)
         {
-
+            await _logic.AssociateGameAsync(association.Game,association.User);
             return Ok();
         }
 
@@ -55,7 +56,7 @@ namespace ServerAdmin.Controllers
         [HttpPut()]
         public async Task<IActionResult> Desassociation([FromBody] UserAndGameDTO desAssociation)
         {
-
+            await _logic.DisassociateGameAsync(desAssociation.Game, desAssociation.User);
             return Ok();
         }
     }
