@@ -17,14 +17,7 @@ namespace ServerAdmin.Controllers
         {
             _logic = logic;
         }
-
-        [HttpGet("{title}")]
-        public async Task<ActionResult<ICollection<int>>> Get([FromRoute] string title)
-        {
-            Task game = _logic.GetGame(title);
-            return Ok(title);
-        }
-
+        
         [HttpPost]
         public async Task<IActionResult> NewGame([FromBody] GameDTO game)
         {

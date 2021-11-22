@@ -6,8 +6,6 @@ namespace ServerAdmin.AdminLogic
 {
     public interface ILogic
     {
-        Task GetUser(string id);
-        Task GetGame(string id);
         Task AddUserAsync(string userName);
         Task ModifyUserAsync(string oldName, string newName);
         Task RemoveUserAsync(string userName);

@@ -15,13 +15,7 @@ namespace ServerAdmin.Controllers
         {
             _logic = logic;
         }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<int>> Get([FromRoute] string id)
-        {
-            await _logic.GetUser(id);
-            return Ok();
-        }
+        
 
         [HttpPost("{newUserName}")]
         public async Task<IActionResult> NewUser([FromRoute] string newUserName)

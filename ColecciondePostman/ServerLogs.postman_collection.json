@@ -1,0 +1,71 @@
+{
+	"info": {
+		"_postman_id": "ef8f2537-7cfc-44a1-a546-a4a3ebb24c6e",
+		"name": "ServerLogs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GetLogs UserName: Juan",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"GameName\" : \"\",\r\n    \"UserName\" : \"Pepe\",\r\n    \"Date\" : \"2021-11-22\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/filterlogs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"filterlogs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetLogs UserName Pedro game: Gta 6 OMG",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"GameName\" : \"\",\r\n    \"UserName\" : \"\",\r\n    \"Date\": \"\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/filterlogs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"filterlogs"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

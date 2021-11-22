@@ -558,7 +558,7 @@ namespace Client
                     try
                     {
                         string path = Console.ReadLine();
-                        _communication.SendFileAsync(path).Wait();
+                        _communication.SendFileAsync(path);
                         fileNotFound = false;
                     }
                     catch (AggregateException e)

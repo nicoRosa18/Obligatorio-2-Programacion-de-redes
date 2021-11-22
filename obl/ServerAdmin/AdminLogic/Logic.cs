@@ -14,17 +14,7 @@ namespace ServerAdmin.AdminLogic
         {
             _communication = new GrpcManager();
         }
-
-        public Task GetUser(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetGame(string id)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public async Task AddUserAsync(string userName)
         {
             Reply possibleError = await _communication.AddUserAsync(userName);
@@ -57,7 +47,7 @@ namespace ServerAdmin.AdminLogic
             Reply possibleError = await _communication.AddGameAsync(game);
             if (possibleError.Error)
             {
-                throw new UserException(possibleError.ErrorDescription);
+                throw new GameException(possibleError.ErrorDescription);
             }
         }
 
@@ -66,7 +56,7 @@ namespace ServerAdmin.AdminLogic
             Reply possibleError = await _communication.ModifyGameAsync(oldGameTitle, game);
             if (possibleError.Error)
             {
-                throw new UserException(possibleError.ErrorDescription);
+                throw new GameException(possibleError.ErrorDescription);
             }
         }
 
@@ -75,7 +65,7 @@ namespace ServerAdmin.AdminLogic
             Reply possibleError = await _communication.RemoveGameAsync(gameTitle);
             if (possibleError.Error)
             {
-                throw new UserException(possibleError.ErrorDescription);
+                throw new GameException(possibleError.ErrorDescription);
             }
         }
 
