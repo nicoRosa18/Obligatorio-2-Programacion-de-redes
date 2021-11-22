@@ -3,6 +3,7 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Server.AdminCommunication;
@@ -11,9 +12,17 @@ namespace Server
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            ServerManager server = new ServerManager();
+            Configuration = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ServerManager>();
+            //services.AddSingleton<ServerManager>();
             services.AddGrpc();
         }
 

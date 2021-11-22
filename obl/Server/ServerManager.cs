@@ -20,7 +20,7 @@ namespace Server
 
         public ServerManager()
         {
-            Task.Run(() => this.ServerManagerAsync()).Wait();
+            Task.Run(() => this.ServerManagerAsync());
         }
 
         public async Task ServerManagerAsync()
