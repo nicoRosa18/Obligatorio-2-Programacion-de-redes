@@ -60,7 +60,7 @@ namespace ServerLogs.Container
             {
                 try
                 {
-                    filteredByUser = DeepCopyLogList(FilterByUserName(user, date));
+                    filteredByUser = DeepCopyLogList(FilterByUserName(user));
                 }
                 catch(System.Collections.Generic.KeyNotFoundException)
                 {
@@ -71,7 +71,7 @@ namespace ServerLogs.Container
             {
                 try
                 {
-                    filteredByGame = DeepCopyLogList(FilterByGameName(game, date));
+                    filteredByGame = DeepCopyLogList(FilterByGameName(game));
                 }
                 catch(System.Collections.Generic.KeyNotFoundException)
                 {
@@ -79,24 +79,19 @@ namespace ServerLogs.Container
                 }
             }
             List<Log> filtered  = new List<Log>();
-            if(!user.Equals(string.Empty) && !game.Equals(string.Empty))
+            if(filteredByUser.Count == 0)
+            {
+                filtered = filteredByGame;
+            }
+            else if(filteredByGame.Count == 0)
+            {
+                filtered = filteredByUser;
+            }
+            else
             {
                 filtered = Intersect(filteredByUser, filteredByGame);
             }
-            else if(!user.Equals(string.Empty))
-            {
-                filtered = filteredByUser;
-            }
-            else if(!game.Equals(string.Empty))
-            {
-                filtered = filteredByGame;
-            }   
-            else
-            {  
-                filteredByUser.AddRange(filteredByGame);
-                filtered = filteredByUser;
-            }
-            return filtered;
+            return FilterByDate(filtered, date);
         }
 
         private List<Log> Intersect(List<Log> filteredByUser, List<Log> filteredByGame)
@@ -109,30 +104,30 @@ namespace ServerLogs.Container
             return toReturn;
         }
 
-        private List<Log> FilterByUserName(string userName, string date)
+        private List<Log> FilterByUserName(string userName)
         {
             List<Log> listFiltered = new List<Log>();
             if(userName.Equals(string.Empty))
             {
-                listFiltered = FilterByDate(CollectionOfListsToSingleListConverter(_userLogs.Values), date);
+                listFiltered = CollectionOfListsToSingleListConverter(_userLogs.Values);
             }
             else
             {
-                listFiltered = FilterByDate(_userLogs[userName], date);
+                listFiltered = _userLogs[userName];
             }
             return listFiltered; 
         }
 
-        private List<Log> FilterByGameName(string gameName, string date)
+        private List<Log> FilterByGameName(string gameName)
         {
             List<Log> listFiltered = new List<Log>();
             if(gameName.Equals(string.Empty))
             {
-                listFiltered = FilterByDate(CollectionOfListsToSingleListConverter(_gameLogs.Values), date);
+                listFiltered = CollectionOfListsToSingleListConverter(_gameLogs.Values);
             }
             else
             {
-                listFiltered = FilterByDate(_gameLogs[gameName], date);
+                listFiltered = _gameLogs[gameName];
             }
             return listFiltered;
         }
