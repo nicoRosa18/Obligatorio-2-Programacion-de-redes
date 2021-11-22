@@ -22,28 +22,28 @@ namespace ServerAdmin.Controllers
         public async Task<ActionResult<ICollection<int>>> Get([FromRoute] string title)
         {
             Task game = _logic.GetGame(title);
-            return Ok();
+            return Ok(title);
         }
 
         [HttpPost]
-        public IActionResult NewGame([FromBody] GameDTO game)
+        public async Task<IActionResult> NewGame([FromBody] GameDTO game)
         {
-            Task task = _logic.AddGameAsync(game);
-            return Ok(task);
+            await _logic.AddGameAsync(game);
+            return Ok(game);
         }
 
         [HttpPut("{title}")]
         public async Task<IActionResult> ModifyGame([FromRoute] string title, [FromBody] GameDTO game)
         {
             await _logic.ModifyGameAsync(title, game);
-            return Ok();
+            return Ok(game);
         }
 
         [HttpDelete("{title}")]
         public async Task<IActionResult> RemoveGame([FromRoute] string title)
         {
             await _logic.RemoveGameAsync(title);
-            return Ok();
+            return Ok($"Game {title} deleted successfully!");
         }
     }
 }
