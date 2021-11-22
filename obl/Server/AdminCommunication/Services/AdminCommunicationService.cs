@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -157,6 +158,7 @@ namespace Server.AdminCommunication
                 Synopsis = request.Synopsis,
                 AgeRating = request.AgeRating
             };
+            newGame.CommunityQualifications= new Collection<Qualification>();
             try
             {
                 _usersAndCatalogueManager.ExistsGame(newGame);
