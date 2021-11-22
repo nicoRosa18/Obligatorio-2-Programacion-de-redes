@@ -266,8 +266,9 @@ namespace Server.Domain
                         Users.Remove(user);
                         break;
                     }
+                    throw new UserNotFound();
                 }
-                throw new UserNotFound();
+                
             }
         }
 
@@ -294,8 +295,8 @@ namespace Server.Domain
                         user.BuyGame(gameTitle);
                         break;
                     }
+                    throw new UserNotFound();
                 }
-                throw new UserNotFound();
             }
         }
         
