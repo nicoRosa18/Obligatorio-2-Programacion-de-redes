@@ -14,17 +14,7 @@ namespace ServerAdmin.AdminLogic
         {
             _communication = new GrpcManager();
         }
-
-        public Task GetUser(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetGame(string id)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public async Task AddUserAsync(string userName)
         {
             Reply possibleError = await _communication.AddUserAsync(userName);
