@@ -16,16 +16,15 @@ namespace Server.Domain
             this.Games = new Collection<Game>();
         }
 
-        public bool ExistsGame(Game game)
+        public bool ExistsGame(Game gameToVerify)
         {
-            if (Games.Contains(game))
+            foreach (Game game in Games)
             {
-                throw new GameAlreadyExists();
+                if (game.Title.Equals(gameToVerify.Title))
+                    throw new GameAlreadyExists();
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public string SearchGame(string title, string genre, int qualification)

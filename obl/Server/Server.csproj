@@ -1,7 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\Common\Common.csproj"/>
+        <ProjectReference Include="..\Common\Common.csproj" />
+        <ProjectReference Include="..\CommonLogs\CommonLogs.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="AdminCommunication\Protos\adminCommunication.proto" GrpcServices="Server"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Google.Protobuf" Version="3.19.1" />
+      <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     </ItemGroup>
 
     <PropertyGroup>

@@ -1,0 +1,12 @@
+{
+    "profiles": {
+        "Server.AdminCommunication": {
+            "commandName": "Project",
+            "launchBrowser": false,
+            "applicationUrl": "https://localhost:31700",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

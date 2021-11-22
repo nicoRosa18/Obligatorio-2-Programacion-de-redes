@@ -43,7 +43,7 @@ namespace Client
             System.IO.Directory.CreateDirectory(_pathsManager.ReadSetting("CoversPath"));
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             try
             {
@@ -558,7 +558,7 @@ namespace Client
                     try
                     {
                         string path = Console.ReadLine();
-                        _communication.SendFileAsync(path).Wait();
+                        _communication.SendFileAsync(path);
                         fileNotFound = false;
                     }
                     catch (AggregateException e)
