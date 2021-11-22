@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -155,7 +156,8 @@ namespace Server.AdminCommunication
                 Cover = request.Cover,
                 Genre = request.Genre,
                 Synopsis = request.Synopsis,
-                AgeRating = request.AgeRating
+                AgeRating = request.AgeRating,
+                CommunityQualifications = new Collection<Qualification>()
             };
             try
             {
