@@ -90,14 +90,14 @@ namespace Server
                 _serverAttributes.AddClient(connectedTcpClient);
                 Console.WriteLine($"Nueva coneccion {threadId} aceptada");
 
-                Task task = Task.Run(async () => await HandleConnection(connectedTcpClient, threadId).ConfigureAwait(false));
+                Task task = Task.Run(async () => await HandleConnectionAsync(connectedTcpClient, threadId).ConfigureAwait(false));
             }
 
             _tcpListener.Stop();
             Console.WriteLine("Cerrando el server...");
         }
 
-        private async Task HandleConnection(TcpClient connectedTcpClient, int threadId)
+        private async Task HandleConnectionAsync(TcpClient connectedTcpClient, int threadId)
         {
             Message spanishMessage = new SpanishMessage();
             CommunicationTcp communicationViaClient = new CommunicationTcp(connectedTcpClient);
