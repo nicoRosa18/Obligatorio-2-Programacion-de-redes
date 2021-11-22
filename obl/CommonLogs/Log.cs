@@ -20,5 +20,21 @@ namespace CommonLogs
             this.Time = DateTime.Now;
             this.Status = status;
         }
+        
+        
+        public override bool Equals(Object obj)
+        {
+            //Check for null and compare run-time types.
+            if ((obj == null) || ! this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else {
+                Log p = (Log) obj;
+                return (this.User == p.User) && (this.Game == p.Game)
+                    &&(this.Status==p.Status)&&(this.Time==p.Time)
+                    &&(this.EventType==p.EventType);
+            }
+        }
     }
 }

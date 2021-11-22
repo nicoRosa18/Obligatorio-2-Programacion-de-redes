@@ -10,8 +10,8 @@ namespace ServerLogs.Container
     {
         private readonly object _gameDictionarylock = new object();
         private readonly object _userDictionarylock = new object();
-        private IDictionary<string, List<Log>> _gameLogs {get; set;}
-        private IDictionary<string, List<Log>> _userLogs {get; set;}
+        private IDictionary<string, List<Log>> _gameLogs { get; set; }
+        private IDictionary<string, List<Log>> _userLogs { get; set; }
 
         public LogContainer()
         {
@@ -21,28 +21,29 @@ namespace ServerLogs.Container
 
         public async Task AddLogAsync(Log log)
         {
-            lock(_userLogs)
+            lock (_userLogs)
             {
                 try
                 {
                     _userLogs[log.User].Add(DeepCopyLog(log));
                 }
-                catch(System.Collections.Generic.KeyNotFoundException)
+                catch (System.Collections.Generic.KeyNotFoundException)
                 {
                     List<Log> newCollectionToKey = new List<Log>();
                     newCollectionToKey.Add(DeepCopyLog(log));
                     _userLogs.Add(log.User, newCollectionToKey);
                 }
             }
-            if(!log.Game.Equals(string.Empty))
+
+            if (!log.Game.Equals(string.Empty))
             {
-                lock(_gameLogs)
+                lock (_gameLogs)
                 {
                     try
                     {
                         _gameLogs[log.Game].Add(DeepCopyLog(log));
                     }
-                    catch(System.Collections.Generic.KeyNotFoundException)
+                    catch (System.Collections.Generic.KeyNotFoundException)
                     {
                         List<Log> newCollectionToKey = new List<Log>();
                         newCollectionToKey.Add(DeepCopyLog(log));
@@ -56,34 +57,36 @@ namespace ServerLogs.Container
         {
             List<Log> filteredByUser = new List<Log>();
             List<Log> filteredByGame = new List<Log>();
-            lock(_userLogs)
+            lock (_userLogs)
             {
                 try
                 {
                     filteredByUser = DeepCopyLogList(FilterByUserName(user));
                 }
-                catch(System.Collections.Generic.KeyNotFoundException)
+                catch (System.Collections.Generic.KeyNotFoundException)
                 {
                     return filteredByUser;
                 }
             }
-            lock(_gameLogs)
+
+            lock (_gameLogs)
             {
                 try
                 {
                     filteredByGame = DeepCopyLogList(FilterByGameName(game));
                 }
-                catch(System.Collections.Generic.KeyNotFoundException)
+                catch (System.Collections.Generic.KeyNotFoundException)
                 {
                     return filteredByGame;
                 }
             }
-            List<Log> filtered  = new List<Log>();
-            if(filteredByUser.Count == 0)
+
+            List<Log> filtered = new List<Log>();
+            if (user.Equals(string.Empty))
             {
                 filtered = filteredByGame;
             }
-            else if(filteredByGame.Count == 0)
+            else if (game.Equals(string.Empty))
             {
                 filtered = filteredByUser;
             }
@@ -91,6 +94,7 @@ namespace ServerLogs.Container
             {
                 filtered = Intersect(filteredByUser, filteredByGame);
             }
+
             return FilterByDate(filtered, date);
         }
 
@@ -99,15 +103,16 @@ namespace ServerLogs.Container
             List<Log> toReturn = new List<Log>();
             foreach (Log log in filteredByUser)
             {
-                if (filteredByGame.Contains(log)) toReturn.Add(log);
+                if (!filteredByGame.Contains(log)) toReturn.Add(log);
             }
+
             return toReturn;
         }
 
         private List<Log> FilterByUserName(string userName)
         {
             List<Log> listFiltered = new List<Log>();
-            if(userName.Equals(string.Empty))
+            if (userName.Equals(string.Empty))
             {
                 listFiltered = CollectionOfListsToSingleListConverter(_userLogs.Values);
             }
@@ -115,13 +120,14 @@ namespace ServerLogs.Container
             {
                 listFiltered = _userLogs[userName];
             }
-            return listFiltered; 
+
+            return listFiltered;
         }
 
         private List<Log> FilterByGameName(string gameName)
         {
             List<Log> listFiltered = new List<Log>();
-            if(gameName.Equals(string.Empty))
+            if (gameName.Equals(string.Empty))
             {
                 listFiltered = CollectionOfListsToSingleListConverter(_gameLogs.Values);
             }
@@ -129,41 +135,46 @@ namespace ServerLogs.Container
             {
                 listFiltered = _gameLogs[gameName];
             }
+
             return listFiltered;
         }
 
         private List<Log> FilterByDate(List<Log> logs, string date)
         {
             List<Log> listFiltered = new List<Log>();
-            if(!date.Equals(string.Empty))
+            if (!date.Equals(string.Empty))
             {
-                listFiltered = logs.FindAll(l => l.Time.Equals(DateTime.Parse(date)));
+                DateTime dateToSearch = DateTime.Parse(date);
+                listFiltered = logs.FindAll(l => l.Time.Date.Equals(dateToSearch.Date));
             }
             else
             {
                 listFiltered = logs;
             }
+
             return listFiltered;
         }
 
         private List<Log> CollectionOfListsToSingleListConverter(ICollection<List<Log>> toConvert)
         {
             List<Log> toReturn = new List<Log>();
-            foreach(List<Log> list in toConvert)
+            foreach (List<Log> list in toConvert)
             {
                 toReturn.AddRange(list);
             }
+
             return toReturn;
         }
 
         private List<Log> DeepCopyLogList(List<Log> logs)
         {
             List<Log> copy = new List<Log>();
-            foreach(Log log in logs)
+            foreach (Log log in logs)
             {
                 Log logCopy = DeepCopyLog(log);
                 copy.Add(logCopy);
             }
+
             return copy;
         }
 
