@@ -301,7 +301,7 @@ namespace Server
             try
             {
                 _usersAndCatalogueManager.ContainsUser(userName);
-                _communicator.SendMessageAsync(CommandConstants.RegisterUser, _messageLanguage.UserRepeated);
+                _communicator.SendMessageAsync(CommandConstants.RegisterUser, _messageLanguage.UserRepeated + _messageLanguage.BackToTry);
                 _localSender.ExecuteAsync(userName, "", "UserRegistration", _messageLanguage.UserRepeated);
             }
             catch (UserNotFound)

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using Server.Domain.ServerExceptions;
 
 namespace Server.Domain
@@ -37,10 +38,10 @@ namespace Server.Domain
 
         public void AddUser(string username)
         {
+            User user = new User();
+            user.Name = username;
             lock (_userCollectionLock)
             {
-                User user = new User();
-                user.Name = username;
                 this.Users.Add(user);
             }
         }
@@ -150,10 +151,13 @@ namespace Server.Domain
             {
                 foreach (User user in this.Users)
                 {
-                    user.RemoveFromAcquiredGames(gameToRemove.Title);
+                    try
+                    {
+                        user.RemoveFromAcquiredGames(gameToRemove.Title);
+                    }
+                    catch(GameNotPurchased) {}  
                 }
             }
-
             lock (_catalogueLock)
             {
                 this.Catalogue.DeleteGame(gameToRemove.Title);
@@ -177,6 +181,147 @@ namespace Server.Domain
                 foreach (User user in this.Users)
                 {
                     user.ModifyGameForNotOwner(oldGame.Title, newGameFullData.Title);
+                }
+            }
+        }
+
+        public void ModifyGameByAdmin(string oldGameTitle, Game newGame)
+        {
+            Game newGameFullData = new Game();
+
+            lock (_catalogueLock)
+            {
+                newGameFullData = this.Catalogue.ModifyGame(oldGameTitle, newGame);
+            }
+
+            lock (_userCollectionLock)
+            {
+                foreach (User user in this.Users)
+                {
+                    user.ModifyGameForNotOwner(oldGameTitle, newGameFullData.Title);
+                    try
+                    {
+                        user.IsOwner(oldGameTitle);
+                        user.ModifyGameForOwner(oldGameTitle, newGame.Title);
+                    }
+                    catch (UserNotOwnerofGame) {}
+                }
+            }
+        }
+
+        public void RemoveGameByAdmin(string gameToRemoveTitle)
+        {
+            lock (_userCollectionLock)
+            {
+                foreach (User user in this.Users)
+                {
+                    try
+                    {
+                        user.RemoveFromAcquiredGames(gameToRemoveTitle);
+                        user.RemoveFromPublishedGames(gameToRemoveTitle);
+                    }
+                    catch (UserNotOwnerofGame){}
+                    catch (GameNotPurchased){}
+                }
+            }
+
+            lock (_catalogueLock)
+            {
+                this.Catalogue.DeleteGame(gameToRemoveTitle);
+            }
+        }
+
+        public void ModifyUserByAdmin(string oldName, string newName)
+        {
+            try
+            {
+                ContainsUser(newName);
+                throw new UserAlreadyExists();
+            }
+            catch (UserNotFound)
+            {
+                ContainsUser(oldName);
+                lock (_userCollectionLock)
+                {
+                    foreach (User user in Users)
+                    {
+                        if (user.Name.Equals(oldName))
+                        {
+                            user.Name = newName;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void RemoveUserByAdmin(string userNameToDelete)
+        {
+            lock (_userCollectionLock)
+            {
+                foreach (User user in Users)
+                {
+                    if (user.Name.Equals(userNameToDelete))
+                    {
+                        Users.Remove(user);
+                        break;
+                    }
+                    throw new UserNotFound();
+                }
+                
+            }
+        }
+
+        public void AssociateGameToUserByAdmin(string gameTitle, string userName)
+        {
+            Game gameDecoy = new Game();
+            gameDecoy.Title = gameTitle;
+            try
+            {
+                lock(_catalogueLock)
+                {
+                    Catalogue.ExistsGame(gameDecoy);
+                }
+                throw new GameNotFound();
+            }
+            catch(GameAlreadyExists) {}
+            
+            lock (_userCollectionLock)
+            {
+                foreach (User user in Users)
+                {
+                    if (user.Name.Equals(userName))
+                    {
+                        user.BuyGame(gameTitle);
+                        break;
+                    }
+                    throw new UserNotFound();
+                }
+            }
+        }
+        
+        public void DesassociateGameToUserByAdmin(string gameTitle, string userName)
+        {
+            Game gameDecoy = new Game();
+            gameDecoy.Title = gameTitle;
+            try
+            {
+                lock(_catalogueLock)
+                {
+                    Catalogue.ExistsGame(gameDecoy);
+                }
+                throw new GameNotFound();
+            }
+            catch(GameAlreadyExists) {}
+
+            lock (_userCollectionLock)
+            {
+                foreach (User user in Users)
+                {
+                    if (user.Name.Equals(userName))
+                    {
+                        user.RemoveFromAcquiredGames(gameTitle);
+                    }
                 }
             }
         }
